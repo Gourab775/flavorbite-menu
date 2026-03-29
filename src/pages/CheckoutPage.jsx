@@ -47,6 +47,7 @@ export function CheckoutPage() {
           totalPrice: grandTotal,
           paymentMode,
           note: orderNote || null,
+          tableId: currentTableId,
         });
 
         clearCart();
@@ -83,14 +84,18 @@ export function CheckoutPage() {
         payment_mode: "online",
         status: "pending",
         note: orderNote || null,
+        table: currentTableId,
         items: cart.map((item) => ({
           id: String(item.id ?? ""),
           name: String(item.name ?? "Unknown Item"),
           price: Number(item.price ?? 0),
           quantity: Number(item.quantity ?? 1),
           is_veg: Boolean(item.isVeg),
+          table: String(item.table ?? currentTableId ?? ""),
         })),
       };
+
+      console.log("Sending order:", orderPayload);
 
       const { data, error } = await supabase
         .from("live_orders")

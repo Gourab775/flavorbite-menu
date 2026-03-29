@@ -5,13 +5,14 @@ import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
  *
  * @param {Object} params
  * @param {string}  params.restaurantId  - must not be null/undefined
- * @param {Array}   params.items         - cart items [{ id, name, price, quantity, isVeg }]
+ * @param {Array}   params.items         - cart items [{ id, name, price, quantity, isVeg, table }]
  * @param {number}  params.totalPrice   - must be a number
  * @param {"counter"|"online"} params.paymentMode
  * @param {string|null} params.note - optional order note
+ * @param {string|null} params.tableId - optional table number
  * @returns {Promise<{ orderId: string }>}
  */
-export async function placeOrder({ restaurantId, items, totalPrice, paymentMode, note = null }) {
+export async function placeOrder({ restaurantId, items, totalPrice, paymentMode, note = null, tableId = null }) {
   if (!isSupabaseConfigured || !supabase) {
     throw new Error(
       "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file."
@@ -45,14 +46,18 @@ export async function placeOrder({ restaurantId, items, totalPrice, paymentMode,
     payment_mode: paymentMode,
     status: "pending",
     note: note || null,
+    table: tableId || null,
     items: items.map((item) => ({
       id: String(item.id ?? ""),
       name: String(item.name ?? "Unknown Item"),
       price: Number(item.price ?? 0),
       quantity: Number(item.quantity ?? 1),
       is_veg: Boolean(item.isVeg),
+      table: String(item.table ?? tableId ?? ""),
     })),
   };
+
+  console.log("Sending order:", orderPayload);
 
   const { data, error } = await supabase
     .from("live_orders")
