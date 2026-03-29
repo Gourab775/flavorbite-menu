@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClient";
 
 /**
  * Places an order — single insert into live_orders with all items stored as JSONB.
@@ -13,6 +13,11 @@ import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
  * @returns {Promise<{ orderId: string }>}
  */
 export async function placeOrder({ restaurantId, items, totalPrice, paymentMode, note = null, tableId = null }) {
+  console.log("=== ORDER DEBUG ===");
+  console.log("Supabase Configured:", isSupabaseConfigured);
+  console.log("Supabase URL:", supabaseUrl);
+  console.log("Table ID:", tableId);
+
   if (!isSupabaseConfigured || !supabase) {
     throw new Error(
       "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file."
@@ -57,13 +62,18 @@ export async function placeOrder({ restaurantId, items, totalPrice, paymentMode,
     })),
   };
 
-  console.log("Sending order:", orderPayload);
+  console.log("Payload:", JSON.stringify(orderPayload, null, 2));
+
+  console.log("Making request to: POST", supabaseUrl + "/rest/v1/live_orders");
 
   const { data, error } = await supabase
     .from("live_orders")
     .insert([orderPayload])
-    .select("id")
+    .select("id, order_code")
     .single();
+
+  console.log("Response data:", data);
+  console.log("Response error:", error);
 
   if (error) {
     console.error("[placeOrder] insert error:", error);
@@ -74,5 +84,6 @@ export async function placeOrder({ restaurantId, items, totalPrice, paymentMode,
     throw new Error("Order insert succeeded but no ID was returned. Please try again.");
   }
 
+  console.log("=== ORDER SUCCESS ===");
   return { orderId: data.id };
 }

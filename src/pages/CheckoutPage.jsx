@@ -95,13 +95,17 @@ export function CheckoutPage() {
         })),
       };
 
-      console.log("Sending order:", orderPayload);
+      console.log("=== PAY ONLINE DEBUG ===");
+      console.log("Table ID:", currentTableId);
+      console.log("Payload:", JSON.stringify(orderPayload, null, 2));
 
       const { data, error } = await supabase
         .from("live_orders")
         .insert([orderPayload])
         .select("id, order_code")
         .single();
+
+      console.log("Response:", data, error);
 
       if (error) throw error;
 
