@@ -91,7 +91,6 @@ export function CheckoutPage() {
           price: Number(item.price ?? 0),
           quantity: Number(item.quantity ?? 1),
           is_veg: Boolean(item.isVeg),
-          table: String(item.table ?? currentTableId ?? ""),
         })),
       };
 
