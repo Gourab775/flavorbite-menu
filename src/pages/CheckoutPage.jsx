@@ -3,9 +3,11 @@ import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
+import { RESTAURANT_ID } from "../utils/constants";
 
 function generateOrderCode() {
-  return "ORD-" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return "ORD-" + num;
 }
 
 export function CheckoutPage() {
@@ -22,9 +24,16 @@ export function CheckoutPage() {
   const orderNote = typeof window !== "undefined" ? sessionStorage.getItem("cart_order_note") || "" : "";
 
   const handleCounterOrder = async () => {
+    console.log("Restaurant ID:", RESTAURANT_ID);
     console.log("Counter flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
+      setToastType("error");
+      return;
+    }
+
+    if (!RESTAURANT_ID) {
+      setToastMsg("Restaurant ID missing");
       setToastType("error");
       return;
     }
@@ -43,6 +52,7 @@ export function CheckoutPage() {
       const { data, error } = await supabase
         .from("live_orders")
         .insert({
+          restaurant_id: RESTAURANT_ID,
           items: itemsPayload,
           table: currentTableId,
           status: "pending",
@@ -69,9 +79,16 @@ export function CheckoutPage() {
   };
 
   const handleOnlineOrder = async () => {
+    console.log("Restaurant ID:", RESTAURANT_ID);
     console.log("Online flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
+      setToastType("error");
+      return;
+    }
+
+    if (!RESTAURANT_ID) {
+      setToastMsg("Restaurant ID missing");
       setToastType("error");
       return;
     }
@@ -90,6 +107,7 @@ export function CheckoutPage() {
       const { data, error } = await supabase
         .from("live_orders")
         .insert({
+          restaurant_id: RESTAURANT_ID,
           items: itemsPayload,
           table: currentTableId,
           status: "pending",
