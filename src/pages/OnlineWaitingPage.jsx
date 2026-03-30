@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
+import { RESTAURANT_ID } from "../utils/constants";
 
 export function OnlineWaitingPage() {
   const [, navigate] = useLocation();
@@ -10,14 +11,39 @@ export function OnlineWaitingPage() {
 
   const [timeLeft, setTimeLeft] = useState(120);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
+    const fetchPhone = async () => {
+      const { data } = await supabase
+        .from("restaurants")
+        .select("contact_number")
+        .eq("id", RESTAURANT_ID)
+        .single();
+
+      if (data?.contact_number) {
+        setPhone(data.contact_number);
+      }
+    };
+
+    fetchPhone();
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [timeLeft]);
 
   useEffect(() => {
     if (!orderId) return;
@@ -87,10 +113,22 @@ export function OnlineWaitingPage() {
 
         <button
           onClick={handleCancel}
-          style={{ marginTop: "32px", background: "none", border: "none", color: "#999", fontSize: "14px", textDecoration: "underline", cursor: "pointer" }}
+          style={{ marginTop: "32px", background: "none", border: "2px solid #dc3545", borderRadius: "8px", color: "#dc3545", fontSize: "14px", fontWeight: "600", padding: "10px 20px", cursor: "pointer" }}
         >
           Cancel Order
         </button>
+
+        <p style={{ marginTop: "24px", color: "#666", fontSize: "14px" }}>
+          Still not confirmed after 2 minutes?{" "}
+          {phone && (
+            <span
+              onClick={() => window.location.href = `tel:${phone}`}
+              style={{ color: "#1890ff", textDecoration: "underline", cursor: "pointer" }}
+            >
+              Contact us
+            </span>
+          )}
+        </p>
       </main>
 
       {showCancelModal && (
