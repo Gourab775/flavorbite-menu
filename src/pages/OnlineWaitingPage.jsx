@@ -46,10 +46,12 @@ export function OnlineWaitingPage() {
   }, [timeLeft]);
 
   useEffect(() => {
+    console.log("Waiting for order:", orderId);
+
     if (!orderId) return;
 
     const channel = supabase
-      .channel("online-payment-status")
+      .channel("order-status-listener")
       .on(
         "postgres_changes",
         {
@@ -58,17 +60,47 @@ export function OnlineWaitingPage() {
           table: "live_orders",
         },
         (payload) => {
-          console.log("[OnlineWaiting] Order update:", payload.new);
-          if (payload.new.id === orderId && payload.new.status === "accepted") {
+          console.log("Realtime payload:", payload);
+
+          const updatedOrder = payload.new;
+
+          if (
+            updatedOrder.id === orderId &&
+            updatedOrder.status === "accepted"
+          ) {
+            console.log("Order accepted → redirecting...");
             navigate(`/t/${currentTableId}/order-confirmed`);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [orderId, navigate, currentTableId]);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const checkStatus = async () => {
+      const { data } = await supabase
+        .from("live_orders")
+        .select("status")
+        .eq("id", orderId)
+        .single();
+
+      if (data?.status === "accepted") {
+        console.log("Polling detected accepted → redirecting...");
+        navigate(`/t/${currentTableId}/order-confirmed`);
+      }
+    };
+
+    const interval = setInterval(checkStatus, 3000);
+
+    return () => clearInterval(interval);
   }, [orderId, navigate, currentTableId]);
 
   const formatTime = (seconds) => {
