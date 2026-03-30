@@ -41,7 +41,7 @@ export function CheckoutPage() {
       setLoading(true);
 
       try {
-        await placeOrder({
+        const result = await placeOrder({
           restaurantId: RESTAURANT_ID,
           items: cart,
           totalPrice: grandTotal,
@@ -52,7 +52,13 @@ export function CheckoutPage() {
 
         clearCart();
         sessionStorage.removeItem(CART_NOTE_KEY);
-        navigate(`/t/${currentTableId}/order-success`);
+        
+        if (paymentMode === "counter") {
+          sessionStorage.setItem("last_order_id", result.orderId);
+          navigate(`/t/${currentTableId}/order-status`);
+        } else {
+          navigate(`/t/${currentTableId}/order-success`);
+        }
       } catch (err) {
         const message = err?.message ?? "Something went wrong. Please try again.";
         showToast(message, "error");
@@ -61,10 +67,10 @@ export function CheckoutPage() {
         setLoading(false);
       }
     },
-    [cart, grandTotal, clearCart, navigate, showToast, orderNote]
+    [cart, grandTotal, clearCart, navigate, showToast, orderNote, currentTableId]
   );
 
-  const payCounter = () => place("counter");
+  const payCounter = () => place("pay_at_counter");
 
   const payOnline = async () => {
     if (debounceRef.current) return;
