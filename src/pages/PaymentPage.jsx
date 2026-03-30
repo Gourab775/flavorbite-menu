@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useSearch } from "wouter";
+import { useLocation, useSearch, useParams } from "wouter";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
 
@@ -8,14 +8,25 @@ function parseAmount(raw) {
   return isNaN(n) ? 0 : n;
 }
 
+const upiLinks = {
+  gpay: "upi://pay",
+  phonepe: "phonepe://pay",
+  paytm: "paytmmp://pay",
+  other: "upi://pay",
+};
+
 export function PaymentPage() {
   const [, navigate] = useLocation();
   const search = useSearch();
+  const { tableId } = useParams();
+  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
+  const currentTableId = tableId || storedTableId;
   const { restaurant } = useMenu();
 
   const [apps, setApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
   const [selectedApp, setSelectedApp] = useState(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   const params = new URLSearchParams(search);
   const orderId = params.get("orderId") ?? null;
@@ -24,6 +35,32 @@ export function PaymentPage() {
   useEffect(() => {
     console.log("[PaymentPage] orderId:", orderId, "amount:", amount);
   }, [orderId, amount]);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const channel = supabase
+      .channel("payment-status")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "live_orders",
+        },
+        (payload) => {
+          console.log("[PaymentPage] Order update:", payload.new);
+          if (payload.new.id === orderId && payload.new.status === "accepted") {
+            navigate(`/t/${currentTableId}/order-confirmed`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId, navigate, currentTableId]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -49,14 +86,21 @@ export function PaymentPage() {
     fetchApps();
   }, []);
 
-  const buildUpiLink = () => {
+  const buildUpiLink = (appName) => {
     if (!restaurant.paymentId || !amount || !orderId) return "";
     const note = `Order #${orderId}`;
-    return `upi://pay?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+    const baseLink = upiLinks[appName?.toLowerCase()] || upiLinks.other;
+    return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
   };
 
   const handleAppSelect = (app) => {
     setSelectedApp(app);
+  };
+
+  const handlePay = () => {
+    if (!selectedApp) return;
+
+    setIsPaying(true);
 
     if (!restaurant.paymentId) {
       alert("Payment ID not configured. Please contact the restaurant.");
@@ -67,14 +111,9 @@ export function PaymentPage() {
       return;
     }
 
-    const link = buildUpiLink();
+    const link = buildUpiLink(selectedApp.app_name);
     console.log("[PaymentPage] Opening UPI:", link);
     setTimeout(() => { window.location.href = link; }, 0);
-  };
-
-  const handleContinue = () => {
-    if (!selectedApp) return;
-    handleAppSelect(selectedApp);
   };
 
   return (
@@ -151,14 +190,21 @@ export function PaymentPage() {
       <div className="paymentFooter">
         <button
           className={`paymentContinueBtn pressable ${selectedApp ? "active" : ""}`}
-          disabled={!selectedApp}
-          onClick={handleContinue}
+          disabled={!selectedApp || isPaying}
+          onClick={handlePay}
         >
           Pay ₹{Math.round(amount)}
           {selectedApp && (
             <span className="paymentContinueAmount">via {selectedApp.app_name}</span>
           )}
         </button>
+
+        {isPaying && (
+          <div className="payment-loading" style={{ textAlign: "center", padding: "16px", color: "#666" }}>
+            <div className="btnSpinner" style={{ margin: "0 auto 8px" }} />
+            <p style={{ margin: 0, fontSize: "14px" }}>Processing your payment. Please wait...</p>
+          </div>
+        )}
       </div>
     </div>
   );
