@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useSearch, useParams } from "wouter";
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
 
 function parseAmount(raw) {
@@ -15,13 +15,12 @@ const upiLinks = {
   upi: "upi://pay",
 };
 
-function getPaymentKey(appName) {
-  const name = appName?.toLowerCase() || "";
-  if (name.includes("google") || name.includes("gpay")) return "gpay";
-  if (name.includes("phonepe")) return "phonepe";
-  if (name.includes("paytm")) return "paytm";
-  return "upi";
-}
+const paymentApps = [
+  { id: "gpay", name: "Google Pay" },
+  { id: "phonepe", name: "PhonePe" },
+  { id: "paytm", name: "Paytm" },
+  { id: "upi", name: "Other UPI" },
+];
 
 export function PaymentPage() {
   const [, navigate] = useLocation();
@@ -31,10 +30,10 @@ export function PaymentPage() {
   const currentTableId = tableId || storedTableId;
   const { restaurant } = useMenu();
 
-  const [apps, setApps] = useState([]);
-  const [loadingApps, setLoadingApps] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [selectedAppName, setSelectedAppName] = useState("");
+
+  console.log("Rendering payment apps");
 
   const params = new URLSearchParams(search);
   const orderId = params.get("orderId") ?? null;
@@ -70,34 +69,6 @@ export function PaymentPage() {
     };
   }, [orderId, navigate, currentTableId]);
 
-  useEffect(() => {
-    const fetchApps = async () => {
-      if (!isSupabaseConfigured || !supabase) {
-        setLoadingApps(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("payment_apps")
-        .select("id, app_name, app_logo, payment_key");
-
-      if (!error) {
-        console.log("[PaymentPage] Apps:", data);
-        const mappedApps = (data ?? []).map(app => ({
-          ...app,
-          payment_key: app.payment_key || getPaymentKey(app.app_name)
-        }));
-        setApps(mappedApps);
-      } else {
-        console.error("[PaymentPage] Apps error:", error);
-      }
-
-      setLoadingApps(false);
-    };
-
-    fetchApps();
-  }, []);
-
   const buildUpiLink = (paymentKey) => {
     if (!restaurant.paymentId || !amount || !orderId) return "";
     const note = `Order #${orderId}`;
@@ -105,9 +76,9 @@ export function PaymentPage() {
     return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
   };
 
-  const handleAppSelect = (app) => {
-    setSelectedPayment(app.payment_key);
-    setSelectedAppName(app.app_name);
+  const handleAppSelect = (appId, appName) => {
+    setSelectedPayment(appId);
+    setSelectedAppName(appName);
   };
 
   const handlePay = () => {
@@ -168,39 +139,26 @@ export function PaymentPage() {
 
         <h2 className="paymentSectionTitle"> Select Payment App</h2>
 
-        {loadingApps ? (
-          <div className="paymentLoading">
-            <span>Loading payment options…</span>
-          </div>
-        ) : apps.length === 0 ? (
-          <div className="paymentEmpty">
-            <span>No payment options available</span>
-          </div>
-        ) : (
-          <div className="paymentAppsGrid">
-            {apps.map((app) => (
-              <button
-                key={app.id}
-                className={`paymentAppCard ${selectedPayment === app.payment_key ? "selected" : ""}`}
-                onClick={() => handleAppSelect(app)}
-                aria-pressed={selectedPayment === app.payment_key}
-              >
-                <img
-                  src={app.app_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`}
-                  alt={app.app_name}
-                  className="paymentAppLogo"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`;
-                  }}
-                />
-                <span className="paymentAppName">{app.app_name}</span>
-                {selectedPayment === app.payment_key && (
-                  <span className="paymentAppCheck" aria-hidden="true">✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="paymentAppsGrid">
+          {paymentApps.map((app) => (
+            <button
+              key={app.id}
+              className={`paymentAppCard ${selectedPayment === app.id ? "selected" : ""}`}
+              onClick={() => handleAppSelect(app.id, app.name)}
+              aria-pressed={selectedPayment === app.id}
+            >
+              <img
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(app.name)}&background=ff7a18&color=fff&size=80&bold=true`}
+                alt={app.name}
+                className="paymentAppLogo"
+              />
+              <span className="paymentAppName">{app.name}</span>
+              {selectedPayment === app.id && (
+                <span className="paymentAppCheck" aria-hidden="true">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
 
         {restaurant.paymentId && (
           <p className="upiIdNote">Pay to: {restaurant.paymentId}</p>
