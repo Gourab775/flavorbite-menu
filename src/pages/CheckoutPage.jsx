@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { supabase } from "../lib/supabaseClient";
@@ -22,6 +22,7 @@ export function CheckoutPage() {
   const orderNote = typeof window !== "undefined" ? sessionStorage.getItem("cart_order_note") || "" : "";
 
   const handleCounterOrder = async () => {
+    console.log("Counter flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
       setToastType("error");
@@ -58,6 +59,54 @@ export function CheckoutPage() {
       clearCart();
       sessionStorage.removeItem("cart_order_note");
       navigate(`/t/${currentTableId}/waiting/${data.id}`);
+    } catch (err) {
+      const message = err?.message ?? "Something went wrong. Please try again.";
+      setToastMsg(message);
+      setToastType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOnlineOrder = async () => {
+    console.log("Online flow triggered");
+    if (!cart || cart.length === 0) {
+      setToastMsg("Your cart is empty.");
+      setToastType("error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const itemsPayload = cart.map((item) => ({
+        id: String(item.id ?? ""),
+        name: String(item.name ?? "Unknown Item"),
+        price: Number(item.price ?? 0),
+        quantity: Number(item.quantity ?? 1),
+        is_veg: Boolean(item.isVeg),
+      }));
+
+      const { data, error } = await supabase
+        .from("live_orders")
+        .insert({
+          items: itemsPayload,
+          table: currentTableId,
+          status: "pending",
+          payment_mode: "online",
+          order_code: generateOrderCode(),
+          total_price: grandTotal,
+          note: orderNote || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const orderCode = data?.order_code ?? data?.id;
+      clearCart();
+      sessionStorage.removeItem("cart_order_note");
+      navigate(`/t/${currentTableId}/payment?orderId=${encodeURIComponent(orderCode)}&amount=${encodeURIComponent(grandTotal)}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);
@@ -121,12 +170,26 @@ export function CheckoutPage() {
             className="payBtn payBtn--counter pressable"
             onClick={handleCounterOrder}
             disabled={loading}
-            style={{ width: "100%" }}
+            style={{ width: "100%", marginBottom: "12px" }}
           >
             <span className="payBtnIcon" aria-hidden="true">💳</span>
             <span>
               <span className="payBtnLabel">Pay at Counter</span>
               <span className="payBtnSub">Cash/Card Only</span>
+            </span>
+            {loading && <span className="btnSpinner" />}
+          </button>
+
+          <button
+            className="payBtn payBtn--online pressable"
+            onClick={handleOnlineOrder}
+            disabled={loading}
+            style={{ width: "100%" }}
+          >
+            <span className="payBtnIcon" aria-hidden="true">📱</span>
+            <span>
+              <span className="payBtnLabel">Pay Online</span>
+              <span className="payBtnSub">UPI Only</span>
             </span>
             {loading && <span className="btnSpinner" />}
           </button>
