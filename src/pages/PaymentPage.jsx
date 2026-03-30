@@ -87,6 +87,7 @@ export function PaymentPage() {
   };
 
   const handleAppSelect = (appId, appName) => {
+    console.log("Selected:", appId, appName);
     setSelectedPayment(appId);
     setSelectedAppName(appName);
   };
@@ -155,12 +156,16 @@ export function PaymentPage() {
           </div>
         ) : (
           <div className="paymentAppsGrid">
-            {paymentApps.map((app) => (
+            {paymentApps.map((app) => {
+              const appKey = app.app_key || app.id;
+              const isSelected = selectedPayment === appKey;
+              console.log("Rendering app:", app.app_name, "key:", appKey, "selected:", isSelected);
+              return (
               <button
                 key={app.id}
-                className={`paymentAppCard ${selectedPayment === app.app_key ? "selected" : ""}`}
-                onClick={() => handleAppSelect(app.app_key, app.app_name)}
-                aria-pressed={selectedPayment === app.app_key}
+                className={`paymentAppCard ${isSelected ? "selected" : ""}`}
+                onClick={() => handleAppSelect(appKey, app.app_name)}
+                aria-pressed={isSelected}
               >
                 <img
                   src={app.app_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`}
@@ -168,11 +173,12 @@ export function PaymentPage() {
                   className="paymentAppLogo"
                 />
                 <span className="paymentAppName">{app.app_name}</span>
-                {selectedPayment === app.app_key && (
+                {isSelected && (
                   <span className="paymentAppCheck" aria-hidden="true">✓</span>
                 )}
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
 
