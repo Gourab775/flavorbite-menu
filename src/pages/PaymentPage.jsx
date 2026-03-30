@@ -12,8 +12,16 @@ const upiLinks = {
   gpay: "upi://pay",
   phonepe: "phonepe://pay",
   paytm: "paytmmp://pay",
-  other: "upi://pay",
+  upi: "upi://pay",
 };
+
+function getPaymentKey(appName) {
+  const name = appName?.toLowerCase() || "";
+  if (name.includes("google") || name.includes("gpay")) return "gpay";
+  if (name.includes("phonepe")) return "phonepe";
+  if (name.includes("paytm")) return "paytm";
+  return "upi";
+}
 
 export function PaymentPage() {
   const [, navigate] = useLocation();
@@ -25,8 +33,8 @@ export function PaymentPage() {
 
   const [apps, setApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(true);
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [isPaying, setIsPaying] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState("");
+  const [selectedAppName, setSelectedAppName] = useState("");
 
   const params = new URLSearchParams(search);
   const orderId = params.get("orderId") ?? null;
@@ -71,11 +79,15 @@ export function PaymentPage() {
 
       const { data, error } = await supabase
         .from("payment_apps")
-        .select("id, app_name, app_logo");
+        .select("id, app_name, app_logo, payment_key");
 
       if (!error) {
         console.log("[PaymentPage] Apps:", data);
-        setApps(data ?? []);
+        const mappedApps = (data ?? []).map(app => ({
+          ...app,
+          payment_key: app.payment_key || getPaymentKey(app.app_name)
+        }));
+        setApps(mappedApps);
       } else {
         console.error("[PaymentPage] Apps error:", error);
       }
@@ -86,21 +98,25 @@ export function PaymentPage() {
     fetchApps();
   }, []);
 
-  const buildUpiLink = (appName) => {
+  const buildUpiLink = (paymentKey) => {
     if (!restaurant.paymentId || !amount || !orderId) return "";
     const note = `Order #${orderId}`;
-    const baseLink = upiLinks[appName?.toLowerCase()] || upiLinks.other;
+    const baseLink = upiLinks[paymentKey] || upiLinks.upi;
     return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
   };
 
   const handleAppSelect = (app) => {
-    setSelectedApp(app);
+    setSelectedPayment(app.payment_key);
+    setSelectedAppName(app.app_name);
   };
 
   const handlePay = () => {
-    if (!selectedApp) return;
+    if (!selectedPayment) {
+      alert("Select payment method");
+      return;
+    }
 
-    setIsPaying(true);
+    console.log("Selected:", selectedPayment);
 
     if (!restaurant.paymentId) {
       alert("Payment ID not configured. Please contact the restaurant.");
@@ -111,9 +127,13 @@ export function PaymentPage() {
       return;
     }
 
-    const link = buildUpiLink(selectedApp.app_name);
-    console.log("[PaymentPage] Opening UPI:", link);
-    setTimeout(() => { window.location.href = link; }, 0);
+    const link = buildUpiLink(selectedPayment);
+    console.log("Opening:", link);
+
+    if (link) {
+      navigate(`/t/${currentTableId}/online-waiting/${orderId}`);
+      setTimeout(() => { window.location.href = link; }, 100);
+    }
   };
 
   return (
@@ -161,9 +181,9 @@ export function PaymentPage() {
             {apps.map((app) => (
               <button
                 key={app.id}
-                className={`paymentAppCard ${selectedApp?.id === app.id ? "selected" : ""}`}
+                className={`paymentAppCard ${selectedPayment === app.payment_key ? "selected" : ""}`}
                 onClick={() => handleAppSelect(app)}
-                aria-pressed={selectedApp?.id === app.id}
+                aria-pressed={selectedPayment === app.payment_key}
               >
                 <img
                   src={app.app_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`}
@@ -174,7 +194,7 @@ export function PaymentPage() {
                   }}
                 />
                 <span className="paymentAppName">{app.app_name}</span>
-                {selectedApp?.id === app.id && (
+                {selectedPayment === app.payment_key && (
                   <span className="paymentAppCheck" aria-hidden="true">✓</span>
                 )}
               </button>
@@ -189,22 +209,15 @@ export function PaymentPage() {
 
       <div className="paymentFooter">
         <button
-          className={`paymentContinueBtn pressable ${selectedApp ? "active" : ""}`}
-          disabled={!selectedApp || isPaying}
+          className={`paymentContinueBtn pressable ${selectedPayment ? "active" : ""}`}
+          disabled={!selectedPayment}
           onClick={handlePay}
         >
           Pay ₹{Math.round(amount)}
-          {selectedApp && (
-            <span className="paymentContinueAmount">via {selectedApp.app_name}</span>
+          {selectedAppName && (
+            <span className="paymentContinueAmount">via {selectedAppName}</span>
           )}
         </button>
-
-        {isPaying && (
-          <div className="payment-loading" style={{ textAlign: "center", padding: "16px", color: "#666" }}>
-            <div className="btnSpinner" style={{ margin: "0 auto 8px" }} />
-            <p style={{ margin: 0, fontSize: "14px" }}>Processing your payment. Please wait...</p>
-          </div>
-        )}
       </div>
     </div>
   );

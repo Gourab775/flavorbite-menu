@@ -10,6 +10,7 @@ import { OrderSuccessPage } from "./pages/OrderSuccessPage";
 import { OrderStatusPage } from "./pages/OrderStatusPage";
 import { OrderConfirmedPage } from "./pages/OrderConfirmedPage";
 import { WaitingPage } from "./pages/WaitingPage";
+import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { TableRequiredPage } from "./pages/TableRequiredPage";
 import { CartBar } from "./components/CartBar";
@@ -30,18 +31,19 @@ function AppRoutes() {
   const [isOrderStatusRoute] = useRoute("/t/:tableId/order-status");
   const [isOrderConfirmedRoute] = useRoute("/t/:tableId/order-confirmed");
   const [isWaitingRoute, waitingParams] = useRoute("/t/:tableId/waiting/:orderId");
+  const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/t/:tableId/online-waiting/:orderId");
   const [location, setLocation] = useLocation();
 
-  const tableId = tableParams?.tableId || cartParams?.tableId || waitingParams?.tableId;
+  const tableId = tableParams?.tableId || cartParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
 
   useEffect(() => {
     const stored = getStoredTableId();
-    if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute) {
+    if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute) {
       if (stored && location === "/") {
         setLocation(`/t/${stored}`);
       }
     }
-  }, [location, isTableRoute, isCartRoute, isCheckoutRoute, isPaymentRoute, isOrderSuccessRoute, isOrderStatusRoute, isOrderConfirmedRoute, isWaitingRoute, setLocation]);
+  }, [location, isTableRoute, isCartRoute, isCheckoutRoute, isPaymentRoute, isOrderSuccessRoute, isOrderStatusRoute, isOrderConfirmedRoute, isWaitingRoute, isOnlineWaitingRoute, setLocation]);
 
   useEffect(() => {
     if (tableId) {
@@ -49,15 +51,15 @@ function AppRoutes() {
     }
   }, [tableId]);
 
-  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && location === "/") {
+  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute && location === "/") {
     return <TableRequiredPage />;
   }
 
-  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute) {
+  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute) {
     return <NotFoundPage />;
   }
 
-  const showCartBar = isTableRoute || isCartRoute || isWaitingRoute;
+  const showCartBar = isTableRoute || isCartRoute || isWaitingRoute || isOnlineWaitingRoute;
 
   return (
     <>
@@ -71,6 +73,7 @@ function AppRoutes() {
         <Route path="/t/:tableId/order-status" component={OrderStatusPage} />
         <Route path="/t/:tableId/order-confirmed" component={OrderConfirmedPage} />
         <Route path="/t/:tableId/waiting/:orderId" component={WaitingPage} />
+        <Route path="/t/:tableId/online-waiting/:orderId" component={OnlineWaitingPage} />
         <Route component={NotFoundPage} />
       </Switch>
       {showCartBar && <CartBar />}
