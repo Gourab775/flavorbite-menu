@@ -184,7 +184,7 @@ export function CheckoutPage() {
               <span className="payBtnIcon" aria-hidden="true">💳</span>
               <span>
                 <span className="payBtnLabel">Pay at Counter</span>
-                <span className="payBtnSub">Settle when you pick up</span>
+                <span className="payBtnSub">Cash/Card Only</span>
               </span>
               {loading && <span className="btnSpinner" aria-label="Processing" />}
             </button>
@@ -198,7 +198,7 @@ export function CheckoutPage() {
               <span className="payBtnIcon" aria-hidden="true">📱</span>
               <span>
                 <span className="payBtnLabel">Pay Online</span>
-                <span className="payBtnSub">UPI, Cards, Wallets</span>
+                <span className="payBtnSub">UPI Only</span>
               </span>
               {loading && <span className="btnSpinner" aria-label="Processing" />}
             </button>
