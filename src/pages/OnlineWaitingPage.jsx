@@ -13,9 +13,6 @@ export function OnlineWaitingPage() {
   const searchParams = new URLSearchParams(search);
   const orderCode = searchParams.get("code");
 
-  console.log("UUID:", orderId);
-  console.log("Order Code:", orderCode);
-
   const [timeLeft, setTimeLeft] = useState(120);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [phone, setPhone] = useState("");
@@ -53,46 +50,30 @@ export function OnlineWaitingPage() {
   }, [timeLeft]);
 
   useEffect(() => {
-    console.log("Waiting for order:", orderId);
-
     if (!orderId) return;
 
     const channel = supabase
-      .channel("order-status-listener")
+      .channel("order-status")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "live_orders",
-        },
+        { event: "UPDATE", schema: "public", table: "live_orders" },
         (payload) => {
-          console.log("Realtime payload:", payload);
-
-          const updatedOrder = payload.new;
-
-          if (
-            updatedOrder.id === orderId &&
-            updatedOrder.status === "accepted"
-          ) {
-            console.log("Order accepted → redirecting...");
+          if (payload.new.id === orderId && payload.new.status === "accepted") {
             navigate(`/t/${currentTableId}/order-confirmed`);
           }
         }
       )
-      .subscribe((status) => {
-        console.log("Subscription status:", status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orderId, navigate, currentTableId]);
+  }, []);
 
   useEffect(() => {
     if (!orderId) return;
 
-    const checkStatus = async () => {
+    const interval = setInterval(async () => {
       const { data } = await supabase
         .from("live_orders")
         .select("status")
@@ -100,15 +81,13 @@ export function OnlineWaitingPage() {
         .single();
 
       if (data?.status === "accepted") {
-        console.log("Polling detected accepted → redirecting...");
+        clearInterval(interval);
         navigate(`/t/${currentTableId}/order-confirmed`);
       }
-    };
-
-    const interval = setInterval(checkStatus, 3000);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [orderId, navigate, currentTableId]);
+  }, []);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
