@@ -47,7 +47,11 @@ export function PaymentPage() {
 
   const params = new URLSearchParams(search);
   const orderId = params.get("orderId") ?? null;
+  const orderCode = params.get("code") ?? null;
   const amount = parseAmount(params.get("amount"));
+
+  console.log("UUID:", orderId);
+  console.log("Order Code:", orderCode);
 
   useEffect(() => {
     console.log("[PaymentPage] orderId:", orderId, "amount:", amount);
@@ -113,7 +117,7 @@ export function PaymentPage() {
     console.log("Opening:", link);
 
     if (link) {
-      navigate(`/t/${currentTableId}/online-waiting/${orderId}`);
+      navigate(`/t/${currentTableId}/online-waiting/${orderId}?code=${encodeURIComponent(orderCode)}`);
       setTimeout(() => { window.location.href = link; }, 100);
     }
   };

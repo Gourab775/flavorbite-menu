@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useLocation, useParams, useSearch } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { RESTAURANT_ID } from "../utils/constants";
 
 export function OnlineWaitingPage() {
   const [, navigate] = useLocation();
+  const search = useSearch();
   const { tableId, orderId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+
+  const searchParams = new URLSearchParams(search);
+  const orderCode = searchParams.get("code");
+
+  console.log("UUID:", orderId);
+  console.log("Order Code:", orderCode);
 
   const [timeLeft, setTimeLeft] = useState(120);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -130,7 +137,7 @@ export function OnlineWaitingPage() {
           Waiting for Payment Confirmation
         </h2>
         <p style={{ color: "#666", fontSize: "16px", marginBottom: "8px" }}>
-          Order ID: <strong>{orderId}</strong>
+          Order ID: <strong>{orderCode || orderId}</strong>
         </p>
         <p style={{ color: "#ff7a18", fontSize: "16px", marginBottom: "24px" }}>
           Time remaining: {formatTime(timeLeft)}
