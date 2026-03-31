@@ -81,9 +81,8 @@ export function PaymentPage() {
     return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
   };
 
-  const handleAppSelect = (appId, appName) => {
-    console.log("Selected:", appId, appName);
-    setSelectedPayment(appId);
+  const handleAppSelect = (appKey, appName) => {
+    setSelectedPayment(appKey);
     setSelectedAppName(appName);
   };
 
@@ -92,8 +91,6 @@ export function PaymentPage() {
       alert("Select payment method");
       return;
     }
-
-    console.log("Selected:", selectedPayment);
 
     if (!restaurant.paymentId) {
       alert("Payment ID not configured. Please contact the restaurant.");
@@ -152,9 +149,8 @@ export function PaymentPage() {
         ) : (
           <div className="paymentAppsGrid">
             {paymentApps.map((app) => {
-              const appKey = app.app_key || app.id;
+              const appKey = app.app_key;
               const isSelected = selectedPayment === appKey;
-              console.log("Rendering app:", app.app_name, "key:", appKey, "selected:", isSelected);
               return (
               <button
                 key={app.id}
