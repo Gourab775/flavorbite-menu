@@ -18,7 +18,7 @@ const upiLinks = {
 export function PaymentPage() {
   const [, navigate] = useLocation();
   const search = useSearch();
-  const { tableId } = useParams();
+  const { tableId, orderId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
   const { restaurant } = useMenu();
@@ -38,24 +38,15 @@ export function PaymentPage() {
         return;
       }
 
-      console.log("Payment Apps:", data);
       setPaymentApps(data);
     };
 
     fetchApps();
   }, []);
 
-  const params = new URLSearchParams(search);
-  const orderId = params.get("orderId") ?? null;
-  const orderCode = params.get("code") ?? null;
-  const amount = parseAmount(params.get("amount"));
-
-  console.log("UUID:", orderId);
-  console.log("Order Code:", orderCode);
-
-  useEffect(() => {
-    console.log("[PaymentPage] orderId:", orderId, "amount:", amount);
-  }, [orderId, amount]);
+  const searchParams = new URLSearchParams(search);
+  const orderCode = searchParams.get("code") ?? null;
+  const amount = parseAmount(searchParams.get("amount"));
 
   useEffect(() => {
     if (!orderId) return;
@@ -84,8 +75,8 @@ export function PaymentPage() {
   }, [orderId, navigate, currentTableId]);
 
   const buildUpiLink = (paymentKey) => {
-    if (!restaurant.paymentId || !amount || !orderId) return "";
-    const note = `Order #${orderId}`;
+    if (!restaurant.paymentId || !amount || !orderCode) return "";
+    const note = `Order #${orderCode}`;
     const baseLink = upiLinks[paymentKey] || upiLinks.upi;
     return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
   };
@@ -108,7 +99,7 @@ export function PaymentPage() {
       alert("Payment ID not configured. Please contact the restaurant.");
       return;
     }
-    if (!amount || !orderId) {
+    if (!amount || !orderCode) {
       alert("Order data missing.");
       return;
     }
@@ -141,7 +132,7 @@ export function PaymentPage() {
           <div className="orderSummaryRow">
             <span className="orderSummaryLabel">Order ID</span>
             <span className="orderSummaryValue">
-              {orderId ? `#${orderId}` : "—"}
+              {orderCode ? `#${orderCode}` : "—"}
             </span>
           </div>
           <div className="orderSummaryDivider" />

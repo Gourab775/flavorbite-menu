@@ -121,12 +121,9 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      console.log("UUID:", data.id);
-      console.log("Order Code:", data.order_code);
-      
       clearCart();
       sessionStorage.removeItem("cart_order_note");
-      navigate(`/t/${currentTableId}/payment?orderId=${encodeURIComponent(data.id)}&code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
+      navigate(`/t/${currentTableId}/payment/${data.id}?code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);

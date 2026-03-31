@@ -26,7 +26,7 @@ function AppRoutes() {
   const [isTableRoute, tableParams] = useRoute("/t/:tableId");
   const [isCartRoute, cartParams] = useRoute("/t/:tableId/cart");
   const [isCheckoutRoute] = useRoute("/t/:tableId/checkout");
-  const [isPaymentRoute] = useRoute("/t/:tableId/payment");
+  const [isPaymentRoute, paymentParams] = useRoute("/t/:tableId/payment/:orderId");
   const [isOrderSuccessRoute] = useRoute("/t/:tableId/order-success");
   const [isOrderStatusRoute] = useRoute("/t/:tableId/order-status");
   const [isOrderConfirmedRoute] = useRoute("/t/:tableId/order-confirmed");
@@ -34,7 +34,7 @@ function AppRoutes() {
   const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/t/:tableId/online-waiting/:orderId");
   const [location, setLocation] = useLocation();
 
-  const tableId = tableParams?.tableId || cartParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
+  const tableId = tableParams?.tableId || cartParams?.tableId || paymentParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
 
   useEffect(() => {
     const stored = getStoredTableId();
@@ -68,7 +68,7 @@ function AppRoutes() {
         <Route path="/t/:tableId" component={MenuPage} />
         <Route path="/t/:tableId/cart" component={CartPage} />
         <Route path="/t/:tableId/checkout" component={CheckoutPage} />
-        <Route path="/t/:tableId/payment" component={PaymentPage} />
+        <Route path="/t/:tableId/payment/:orderId" component={PaymentPage} />
         <Route path="/t/:tableId/order-success" component={OrderSuccessPage} />
         <Route path="/t/:tableId/order-status" component={OrderStatusPage} />
         <Route path="/t/:tableId/order-confirmed" component={OrderConfirmedPage} />
