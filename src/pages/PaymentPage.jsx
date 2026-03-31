@@ -26,16 +26,39 @@ function getAppKey(appName) {
 }
 
 export function PaymentPage() {
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const search = useSearch();
-  const { tableId, orderId } = useParams();
+  const { tableId, orderId: paramOrderId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
   const { restaurant } = useMenu();
 
+  const searchParams = new URLSearchParams(search);
+  let orderId = paramOrderId || searchParams.get("orderId");
+  let orderCode = searchParams.get("code");
+  let amount = parseAmount(searchParams.get("amount"));
+
+  const savedData = typeof window !== "undefined" ? sessionStorage.getItem("orderData") : null;
+  if ((!orderId || !amount) && savedData) {
+    const parsed = JSON.parse(savedData);
+    orderId = orderId || parsed.orderId;
+    orderCode = orderCode || parsed.orderCode;
+    amount = amount || parseAmount(parsed.amount);
+  }
+
+  console.log("Order:", orderId, orderCode, amount);
+
   const [paymentApps, setPaymentApps] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [selectedAppName, setSelectedAppName] = useState("");
+
+  const navigate = (to) => {
+    if (to === -1) {
+      window.history.back();
+    } else {
+      setLocation(to);
+    };
+  };
 
   useEffect(() => {
     const fetchApps = async () => {

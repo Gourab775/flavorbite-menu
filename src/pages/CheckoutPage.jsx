@@ -123,6 +123,11 @@ export function CheckoutPage() {
 
       clearCart();
       sessionStorage.removeItem("cart_order_note");
+      sessionStorage.setItem("orderData", JSON.stringify({
+        orderId: data.id,
+        orderCode: data.order_code,
+        amount: grandTotal
+      }));
       navigate(`/t/${currentTableId}/payment/${data.id}?code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
