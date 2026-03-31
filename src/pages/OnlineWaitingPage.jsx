@@ -52,6 +52,8 @@ export function OnlineWaitingPage() {
   useEffect(() => {
     if (!orderId) return;
 
+    console.log("Realtime active for:", orderId);
+
     const channel = supabase
       .channel("order-status")
       .on(
@@ -68,26 +70,7 @@ export function OnlineWaitingPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  useEffect(() => {
-    if (!orderId) return;
-
-    const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from("live_orders")
-        .select("status")
-        .eq("id", orderId)
-        .single();
-
-      if (data?.status === "accepted") {
-        clearInterval(interval);
-        navigate(`/t/${currentTableId}/order-confirmed`);
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [orderId, navigate, currentTableId]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
