@@ -12,6 +12,7 @@ const upiLinks = {
   gpay: "upi://pay",
   phonepe: "phonepe://pay",
   paytm: "paytmmp://pay",
+  bhim: "upi://pay",
   upi: "upi://pay",
 };
 
@@ -20,6 +21,7 @@ function getAppKey(appName) {
   if (name.includes("google")) return "gpay";
   if (name.includes("phonepe")) return "phonepe";
   if (name.includes("paytm")) return "paytm";
+  if (name.includes("bhim")) return "bhim";
   return "upi";
 }
 
