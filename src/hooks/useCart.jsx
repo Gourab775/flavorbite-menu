@@ -49,6 +49,14 @@ export function CartProvider({ children }) {
   const [vegMode, setVegMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    const handleCartCleared = () => {
+      setCart([]);
+    };
+    window.addEventListener("cart-cleared", handleCartCleared);
+    return () => window.removeEventListener("cart-cleared", handleCartCleared);
+  }, []);
+
 
   useEffect(() => {
     try {

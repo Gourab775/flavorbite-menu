@@ -87,6 +87,7 @@ export function OnlineWaitingPage() {
     localStorage.removeItem("qr_menu_cart");
     localStorage.removeItem("notes");
     sessionStorage.removeItem("orderData");
+    window.dispatchEvent(new Event("cart-cleared"));
     console.log("Cart cleared after cancel");
     navigate(`/t/${currentTableId}`);
   };
