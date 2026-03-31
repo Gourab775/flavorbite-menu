@@ -15,7 +15,7 @@ export function CheckoutPage() {
   const { tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
-  const { cart, subtotal, tax, grandTotal, clearCart } = useCart();
+  const { cart, subtotal, tax, grandTotal } = useCart();
 
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -66,10 +66,6 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      clearCart();
-      localStorage.removeItem("qr_menu_cart");
-      sessionStorage.removeItem("cart_order_note");
-      console.log("Cart cleared after payment");
       navigate(`/t/${currentTableId}/waiting/${data.id}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
@@ -123,9 +119,6 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      clearCart();
-      localStorage.removeItem("qr_menu_cart");
-      sessionStorage.removeItem("cart_order_note");
       sessionStorage.setItem("orderData", JSON.stringify({
         orderId: data.id,
         orderCode: data.order_code,
