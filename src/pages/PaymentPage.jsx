@@ -77,10 +77,6 @@ export function PaymentPage() {
     fetchApps();
   }, []);
 
-  const searchParams = new URLSearchParams(search);
-  const orderCode = searchParams.get("code") ?? null;
-  const amount = parseAmount(searchParams.get("amount"));
-
   useEffect(() => {
     if (!orderId) return;
 
