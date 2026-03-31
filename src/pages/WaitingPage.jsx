@@ -8,6 +8,22 @@ export function WaitingPage() {
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
   const [order, setOrder] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+
+  const handleCancel = () => {
+    setShowCancelModal(true);
+  };
+
+  const handleCancelConfirm = () => {
+    setShowCancelModal(false);
+    localStorage.removeItem("qr_menu_cart");
+    localStorage.removeItem("notes");
+    sessionStorage.removeItem("orderData");
+    sessionStorage.removeItem("cart_order_note");
+    window.dispatchEvent(new Event("cart-cleared"));
+    console.log("Cart cleared after cancel");
+    navigate(`/t/${currentTableId}`);
+  };
 
   useEffect(() => {
     const channel = supabase
@@ -63,7 +79,49 @@ export function WaitingPage() {
         <p style={{ color: "#999", fontSize: "14px", marginTop: "32px" }}>
           Waiting for confirmation...
         </p>
+
+        <button
+          onClick={handleCancel}
+          style={{ marginTop: "32px", background: "none", border: "2px solid #dc3545", borderRadius: "8px", color: "#dc3545", fontSize: "14px", fontWeight: "600", padding: "10px 20px", cursor: "pointer" }}
+        >
+          Cancel Order
+        </button>
       </main>
+
+      {showCancelModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{ background: "#fff", borderRadius: "12px", padding: "24px", maxWidth: "320px", textAlign: "center" }}>
+            <p style={{ fontSize: "16px", marginBottom: "24px" }}>
+              Are you sure you want to cancel this order?
+            </p>
+            <button
+              onClick={handleCancelConfirm}
+              style={{
+                background: "#dc3545",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "12px 32px",
+                fontSize: "16px",
+                cursor: "pointer"
+              }}
+            >
+              Yes, Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
