@@ -13,7 +13,10 @@ export function CartBar() {
     location?.includes("/cart") ||
     location?.includes("/checkout") ||
     location?.includes("/payment") ||
-    location?.includes("/order-success");
+    location?.includes("/order-success") ||
+    location?.includes("/online-waiting") ||
+    location?.includes("/order-confirmed") ||
+    location?.includes("/waiting");
 
   if (isHidden) return null;
   if (totalItems === 0) return null;

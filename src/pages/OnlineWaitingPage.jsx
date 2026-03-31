@@ -84,6 +84,10 @@ export function OnlineWaitingPage() {
 
   const handleCancelConfirm = () => {
     setShowCancelModal(false);
+    localStorage.removeItem("qr_menu_cart");
+    localStorage.removeItem("notes");
+    sessionStorage.removeItem("orderData");
+    console.log("Cart cleared after cancel");
     navigate(`/t/${currentTableId}`);
   };
 

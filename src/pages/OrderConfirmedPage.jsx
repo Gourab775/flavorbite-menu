@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 
 export function OrderConfirmedPage() {
@@ -5,6 +6,13 @@ export function OrderConfirmedPage() {
   const { tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+
+  useEffect(() => {
+    localStorage.removeItem("qr_menu_cart");
+    localStorage.removeItem("notes");
+    sessionStorage.removeItem("orderData");
+    console.log("Cart cleared after order confirmed");
+  }, []);
 
   const goToMenu = () => {
     navigate(`/t/${currentTableId}`);
