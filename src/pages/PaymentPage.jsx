@@ -15,6 +15,14 @@ const upiLinks = {
   upi: "upi://pay",
 };
 
+function getAppKey(appName) {
+  const name = appName?.toLowerCase() || "";
+  if (name.includes("google")) return "gpay";
+  if (name.includes("phonepe")) return "phonepe";
+  if (name.includes("paytm")) return "paytm";
+  return "upi";
+}
+
 export function PaymentPage() {
   const [, navigate] = useLocation();
   const search = useSearch();
@@ -149,7 +157,7 @@ export function PaymentPage() {
         ) : (
           <div className="paymentAppsGrid">
             {paymentApps.map((app) => {
-              const appKey = app.app_key;
+              const appKey = app.app_key || getAppKey(app.app_name);
               const isSelected = selectedPayment === appKey;
               return (
               <button
