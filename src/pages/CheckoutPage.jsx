@@ -15,7 +15,7 @@ export function CheckoutPage() {
   const { tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
-  const { cart, subtotal, tax, grandTotal, clearCart } = useCart();
+  const { cart, subtotal, tax, grandTotal } = useCart();
 
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -66,7 +66,6 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      clearCart();
       sessionStorage.removeItem("cart_order_note");
       navigate(`/t/${currentTableId}/waiting/${data.id}`);
     } catch (err) {
@@ -121,7 +120,6 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      clearCart();
       sessionStorage.removeItem("cart_order_note");
       sessionStorage.setItem("orderData", JSON.stringify({
         orderId: data.id,
