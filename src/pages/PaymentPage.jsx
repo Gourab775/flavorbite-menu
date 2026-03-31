@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useSearch, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
@@ -46,7 +46,14 @@ export function PaymentPage() {
     amount = amount || parseAmount(parsed.amount);
   }
 
-  console.log("Order:", orderId, orderCode, amount);
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    console.log("Order:", orderId, orderCode, amount);
+  }, []);
 
   const [paymentApps, setPaymentApps] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState("");
