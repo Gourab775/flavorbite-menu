@@ -679,71 +679,110 @@ body {
   color: rgba(31, 31, 31, 0.8);
 }
 
-/* ── Minimal veg-only toggle ── */
-.vegToggleWrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0 9px 0 10px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,0.1);
-  background: #1a1a2e;
-  color: #9ca3af;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  user-select: none;
-  transition: border-color 200ms ease, color 200ms ease, background 200ms ease, box-shadow 200ms ease;
-  flex-shrink: 0;
-}
-
-.vegToggleWrap.on {
-  border-color: rgba(34,197,94,0.5);
-  color: #4ade80;
-  background: rgba(22,27,23,0.95);
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.1), 0 2px 8px rgba(34,197,94,0.08);
-}
-
-.vegLabel {
-  letter-spacing: 0.07em;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.vegSwitch {
-  width: 26px;
-  height: 16px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.1);
-  padding: 2px;
+/* ── Premium Veg Toggle Pill ── */
+.vegTogglePill {
+  position: relative;
   display: flex;
   align-items: center;
-  position: relative;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: background 200ms ease;
+  justify-content: space-between;
+  width: 120px;
+  height: 40px;
+  border-radius: 20px;
   border: none;
+  background: rgba(107, 114, 128, 0.25);
+  cursor: pointer;
+  padding: 4px;
+  transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.vegSwitch.on { background: rgba(34,197,94,0.2); }
-
-.vegThumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #6b7280;
-  display: block;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.4);
-  transition: transform 220ms cubic-bezier(0.34,1.56,0.64,1), background 200ms ease;
+.vegTogglePill:hover {
+  transform: scale(1.02);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.vegSwitch.on .vegThumb {
-  transform: translateX(10px);
-  background: #4ade80;
+.vegTogglePill:active {
+  transform: scale(0.98);
 }
+
+.vegTogglePill.active {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 
+    0 4px 16px rgba(34, 197, 94, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.vegTogglePill.active:hover {
+  box-shadow: 
+    0 6px 20px rgba(34, 197, 94, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.vegToggleLabel {
+  position: relative;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  user-select: none;
+  flex: 1;
+  text-align: center;
+}
+
+.vegToggleLabel--off {
+  color: rgba(255, 255, 255, 0.55);
+  margin-left: 4px;
+}
+
+.vegToggleLabel--on {
+  color: rgba(255, 255, 255, 0.35);
+  margin-right: 4px;
+}
+
+.vegTogglePill.active .vegToggleLabel--off {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.vegTogglePill.active .vegToggleLabel--on {
+  color: #ffffff;
+}
+
+.vegToggleSlider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  height: calc(100% - 8px);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.vegTogglePill.active .vegToggleSlider {
+  left: calc(50% + 2px);
+  background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Legacy styles removed - using new vegTogglePill instead */
 
 /* ── Category strip (modern pill style) ── */
 .catScroll {
