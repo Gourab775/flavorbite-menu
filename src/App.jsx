@@ -81,6 +81,18 @@ function AppRoutes() {
   );
 }
 
+function EtherealBackground() {
+  return (
+    <div className="etherealBg">
+      <div className="etherealShape etherealShape--1" />
+      <div className="etherealShape etherealShape--2" />
+      <div className="etherealShape etherealShape--3" />
+      <div className="etherealShape etherealShape--4" />
+      <div className="etherealGrain" />
+    </div>
+  );
+}
+
 export default function App() {
   useEffect(() => {
     let lastTouchEnd = 0;
@@ -100,6 +112,7 @@ export default function App() {
     <CartProvider>
       <MenuProvider>
         <div className="appBackdrop">
+          <EtherealBackground />
           <div className="phoneFrame">
             <AppRoutes />
           </div>
