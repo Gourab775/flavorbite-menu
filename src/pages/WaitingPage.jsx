@@ -1,9 +1,17 @@
 import { useEffect, useState, useMemo } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
-import Lottie from "lottie-react";
-import loadingAnimation from "../assets/animations/loading.json";
 import { motion } from "framer-motion";
+
+let Lottie = null;
+let loadingAnimation = null;
+
+try {
+  Lottie = require("lottie-react").default || require("lottie-react");
+  loadingAnimation = require("../assets/animations/loading.json").default || require("../assets/animations/loading.json");
+} catch (e) {
+  console.warn("Lottie not available:", e.message);
+}
 
 export function WaitingPage() {
   const [, navigate] = useLocation();
@@ -65,6 +73,23 @@ export function WaitingPage() {
     fetchOrder();
   }, [orderId]);
 
+  const renderAnimation = () => {
+    if (!Lottie || !lottieData) {
+      return (
+        <div style={{ fontSize: "64px", marginBottom: "24px" }}>⏳</div>
+      );
+    }
+    return (
+      <div style={{ width: "180px", height: "180px", marginBottom: "24px" }}>
+        <Lottie 
+          animationData={lottieData} 
+          loop={true}
+          style={{ width: "100%", height: "100%" }}
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="pageLayout">
       <header className="topBar">
@@ -78,13 +103,7 @@ export function WaitingPage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 20px", minHeight: "calc(100vh - 120px)" }}
       >
-        <div style={{ width: "180px", height: "180px", marginBottom: "24px" }}>
-          <Lottie 
-            animationData={lottieData} 
-            loop={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
+        {renderAnimation()}
         
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
