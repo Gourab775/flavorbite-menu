@@ -462,18 +462,6 @@ body {
   background: rgba(31, 31, 31, 0.2);
   color: rgba(31, 31, 31, 0.8);
 }
-  border-radius: 999px;
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 150ms ease, color 150ms ease;
-}
-
-.searchClearBtn:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
 /* ── Minimal veg-only toggle ── */
 .vegToggleWrap {
