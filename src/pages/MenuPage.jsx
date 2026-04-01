@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useParams } from "wouter";
 import { Header } from "../components/Header";
 import { SearchBar } from "../components/SearchBar";
@@ -35,6 +35,18 @@ export function MenuPage() {
   const isSearching = searchQuery.trim() !== "";
 
   const [activeCategory, setActiveCategory] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = useCallback(() => {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    setIsScrolled(scrollY > 10);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
   const grouped = useMemo(() => {
     if (isSearching) {
@@ -75,14 +87,14 @@ export function MenuPage() {
       <main id="menu-container" className="menuScroll hideScrollbar">
         <div className="topSection">
           <Header />
-          <div className="stickyHeader">
+          <div className={`stickyHeader ${isScrolled ? "scrolled" : ""}`}>
             <div className="stickySearchRow">
               <SearchBar />
               <VegToggle />
             </div>
           </div>
           {!isSearching && (
-            <div className="categoryWrapper">
+            <div className={`categoryWrapper ${isScrolled ? "scrolled" : ""}`}>
               <CategorySlider
                 categories={categories}
                 activeCategory={activeCategory}

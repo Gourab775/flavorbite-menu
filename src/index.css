@@ -104,7 +104,7 @@ body {
   position: relative;
 }
 
-/* ── Top bar ── */
+/* ── Top bar - Dynamic Glass ── */
 .topBar {
   position: sticky;
   top: 0;
@@ -114,9 +114,30 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
-  background: rgba(255,255,255,0.96);
-  border-bottom: 1px solid rgba(17,24,39,0.06);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 300ms ease;
+}
+
+.topBar.scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Fallback */
+@supports not (backdrop-filter: blur(20px)) {
+  .topBar {
+    background: rgba(255, 255, 255, 0.98);
+  }
+  .topBar.scrolled {
+    background: rgba(255, 255, 255, 1);
+  }
 }
 
 .topBarTitle {
@@ -299,19 +320,50 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* ── Sticky header ── */
+/* ── Sticky header with dynamic glass ── */
 .stickyHeader {
-  background: rgba(255,255,255,0.97);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 300ms ease;
 }
 
 .stickyHeader.scrolled {
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .stickyHeader {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .stickyHeader.scrolled {
+    background: rgba(255, 255, 255, 1);
+  }
 }
 
 /* ── Category wrapper ── */
 .categoryWrapper {
-  background: rgba(255,255,255,0.97);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 300ms ease;
+}
+
+.categoryWrapper.scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+@supports not (backdrop-filter: blur(16px)) {
+  .categoryWrapper {
+    background: rgba(255, 255, 255, 0.95);
+  }
 }
 
 /* ── Search row (inside sticky header) ── */
@@ -322,7 +374,7 @@ body {
   padding: 10px 14px 8px;
 }
 
-/* ── Premium dark search bar ── */
+/* ── Premium glass search bar ── */
 .searchWrap {
   flex: 1;
   position: relative;
@@ -338,23 +390,44 @@ body {
 .searchField input {
   width: 100%;
   height: 42px;
-  border-radius: 12px;
-  border: none;
-  background: #1a1a2e;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 0 40px 0 40px;
-  color: #fff;
+  color: #1f1f1f;
   outline: none;
   font-size: 14px;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
-  transition: box-shadow 200ms ease;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 200ms ease;
   -webkit-appearance: none;
 }
 
-.searchField input::placeholder { color: rgba(255,255,255,0.35); }
+.searchField input::placeholder { 
+  color: rgba(31, 31, 31, 0.45); 
+}
 
 .searchField input:focus {
-  box-shadow: 0 0 0 2px var(--accent), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 122, 24, 0.4);
+  box-shadow: 
+    0 0 0 2px rgba(255, 122, 24, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Fallback */
+@supports not (backdrop-filter: blur(12px)) {
+  .searchField input {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  .searchField input:focus {
+    background: #fff;
+  }
 }
 
 .searchIcon {
@@ -362,7 +435,7 @@ body {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255,255,255,0.4);
+  color: rgba(31, 31, 31, 0.45);
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -375,6 +448,20 @@ body {
   transform: translateY(-50%);
   width: 26px;
   height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(31, 31, 31, 0.1);
+  color: rgba(31, 31, 31, 0.6);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.searchClearBtn:hover {
+  background: rgba(31, 31, 31, 0.2);
+  color: rgba(31, 31, 31, 0.8);
+}
   border-radius: 999px;
   border: none;
   background: rgba(255,255,255,0.1);
