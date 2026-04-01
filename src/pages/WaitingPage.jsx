@@ -80,7 +80,7 @@ export function WaitingPage() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
-          className="text-8xl sm:text-9xl"
+          className="text-9xl sm:text-[10rem]"
         >
           ⏳
         </motion.div>
@@ -89,9 +89,9 @@ export function WaitingPage() {
     return (
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1.05, opacity: 1 }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-[55vw] h-[55vw] sm:w-72 sm:h-72 md:w-80 md:h-80 max-w-[320px] max-h-[320px]"
+        className="w-[60vw] h-[60vw] sm:w-80 sm:h-80 md:w-96 md:h-96 max-w-[400px] max-h-[400px]"
       >
         <Lottie 
           animationData={lottieData} 
@@ -110,50 +110,63 @@ export function WaitingPage() {
 
       <motion.main 
         className="checkoutBody hideScrollbar"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px 40px", minHeight: "calc(100vh - 80px)" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          justifyContent: "center",
+          textAlign: "center", 
+          padding: "20px 24px 32px", 
+          minHeight: "calc(100vh - 60px)"
+        }}
       >
-        <div className="flex-1 flex items-center justify-center py-4">
+        {/* Animation - Primary visual focus */}
+        <div className="flex-shrink-0 mb-8 sm:mb-10">
           {renderAnimation()}
         </div>
-        
-        <motion.h2 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="text-2xl sm:text-3xl font-semibold text-[#1f1f1f]"
-        >
-          Waiting for restaurant confirmation...
-        </motion.h2>
-        
-        {order?.order_code && (
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-            className="text-base sm:text-lg text-[#666] mt-3"
-          >
-            Order ID: <strong>{order.order_code}</strong>
-          </motion.p>
-        )}
-        
-        <motion.p 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.3 }}
-          className="text-sm sm:text-base text-[#999] mt-4 max-w-[280px] sm:max-w-sm"
-        >
-          Please do not refresh or leave this page
-        </motion.p>
 
+        {/* Text Content - Centered group */}
+        <div className="flex flex-col items-center gap-y-3 sm:gap-y-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1f1f1f] leading-tight"
+          >
+            Waiting for restaurant confirmation...
+          </motion.h2>
+          
+          {order?.order_code && (
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="text-lg sm:text-xl text-[#666] font-medium"
+            >
+              Order ID: <span className="text-[#1f1f1f] font-bold">{order.order_code}</span>
+            </motion.p>
+          )}
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="text-sm sm:text-base text-[#999] mt-2 max-w-sm leading-relaxed"
+          >
+            Please do not refresh or leave this page
+          </motion.p>
+        </div>
+
+        {/* Cancel Button - Secondary action */}
         <motion.button
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
+          transition={{ delay: 0.6, duration: 0.4 }}
           onClick={handleCancel}
-          className="mt-6 sm:mt-8 bg-transparent border-2 border-[#dc3545] rounded-lg text-[#dc3545] text-sm font-semibold px-5 py-2 cursor-pointer hover:bg-[#dc3545] hover:text-white transition-colors"
+          className="mt-10 sm:mt-12 bg-transparent border-2 border-[#dc3545] rounded-xl text-[#dc3545] text-base font-semibold px-8 py-3 cursor-pointer hover:bg-[#dc3545] hover:text-white transition-all duration-200"
         >
           Cancel Order
         </motion.button>
