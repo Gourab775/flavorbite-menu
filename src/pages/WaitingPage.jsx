@@ -76,11 +76,11 @@ export function WaitingPage() {
   const renderAnimation = () => {
     if (!Lottie || !lottieData) {
       return (
-        <div style={{ fontSize: "64px", marginBottom: "24px" }}>⏳</div>
+        <div className="text-7xl sm:text-8xl mb-6 sm:mb-8">⏳</div>
       );
     }
     return (
-      <div style={{ width: "180px", height: "180px", marginBottom: "24px" }}>
+      <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 max-w-[240px] max-h-[240px] mb-6 sm:mb-8">
         <Lottie 
           animationData={lottieData} 
           loop={true}
@@ -109,7 +109,7 @@ export function WaitingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px", color: "#1f1f1f" }}
+          className="text-2xl sm:text-3xl font-semibold mb-4 text-[#1f1f1f]"
         >
           Waiting for restaurant confirmation...
         </motion.h2>
@@ -119,7 +119,7 @@ export function WaitingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.3 }}
-            style={{ color: "#666", fontSize: "16px", marginTop: "8px" }}
+            className="text-base sm:text-lg text-[#666] mt-2"
           >
             Order ID: <strong>{order.order_code}</strong>
           </motion.p>
@@ -129,7 +129,7 @@ export function WaitingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          style={{ color: "#999", fontSize: "14px", marginTop: "32px", maxWidth: "280px" }}
+          className="text-sm sm:text-base text-[#999] mt-6 sm:mt-8 max-w-[280px] sm:max-w-sm"
         >
           Please do not refresh or leave this page
         </motion.p>
@@ -139,7 +139,7 @@ export function WaitingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.3 }}
           onClick={handleCancel}
-          style={{ marginTop: "32px", background: "none", border: "2px solid #dc3545", borderRadius: "8px", color: "#dc3545", fontSize: "14px", fontWeight: "600", padding: "10px 20px", cursor: "pointer" }}
+          className="mt-6 sm:mt-8 bg-transparent border-2 border-[#dc3545] rounded-lg text-[#dc3545] text-sm font-semibold px-5 py-2 cursor-pointer hover:bg-[#dc3545] hover:text-white transition-colors"
         >
           Cancel Order
         </motion.button>
