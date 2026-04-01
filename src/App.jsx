@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider } from "./store/menuStore";
+import { ThemeProvider } from "./context/ThemeContext";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
@@ -14,6 +15,7 @@ import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { TableRequiredPage } from "./pages/TableRequiredPage";
 import { CartBar } from "./components/CartBar";
+import { ThemeSwitcher } from "./components/ThemeSwitcher";
 
 const TABLE_KEY = "tableId";
 
@@ -63,6 +65,7 @@ function AppRoutes() {
 
   return (
     <>
+      <ThemeSwitcher />
       <Switch>
         <Route path="/" component={MenuPage} />
         <Route path="/t/:tableId" component={MenuPage} />
@@ -111,12 +114,14 @@ export default function App() {
   return (
     <CartProvider>
       <MenuProvider>
-        <div className="appBackdrop">
-          <EtherealBackground />
-          <div className="phoneFrame">
-            <AppRoutes />
+        <ThemeProvider>
+          <div className="appBackdrop">
+            <EtherealBackground />
+            <div className="phoneFrame">
+              <AppRoutes />
+            </div>
           </div>
-        </div>
+        </ThemeProvider>
       </MenuProvider>
     </CartProvider>
   );
