@@ -76,17 +76,29 @@ export function WaitingPage() {
   const renderAnimation = () => {
     if (!Lottie || !lottieData) {
       return (
-        <div className="text-7xl sm:text-8xl mb-6 sm:mb-8">⏳</div>
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
+          className="text-8xl sm:text-9xl"
+        >
+          ⏳
+        </motion.div>
       );
     }
     return (
-      <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 max-w-[240px] max-h-[240px] mb-6 sm:mb-8">
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1.05, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-[55vw] h-[55vw] sm:w-72 sm:h-72 md:w-80 md:h-80 max-w-[320px] max-h-[320px]"
+      >
         <Lottie 
           animationData={lottieData} 
           loop={true}
           style={{ width: "100%", height: "100%" }}
         />
-      </div>
+      </motion.div>
     );
   };
 
@@ -101,15 +113,17 @@ export function WaitingPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 20px", minHeight: "calc(100vh - 120px)" }}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "24px 16px 40px", minHeight: "calc(100vh - 80px)" }}
       >
-        {renderAnimation()}
+        <div className="flex-1 flex items-center justify-center py-4">
+          {renderAnimation()}
+        </div>
         
         <motion.h2 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="text-2xl sm:text-3xl font-semibold mb-4 text-[#1f1f1f]"
+          className="text-2xl sm:text-3xl font-semibold text-[#1f1f1f]"
         >
           Waiting for restaurant confirmation...
         </motion.h2>
@@ -119,7 +133,7 @@ export function WaitingPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.3 }}
-            className="text-base sm:text-lg text-[#666] mt-2"
+            className="text-base sm:text-lg text-[#666] mt-3"
           >
             Order ID: <strong>{order.order_code}</strong>
           </motion.p>
@@ -129,7 +143,7 @@ export function WaitingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="text-sm sm:text-base text-[#999] mt-6 sm:mt-8 max-w-[280px] sm:max-w-sm"
+          className="text-sm sm:text-base text-[#999] mt-4 max-w-[280px] sm:max-w-sm"
         >
           Please do not refresh or leave this page
         </motion.p>
