@@ -883,21 +883,24 @@ body {
   color: #fff;
 }
 
-/* ── Cart bar — fixed bottom, centered, simple pop-in ── */
+/* ── Cart bar — floating glassmorphism ── */
 .cartBarOuter {
   position: fixed;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%) scale(0.95);
+  bottom: max(14px, env(safe-area-inset-bottom, 14px));
+  left: 16px;
+  right: 16px;
   z-index: 999;
-  width: min(420px, calc(100vw - 28px));
+  width: auto;
+  max-width: 480px;
+  margin: 0 auto;
   opacity: 0;
+  transform: translateY(20px) scale(0.95);
   pointer-events: none;
-  transition: transform 250ms ease, opacity 200ms ease;
+  transition: transform 300ms ease, opacity 200ms ease;
 }
 
 .cartBarOuter--visible {
-  transform: translateX(-50%) scale(1);
+  transform: translateY(0) scale(1);
   opacity: 1;
   pointer-events: auto;
 }
@@ -907,55 +910,73 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: none;
-  background: rgba(18,18,18,0.97);
-  backdrop-filter: blur(14px);
+  padding: 14px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: #fff;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   cursor: pointer;
   font-family: inherit;
-  transition: transform 150ms ease;
+  transition: transform 150ms ease, box-shadow 200ms ease;
 }
 
-.cartBar:active { transform: scale(0.98); }
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(20px)) {
+  .cartBar {
+    background: rgba(18, 18, 18, 0.95);
+  }
+}
+
+.cartBar:active { 
+  transform: scale(0.98); 
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
 
 .cartBarLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .cartBarIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,140,58,0.2), rgba(255,140,58,0.1));
   display: grid;
   place-items: center;
-  color: #fff;
+  color: #ff8c3a;
   flex-shrink: 0;
 }
 
 .cartBarCount {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
   font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .cartBarAmt {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
   color: #fff;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .cartBarCta {
-  font-size: 13px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 800;
   color: #ff8c3a;
   flex-shrink: 0;
+  letter-spacing: 0.5px;
 }
 
 /* ── Cart page ── */
