@@ -4,16 +4,15 @@ export function VegToggle() {
   const { vegMode, setVegMode } = useCart();
 
   return (
-    <div className="vegToggleWrap">
-      <span className="vegLabel">VEG</span>
-      <button
-        onClick={() => setVegMode(!vegMode)}
-        className={`vegSwitch ${vegMode ? "on" : ""}`}
-        aria-pressed={vegMode}
-        title={vegMode ? "Veg only (on)" : "Veg only (off)"}
-      >
-        <span className="vegThumb" />
-      </button>
-    </div>
+    <button
+      onClick={() => setVegMode(!vegMode)}
+      className={`vegTogglePill ${vegMode ? "active" : ""}`}
+      aria-pressed={vegMode}
+      title={vegMode ? "Showing veg items only" : "Showing all items"}
+    >
+      <span className="vegToggleLabel vegToggleLabel--off">OFF</span>
+      <span className="vegToggleLabel vegToggleLabel--on">VEG</span>
+      <span className="vegToggleSlider" />
+    </button>
   );
 }
