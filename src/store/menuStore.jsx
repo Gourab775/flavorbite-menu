@@ -5,10 +5,7 @@ import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
-// In-memory cache
 const menuCache = new Map();
-
-// Default slug for direct access
 const DEFAULT_SLUG = "demo-restaurant";
 
 function normalizeCategories(data) {
@@ -95,18 +92,16 @@ export function MenuProvider({ children }) {
   const currentSlug = useRef(null);
 
   const loadMenu = useCallback(async (slug) => {
-    // Use provided slug, stored slug, or default
     const targetSlug = slug || getStoredSlug() || DEFAULT_SLUG;
+    const cleanSlug = String(targetSlug).trim().toLowerCase();
 
-    // Check cache first
-    if (menuCache.has(targetSlug)) {
-      const cached = menuCache.get(targetSlug);
+    if (menuCache.has(cleanSlug)) {
+      const cached = menuCache.get(cleanSlug);
       dispatch({ type: "SET_DATA", payload: cached });
       return;
     }
 
-    // Prevent duplicate fetches
-    if (currentSlug.current === targetSlug && hasFetched.current) {
+    if (currentSlug.current === cleanSlug && hasFetched.current) {
       return;
     }
 
@@ -117,18 +112,24 @@ export function MenuProvider({ children }) {
 
     dispatch({ type: "START_LOADING" });
     hasFetched.current = true;
-    currentSlug.current = targetSlug;
+    currentSlug.current = cleanSlug;
 
     try {
-      // Fetch restaurant by slug
+      // Use maybeSingle() instead of single() to avoid 406 error
       const { data: restData, error: restErr } = await supabase
         .from("restaurants")
         .select("id, name, slug, logo, payment_id")
-        .eq("slug", targetSlug)
-        .single();
+        .eq("slug", cleanSlug)
+        .maybeSingle();
 
-      if (restErr || !restData) {
-        console.error("[menuStore] Restaurant not found for slug:", targetSlug);
+      if (restErr) {
+        console.error("[menuStore] Restaurant fetch error:", restErr.message);
+        dispatch({ type: "SET_ERROR", payload: "Failed to load restaurant" });
+        return;
+      }
+
+      if (!restData) {
+        console.warn("[menuStore] No restaurant found for slug:", cleanSlug);
         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
         return;
       }
@@ -169,13 +170,11 @@ export function MenuProvider({ children }) {
         featuredItems: normalizeFeaturedItems(featuredResult.data),
       };
 
-      // Cache the data
-      menuCache.set(targetSlug, data);
-
+      menuCache.set(cleanSlug, data);
       dispatch({ type: "SET_DATA", payload: data });
     } catch (err) {
-      console.error("[menuStore] Error:", err);
-      dispatch({ type: "SET_ERROR", payload: "Failed to load menu data" });
+      console.error("[menuStore] Unexpected error:", err);
+      dispatch({ type: "SET_ERROR", payload: "Failed to load menu" });
     }
   }, []);
 
@@ -187,7 +186,7 @@ export function MenuProvider({ children }) {
   const refetch = useCallback(() => {
     const slug = getSlugFromPath() || getStoredSlug();
     if (slug) {
-      menuCache.delete(slug);
+      menuCache.delete(slug.trim().toLowerCase());
       hasFetched.current = false;
       loadMenu(slug);
     }
