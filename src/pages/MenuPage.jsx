@@ -88,7 +88,7 @@ export function MenuPage() {
         <div className="topSection">
           <Header />
           <div className={`stickyHeader ${isScrolled ? "scrolled" : ""}`}>
-            <div className="stickySearchRow">
+            <div className="searchBarContainer">
               <SearchBar />
               <VegToggle />
             </div>
