@@ -5,8 +5,11 @@ import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
-// Simple in-memory cache
+// In-memory cache
 const menuCache = new Map();
+
+// Default slug for direct access
+const DEFAULT_SLUG = "demo-restaurant";
 
 function normalizeCategories(data) {
   if (!Array.isArray(data)) return [];
@@ -56,7 +59,6 @@ function getSlugFromPath() {
   return segments[0] || null;
 }
 
-// Single state object for better performance
 const initialState = {
   categories: [],
   menuItems: [],
@@ -79,26 +81,32 @@ function reducer(state, action) {
   }
 }
 
+function useReducer(reducer, initialState) {
+  const [state, setState] = useState(initialState);
+  const dispatch = useCallback((action) => {
+    setState((prev) => reducer(prev, action));
+  }, []);
+  return [state, dispatch];
+}
+
 export function MenuProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const hasFetched = useRef(false);
   const currentSlug = useRef(null);
 
   const loadMenu = useCallback(async (slug) => {
-    if (!slug) {
-      dispatch({ type: "SET_ERROR", payload: "Invalid URL - No restaurant specified" });
-      return;
-    }
+    // Use provided slug, stored slug, or default
+    const targetSlug = slug || getStoredSlug() || DEFAULT_SLUG;
 
     // Check cache first
-    if (menuCache.has(slug)) {
-      const cached = menuCache.get(slug);
+    if (menuCache.has(targetSlug)) {
+      const cached = menuCache.get(targetSlug);
       dispatch({ type: "SET_DATA", payload: cached });
       return;
     }
 
     // Prevent duplicate fetches
-    if (currentSlug.current === slug && hasFetched.current) {
+    if (currentSlug.current === targetSlug && hasFetched.current) {
       return;
     }
 
@@ -109,17 +117,18 @@ export function MenuProvider({ children }) {
 
     dispatch({ type: "START_LOADING" });
     hasFetched.current = true;
-    currentSlug.current = slug;
+    currentSlug.current = targetSlug;
 
     try {
-      // Step 1: Fetch restaurant by slug
+      // Fetch restaurant by slug
       const { data: restData, error: restErr } = await supabase
         .from("restaurants")
         .select("id, name, slug, logo, payment_id")
-        .eq("slug", slug)
+        .eq("slug", targetSlug)
         .single();
 
       if (restErr || !restData) {
+        console.error("[menuStore] Restaurant not found for slug:", targetSlug);
         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
         return;
       }
@@ -133,7 +142,7 @@ export function MenuProvider({ children }) {
         paymentId: restData.payment_id ?? "",
       };
 
-      // Step 2: Fetch categories, menu items, and featured items in parallel
+      // Fetch categories, menu items, and featured items in parallel
       const [catsResult, itemsResult, featuredResult] = await Promise.all([
         supabase
           .from("categories")
@@ -161,7 +170,7 @@ export function MenuProvider({ children }) {
       };
 
       // Cache the data
-      menuCache.set(slug, data);
+      menuCache.set(targetSlug, data);
 
       dispatch({ type: "SET_DATA", payload: data });
     } catch (err) {
@@ -176,7 +185,6 @@ export function MenuProvider({ children }) {
   }, [loadMenu]);
 
   const refetch = useCallback(() => {
-    // Clear cache and refetch
     const slug = getSlugFromPath() || getStoredSlug();
     if (slug) {
       menuCache.delete(slug);
@@ -208,13 +216,4 @@ export function useMenuStore() {
   const ctx = useContext(MenuContext);
   if (!ctx) throw new Error("useMenuStore must be used within MenuProvider");
   return ctx;
-}
-
-// useReducer polyfill
-function useReducer(reducer, initialState) {
-  const [state, setState] = useState(initialState);
-  const dispatch = useCallback((action) => {
-    setState((prev) => reducer(prev, action));
-  }, []);
-  return [state, dispatch];
 }

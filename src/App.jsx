@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider } from "./store/menuStore";
@@ -15,51 +15,8 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { CartBar } from "./components/CartBar";
 import { setStoredSlug, setStoredTableId, getStoredSlug } from "./utils/constants";
 
-// Extract restaurant identifier from URL
-function getRestaurantIdentifier() {
-  if (typeof window === "undefined") return null;
-  
-  const url = window.location;
-  const pathname = url.pathname;
-  const search = url.search;
-  
-  // Check for slug in path: /menu/:slug or /:slug
-  const pathSlug = pathname.split("/menu/")[1]?.split("/")[0] || pathname.slice(1).split("/")[0];
-  
-  // Check for restaurant ID in query params
-  const queryId = new URLSearchParams(search).get("restaurant");
-  
-  const identifier = pathSlug || queryId;
-  
-  console.log("[Entry] Slug from path:", pathSlug);
-  console.log("[Entry] Query ID:", queryId);
-  console.log("[Entry] Final identifier:", identifier);
-  
-  return identifier;
-}
-
-function WelcomeScreen() {
-  return (
-    <div className="pageLayout">
-      <main className="loadingPage">
-        <div className="scanQRIcon">📱</div>
-        <h2 className="loadingTitle">Scan QR Code</h2>
-        <p className="loadingText">Scan the QR code on your table to view the menu.</p>
-      </main>
-    </div>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="pageLayout">
-      <main className="loadingPage">
-        <div className="loadingSpinner" />
-        <p className="loadingText">Loading menu...</p>
-      </main>
-    </div>
-  );
-}
+// Default restaurant slug for direct access
+const DEFAULT_SLUG = "demo-restaurant";
 
 function AppRoutes() {
   // Slug-based routes
@@ -75,8 +32,7 @@ function AppRoutes() {
   const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/:slug/online-waiting/:orderId");
 
   const [location, setLocation] = useLocation();
-  const [isInitializing, setIsInitializing] = useState(true);
-  const hasRedirected = useRef(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Extract slug from any route
   const slug = menuParams?.slug || tableParams?.slug || cartParams?.slug || paymentParams?.slug || waitingParams?.slug || onlineWaitingParams?.slug;
@@ -100,48 +56,28 @@ function AppRoutes() {
   // Check for any slug-based route
   const isAnySlugRoute = isMenuRoute || isTableRoute || isCartRoute || isCheckoutRoute || isPaymentRoute || isOrderSuccessRoute || isOrderStatusRoute || isOrderConfirmedRoute || isWaitingRoute || isOnlineWaitingRoute;
 
-  // Entry logic: On first load, check for identifier and redirect if needed
+  // Entry logic: Always load menu directly
   useEffect(() => {
-    if (hasRedirected.current) return;
-    
-    const identifier = getRestaurantIdentifier();
-    const storedSlug = getStoredSlug();
-    const currentSlug = location.slice(1).split("/")[0];
-    
-    console.log("[Entry] Current location:", location);
-    console.log("[Entry] Current slug:", currentSlug);
-    console.log("[Entry] Stored slug:", storedSlug);
-    
-    // If we're at root, check for identifier or stored slug
+    // If at root, redirect to default slug
     if (location === "/" || location === "") {
-      if (identifier) {
-        // URL has a slug - redirect to proper format
-        console.log("[Entry] Redirecting to:", `/${identifier}`);
-        hasRedirected.current = true;
-        setLocation(`/${identifier}`, { replace: true });
-      } else if (storedSlug) {
-        // No slug in URL but we have stored slug - redirect
-        console.log("[Entry] Redirecting to stored:", `/${storedSlug}`);
-        hasRedirected.current = true;
-        setLocation(`/${storedSlug}`, { replace: true });
-      } else {
-        // No identifier anywhere - show welcome
-        setIsInitializing(false);
-      }
+      const storedSlug = getStoredSlug();
+      const targetSlug = storedSlug || DEFAULT_SLUG;
+      setLocation(`/${targetSlug}`, { replace: true });
     } else {
-      // Not at root - no need to redirect
-      setIsInitializing(false);
+      setIsReady(true);
     }
   }, [location, setLocation]);
 
-  // Show loading while initializing/redirecting
-  if (isInitializing && !isAnySlugRoute) {
-    return <LoadingScreen />;
-  }
-
-  // Show welcome screen only when truly at root with no identifier
-  if ((location === "/" || location === "") && !isAnySlugRoute) {
-    return <WelcomeScreen />;
+  // Show loading only briefly while redirecting
+  if (!isReady && !isAnySlugRoute) {
+    return (
+      <div className="pageLayout">
+        <main className="loadingPage">
+          <div className="loadingSpinner" />
+          <p className="loadingText">Loading...</p>
+        </main>
+      </div>
+    );
   }
 
   const showCartBar = isMenuRoute || isTableRoute || isWaitingRoute || isOnlineWaitingRoute;
