@@ -2,14 +2,18 @@ import { useCallback, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
+import { getStoredSlug, getStoredTableId } from "../utils/constants";
 
 const CART_NOTE_KEY = "cart_order_note";
 
 export function CartPage() {
   const [, navigate] = useLocation();
-  const { tableId } = useParams();
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
+  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  
+  const slug = urlSlug || getStoredSlug();
+  const tableId = urlTableId || getStoredTableId();
+  
+  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
   const {
     cart,
     increaseQty,
@@ -59,7 +63,7 @@ export function CartPage() {
         <header className="topBar">
           <button
             className="iconBtn pressable"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(basePath)}
             aria-label="Back to menu"
           >
             ←
@@ -76,7 +80,7 @@ export function CartPage() {
           <p className="emptySub">Add items from the menu to get started.</p>
           <button
             className="btn primary pressable"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(basePath)}
           >
             Browse Menu
           </button>
@@ -92,7 +96,7 @@ export function CartPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(basePath)}
           aria-label="Back to menu"
         >
           ←
@@ -161,7 +165,7 @@ export function CartPage() {
           className="ctaBtn primary pressable"
           onClick={() => {
             sessionStorage.setItem(CART_NOTE_KEY, orderNote);
-            navigate(`/t/${currentTableId}/checkout`);
+            navigate(`${basePath}/checkout`);
           }}
           aria-label="Proceed to checkout"
         >
