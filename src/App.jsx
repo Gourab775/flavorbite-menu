@@ -101,19 +101,7 @@ function AppRoutes() {
   return (
     <>
       <Switch>
-        {/* Routes without table ID */}
-        <Route path="/:slug" component={MenuPage} />
-        <Route path="/:slug/cart" component={CartPage} />
-        <Route path="/:slug/checkout" component={CheckoutPage} />
-        <Route path="/:slug/payment/:orderId" component={PaymentPage} />
-        <Route path="/:slug/order-success" component={OrderSuccessPage} />
-        <Route path="/:slug/order-status" component={OrderStatusPage} />
-        <Route path="/:slug/order-confirmed" component={OrderConfirmedPage} />
-        <Route path="/:slug/waiting/:orderId" component={WaitingPage} />
-        <Route path="/:slug/online-waiting/:orderId" component={OnlineWaitingPage} />
-
-        {/* Routes with table ID - MUST come before catch-all */}
-        <Route path="/:slug/t/:tableId" component={MenuPage} />
+        {/* Routes with table ID - MUST come FIRST (more specific) */}
         <Route path="/:slug/t/:tableId/cart" component={CartPage} />
         <Route path="/:slug/t/:tableId/checkout" component={CheckoutPage} />
         <Route path="/:slug/t/:tableId/payment/:orderId" component={PaymentPage} />
@@ -122,6 +110,18 @@ function AppRoutes() {
         <Route path="/:slug/t/:tableId/order-confirmed" component={OrderConfirmedPage} />
         <Route path="/:slug/t/:tableId/waiting/:orderId" component={WaitingPage} />
         <Route path="/:slug/t/:tableId/online-waiting/:orderId" component={OnlineWaitingPage} />
+        <Route path="/:slug/t/:tableId" component={MenuPage} />
+
+        {/* Routes without table ID - come after table routes */}
+        <Route path="/:slug/cart" component={CartPage} />
+        <Route path="/:slug/checkout" component={CheckoutPage} />
+        <Route path="/:slug/payment/:orderId" component={PaymentPage} />
+        <Route path="/:slug/order-success" component={OrderSuccessPage} />
+        <Route path="/:slug/order-status" component={OrderStatusPage} />
+        <Route path="/:slug/order-confirmed" component={OrderConfirmedPage} />
+        <Route path="/:slug/waiting/:orderId" component={WaitingPage} />
+        <Route path="/:slug/online-waiting/:orderId" component={OnlineWaitingPage} />
+        <Route path="/:slug" component={MenuPage} />
 
         {/* Catch-all 404 - MUST be last */}
         <Route path="/:slug/*" component={NotFoundPage} />
