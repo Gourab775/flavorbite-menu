@@ -1,9 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
+
+// Simple in-memory cache
+const menuCache = new Map();
 
 function normalizeCategories(data) {
   if (!Array.isArray(data)) return [];
@@ -53,139 +56,149 @@ function getSlugFromPath() {
   return segments[0] || null;
 }
 
+// Single state object for better performance
+const initialState = {
+  categories: [],
+  menuItems: [],
+  featuredItems: [],
+  restaurant: { id: "", name: "", slug: "", logo: "", paymentId: "" },
+  loading: true,
+  error: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "START_LOADING":
+      return { ...state, loading: true, error: null };
+    case "SET_DATA":
+      return { ...state, ...action.payload, loading: false, error: null };
+    case "SET_ERROR":
+      return { ...state, loading: false, error: action.payload };
+    default:
+      return state;
+  }
+}
+
 export function MenuProvider({ children }) {
-  const [categories, setCategories] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
-  const [featuredItems, setFeaturedItems] = useState([]);
-  const [restaurant, setRestaurant] = useState({ id: "", name: "", slug: "", logo: "", paymentId: "" });
-  const [restaurantLoading, setRestaurantLoading] = useState(true);
-  const [restaurantError, setRestaurantError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const hasFetched = useRef(false);
+  const currentSlug = useRef(null);
 
   const loadMenu = useCallback(async (slug) => {
     if (!slug) {
-      setRestaurantError("Invalid URL - No restaurant specified");
-      setRestaurantLoading(false);
-      setLoading(false);
+      dispatch({ type: "SET_ERROR", payload: "Invalid URL - No restaurant specified" });
+      return;
+    }
+
+    // Check cache first
+    if (menuCache.has(slug)) {
+      const cached = menuCache.get(slug);
+      dispatch({ type: "SET_DATA", payload: cached });
+      return;
+    }
+
+    // Prevent duplicate fetches
+    if (currentSlug.current === slug && hasFetched.current) {
       return;
     }
 
     if (!isSupabaseConfigured || !supabase) {
-      setRestaurantError("App configuration error");
-      setRestaurantLoading(false);
-      setLoading(false);
+      dispatch({ type: "SET_ERROR", payload: "App configuration error" });
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    setRestaurantLoading(true);
+    dispatch({ type: "START_LOADING" });
+    hasFetched.current = true;
+    currentSlug.current = slug;
 
-    // Step 1: Fetch restaurant by slug
-    const { data: restData, error: restErr } = await supabase
-      .from("restaurants")
-      .select("id, name, slug, logo, payment_id")
-      .eq("slug", slug)
-      .single();
+    try {
+      // Step 1: Fetch restaurant by slug
+      const { data: restData, error: restErr } = await supabase
+        .from("restaurants")
+        .select("id, name, slug, logo, payment_id")
+        .eq("slug", slug)
+        .single();
 
-    if (restErr || !restData) {
-      console.error("[menuStore] Restaurant fetch error:", restErr);
-      setRestaurantError("Restaurant not found");
-      setRestaurantLoading(false);
-      setLoading(false);
-      return;
+      if (restErr || !restData) {
+        dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
+        return;
+      }
+
+      const restaurantId = restData.id;
+      const restaurant = {
+        id: restaurantId,
+        name: restData.name ?? "",
+        slug: restData.slug ?? "",
+        logo: restData.logo ?? "",
+        paymentId: restData.payment_id ?? "",
+      };
+
+      // Step 2: Fetch categories, menu items, and featured items in parallel
+      const [catsResult, itemsResult, featuredResult] = await Promise.all([
+        supabase
+          .from("categories")
+          .select("id, name, image, sort_order")
+          .eq("restaurant_id", restaurantId)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("menu_items")
+          .select("id, name, description, price, is_veg, is_available, category_id, image_url")
+          .eq("restaurant_id", restaurantId)
+          .eq("is_available", true),
+        supabase
+          .from("featured_items")
+          .select("id, image_url, redirect_url, display_order")
+          .eq("restaurant_id", restaurantId)
+          .eq("is_active", true)
+          .order("display_order", { ascending: true }),
+      ]);
+
+      const data = {
+        restaurant,
+        categories: normalizeCategories(catsResult.data),
+        menuItems: normalizeMenuItems(itemsResult.data),
+        featuredItems: normalizeFeaturedItems(featuredResult.data),
+      };
+
+      // Cache the data
+      menuCache.set(slug, data);
+
+      dispatch({ type: "SET_DATA", payload: data });
+    } catch (err) {
+      console.error("[menuStore] Error:", err);
+      dispatch({ type: "SET_ERROR", payload: "Failed to load menu data" });
     }
-
-    console.log("[menuStore] Restaurant loaded:", restData);
-    const restaurantId = restData.id;
-
-    setRestaurant({
-      id: restaurantId,
-      name: restData.name ?? "",
-      slug: restData.slug ?? "",
-      logo: restData.logo ?? "",
-      paymentId: restData.payment_id ?? "",
-    });
-    setRestaurantError(null);
-    setRestaurantLoading(false);
-
-    // Step 2: Load categories
-    const catsResult = await supabase
-      .from("categories")
-      .select("id, name, image, sort_order")
-      .eq("restaurant_id", restaurantId)
-      .order("sort_order", { ascending: true });
-
-    if (!catsResult.error) {
-      setCategories(normalizeCategories(catsResult.data));
-    } else {
-      console.error("[menuStore] Categories error:", catsResult.error);
-    }
-
-    // Step 3: Load menu items
-    const itemsResult = await supabase
-      .from("menu_items")
-      .select("id, name, description, price, is_veg, is_available, category_id, image_url")
-      .eq("restaurant_id", restaurantId)
-      .eq("is_available", true);
-
-    if (!itemsResult.error) {
-      setMenuItems(normalizeMenuItems(itemsResult.data));
-    } else {
-      console.error("[menuStore] Menu items error:", itemsResult.error);
-    }
-
-    // Step 4: Load featured items
-    const featuredResult = await supabase
-      .from("featured_items")
-      .select("id, image_url, redirect_url, display_order")
-      .eq("restaurant_id", restaurantId)
-      .eq("is_active", true)
-      .order("display_order", { ascending: true });
-
-    if (!featuredResult.error) {
-      setFeaturedItems(normalizeFeaturedItems(featuredResult.data));
-    } else {
-      console.error("[menuStore] Featured items error:", featuredResult.error);
-    }
-
-    if (catsResult.error || itemsResult.error) {
-      setError("Failed to load menu data.");
-    }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
     const slug = getSlugFromPath() || getStoredSlug();
-
-    if (!cancelled) {
-      loadMenu(slug);
-    }
-
-    return () => { cancelled = true; };
+    loadMenu(slug);
   }, [loadMenu]);
 
   const refetch = useCallback(() => {
+    // Clear cache and refetch
     const slug = getSlugFromPath() || getStoredSlug();
-    return loadMenu(slug);
+    if (slug) {
+      menuCache.delete(slug);
+      hasFetched.current = false;
+      loadMenu(slug);
+    }
   }, [loadMenu]);
 
   const value = useMemo(
     () => ({
-      categories,
-      menuItems,
-      featuredItems,
-      restaurant,
-      restaurantLoading,
-      restaurantError,
-      loading,
-      error,
+      categories: state.categories,
+      menuItems: state.menuItems,
+      featuredItems: state.featuredItems,
+      restaurant: state.restaurant,
+      restaurantLoading: state.loading,
+      restaurantError: state.error,
+      loading: state.loading,
+      error: state.error,
       refetch,
       justUpdated: false,
     }),
-    [categories, menuItems, featuredItems, restaurant, restaurantLoading, restaurantError, loading, error, refetch]
+    [state, refetch]
   );
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
@@ -195,4 +208,13 @@ export function useMenuStore() {
   const ctx = useContext(MenuContext);
   if (!ctx) throw new Error("useMenuStore must be used within MenuProvider");
   return ctx;
+}
+
+// useReducer polyfill
+function useReducer(reducer, initialState) {
+  const [state, setState] = useState(initialState);
+  const dispatch = useCallback((action) => {
+    setState((prev) => reducer(prev, action));
+  }, []);
+  return [state, dispatch];
 }
