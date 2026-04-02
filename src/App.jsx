@@ -16,7 +16,7 @@ import { CartBar } from "./components/CartBar";
 import { setStoredSlug, setStoredTableId, getStoredSlug } from "./utils/constants";
 
 // Default restaurant slug for direct access
-const DEFAULT_SLUG = "demo-restaurant";
+const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function AppRoutes() {
   // Slug-based routes

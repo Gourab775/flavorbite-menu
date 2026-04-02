@@ -105,64 +105,66 @@ export function MenuProvider({ children }) {
     try {
       console.log("[MENU] query: slug =", slug);
 
-      const rawResult = await supabase
-        .from("restaurants")
-        .select("id, name, slug, logo, payment_id")
-        .eq("slug", slug);
+       const { data: restaurantData, error } = await supabase
+         .from("restaurants")
+         .select("id, name, slug, logo, payment_id")
+         .eq("slug", slug)
+         .maybeSingle();
 
-      // SAFE LOGGING: Only log primitives, no circular objects
-      console.log("[MENU] result: data count =", rawResult.data?.length ?? 0);
-      console.log("[MENU] result: error =", rawResult.error?.message ?? "none");
+       // SAFE LOGGING: Only log primitives, no circular objects
+       console.log("[MENU] result: data =", restaurantData ? "found" : "null");
+       console.log("[MENU] result: error =", error?.message ?? "none");
 
-      if (rawResult.error) {
-        dispatch({ type: "SET_ERROR", payload: rawResult.error.message });
-        return;
-      }
+       if (error) {
+         dispatch({ type: "SET_ERROR", payload: error.message });
+         return;
+       }
 
-      if (!rawResult.data || rawResult.data.length === 0) {
-        // Try ILIKE fallback
-        const ilikeResult = await supabase
-          .from("restaurants")
-          .select("id, name, slug, logo, payment_id")
-          .ilike("slug", `%${slug}%`);
+       if (!restaurantData) {
+         // Try ILIKE fallback
+         const ilikeResult = await supabase
+           .from("restaurants")
+           .select("id, name, slug, logo, payment_id")
+           .ilike("slug", `%${slug}%`)
+           .maybeSingle();
 
-        console.log("[MENU] ilike: found =", ilikeResult.data?.length ?? 0);
+         console.log("[MENU] ilike: found =", ilikeResult.data ? "found" : "null");
 
-        if (ilikeResult.data && ilikeResult.data.length > 0) {
-          const row = ilikeResult.data[0];
-          const restaurantId = String(row.id);
-          const restaurant = {
-            id: restaurantId,
-            name: String(row.name ?? ""),
-            slug: String(row.slug ?? ""),
-            logo: String(row.logo ?? ""),
-            paymentId: String(row.payment_id ?? ""),
-          };
+         if (ilikeResult.data) {
+           const row = ilikeResult.data;
+           const restaurantId = String(row.id);
+           const restaurant = {
+             id: restaurantId,
+             name: String(row.name ?? ""),
+             slug: String(row.slug ?? ""),
+             logo: String(row.logo ?? ""),
+             paymentId: String(row.payment_id ?? ""),
+           };
 
-          const [cats, items, feat] = await Promise.all([
-            supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
-            supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-            supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
-          ]);
+           const [cats, items, feat] = await Promise.all([
+             supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
+             supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
+             supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
+           ]);
 
-          const data = {
-            restaurant,
-            categories: normalizeCategories(cats.data),
-            menuItems: normalizeMenuItems(items.data),
-            featuredItems: normalizeFeaturedItems(feat.data),
-          };
+           const data = {
+             restaurant,
+             categories: normalizeCategories(cats.data),
+             menuItems: normalizeMenuItems(items.data),
+             featuredItems: normalizeFeaturedItems(feat.data),
+           };
 
-          menuCache.set(slug, data);
-          dispatch({ type: "SET_DATA", payload: data });
-          console.log("[MENU] success via ilike");
-          return;
-        }
+           menuCache.set(slug, data);
+           dispatch({ type: "SET_DATA", payload: data });
+           console.log("[MENU] success via ilike");
+           return;
+         }
 
-        dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
-        return;
-      }
+         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
+         return;
+       }
 
-      const row = rawResult.data[0];
+       const row = restaurantData;
       const restaurantId = String(row.id);
       const restaurant = {
         id: restaurantId,
