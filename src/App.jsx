@@ -25,9 +25,8 @@ if (typeof window !== "undefined") {
 }
 
 function AppRoutes() {
-  // Slug-based routes
+  // Routes without table ID
   const [isMenuRoute, menuParams] = useRoute("/:slug");
-  const [isTableRoute, tableParams] = useRoute("/:slug/t/:tableId");
   const [isCartRoute, cartParams] = useRoute("/:slug/cart");
   const [isCheckoutRoute] = useRoute("/:slug/checkout");
   const [isPaymentRoute, paymentParams] = useRoute("/:slug/payment/:orderId");
@@ -37,14 +36,25 @@ function AppRoutes() {
   const [isWaitingRoute, waitingParams] = useRoute("/:slug/waiting/:orderId");
   const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/:slug/online-waiting/:orderId");
 
+  // Routes with table ID
+  const [isTableRoute, tableParams] = useRoute("/:slug/t/:tableId");
+  const [isTableCartRoute, tableCartParams] = useRoute("/:slug/t/:tableId/cart");
+  const [isTableCheckoutRoute] = useRoute("/:slug/t/:tableId/checkout");
+  const [isTablePaymentRoute, tablePaymentParams] = useRoute("/:slug/t/:tableId/payment/:orderId");
+  const [isTableOrderSuccessRoute] = useRoute("/:slug/t/:tableId/order-success");
+  const [isTableOrderStatusRoute] = useRoute("/:slug/t/:tableId/order-status");
+  const [isTableOrderConfirmedRoute] = useRoute("/:slug/t/:tableId/order-confirmed");
+  const [isTableWaitingRoute, tableWaitingParams] = useRoute("/:slug/t/:tableId/waiting/:orderId");
+  const [isTableOnlineWaitingRoute, tableOnlineWaitingParams] = useRoute("/:slug/t/:tableId/online-waiting/:orderId");
+
   const [location, setLocation] = useLocation();
   const [isReady, setIsReady] = useState(false);
 
-  // Extract slug from any route
-  const slug = menuParams?.slug || tableParams?.slug || cartParams?.slug || paymentParams?.slug || waitingParams?.slug || onlineWaitingParams?.slug;
+  // Extract slug from any route (non-table first, then table variants)
+  const slug = menuParams?.slug || tableParams?.slug || cartParams?.slug || tableCartParams?.slug || paymentParams?.slug || tablePaymentParams?.slug || waitingParams?.slug || tableWaitingParams?.slug || onlineWaitingParams?.slug || tableOnlineWaitingParams?.slug;
 
-  // Extract tableId from route
-  const tableId = tableParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
+  // Extract tableId from any route
+  const tableId = tableParams?.tableId || tableCartParams?.tableId || tablePaymentParams?.tableId || tableWaitingParams?.tableId || tableOnlineWaitingParams?.tableId;
 
   // Store slug and tableId when available
   useEffect(() => {
@@ -59,8 +69,8 @@ function AppRoutes() {
     }
   }, [tableId]);
 
-  // Check for any slug-based route
-  const isAnySlugRoute = isMenuRoute || isTableRoute || isCartRoute || isCheckoutRoute || isPaymentRoute || isOrderSuccessRoute || isOrderStatusRoute || isOrderConfirmedRoute || isWaitingRoute || isOnlineWaitingRoute;
+  // Check for any slug-based route (both with and without table ID)
+  const isAnySlugRoute = isMenuRoute || isTableRoute || isCartRoute || isTableCartRoute || isCheckoutRoute || isTableCheckoutRoute || isPaymentRoute || isTablePaymentRoute || isOrderSuccessRoute || isTableOrderSuccessRoute || isOrderStatusRoute || isTableOrderStatusRoute || isOrderConfirmedRoute || isTableOrderConfirmedRoute || isWaitingRoute || isTableWaitingRoute || isOnlineWaitingRoute || isTableOnlineWaitingRoute;
 
   // Entry logic: Always load menu directly
   useEffect(() => {
@@ -91,8 +101,8 @@ function AppRoutes() {
   return (
     <>
       <Switch>
+        {/* Routes without table ID */}
         <Route path="/:slug" component={MenuPage} />
-        <Route path="/:slug/t/:tableId" component={MenuPage} />
         <Route path="/:slug/cart" component={CartPage} />
         <Route path="/:slug/checkout" component={CheckoutPage} />
         <Route path="/:slug/payment/:orderId" component={PaymentPage} />
@@ -101,6 +111,19 @@ function AppRoutes() {
         <Route path="/:slug/order-confirmed" component={OrderConfirmedPage} />
         <Route path="/:slug/waiting/:orderId" component={WaitingPage} />
         <Route path="/:slug/online-waiting/:orderId" component={OnlineWaitingPage} />
+
+        {/* Routes with table ID - MUST come before catch-all */}
+        <Route path="/:slug/t/:tableId" component={MenuPage} />
+        <Route path="/:slug/t/:tableId/cart" component={CartPage} />
+        <Route path="/:slug/t/:tableId/checkout" component={CheckoutPage} />
+        <Route path="/:slug/t/:tableId/payment/:orderId" component={PaymentPage} />
+        <Route path="/:slug/t/:tableId/order-success" component={OrderSuccessPage} />
+        <Route path="/:slug/t/:tableId/order-status" component={OrderStatusPage} />
+        <Route path="/:slug/t/:tableId/order-confirmed" component={OrderConfirmedPage} />
+        <Route path="/:slug/t/:tableId/waiting/:orderId" component={WaitingPage} />
+        <Route path="/:slug/t/:tableId/online-waiting/:orderId" component={OnlineWaitingPage} />
+
+        {/* Catch-all 404 - MUST be last */}
         <Route path="/:slug/*" component={NotFoundPage} />
       </Switch>
       {showCartBar && <CartBar />}
