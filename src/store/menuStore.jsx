@@ -115,23 +115,35 @@ export function MenuProvider({ children }) {
        console.log("[MENU] result: data =", restaurantData ? "found" : "null");
        console.log("[MENU] result: error =", error?.message ?? "none");
 
+       // Diagnose the issue
        if (error) {
-         dispatch({ type: "SET_ERROR", payload: error.message });
+         console.error("[MENU] Query error (likely RLS or network):", error.message);
+         dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
          return;
        }
 
        if (!restaurantData) {
-         // Try ILIKE fallback
-         const ilikeResult = await supabase
+         console.warn("[MENU] No restaurant found for slug:", slug, "- trying ilike fallback");
+         
+         // Try ILIKE fallback for case-insensitive matching
+         const { data: ilikeData, error: ilikeError } = await supabase
            .from("restaurants")
            .select("id, name, slug, logo, payment_id")
            .ilike("slug", `%${slug}%`)
            .maybeSingle();
 
-         console.log("[MENU] ilike: found =", ilikeResult.data ? "found" : "null");
+         console.log("[MENU] ilike: data =", ilikeData ? "found" : "null");
+         console.log("[MENU] ilike: error =", ilikeError?.message ?? "none");
 
-         if (ilikeResult.data) {
-           const row = ilikeResult.data;
+         if (ilikeError) {
+           console.error("[MENU] ILIKE query error:", ilikeError.message);
+           dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
+           return;
+         }
+
+         if (ilikeData) {
+           console.log("[MENU] Found via ilike fallback, slug was:", ilikeData.slug);
+           const row = ilikeData;
            const restaurantId = String(row.id);
            const restaurant = {
              id: restaurantId,
@@ -160,10 +172,16 @@ export function MenuProvider({ children }) {
            return;
          }
 
-         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
+         // No data found in either query
+         console.error("[MENU] Restaurant not found in database for slug:", slug);
+         dispatch({ 
+           type: "SET_ERROR", 
+           payload: `Restaurant "${slug}" not found. Please check the slug and ensure the restaurant exists in the database.` 
+         });
          return;
        }
 
+       // Successfully found restaurant data
        const row = restaurantData;
       const restaurantId = String(row.id);
       const restaurant = {
@@ -191,8 +209,8 @@ export function MenuProvider({ children }) {
       dispatch({ type: "SET_DATA", payload: data });
       console.log("[MENU] success");
     } catch (err) {
-      console.error("[MENU] error:", err?.message ?? String(err));
-      dispatch({ type: "SET_ERROR", payload: "Failed to load" });
+      console.error("[MENU] Network/Fetch error:", err?.message ?? String(err));
+      dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });
     }
   }, []);
 

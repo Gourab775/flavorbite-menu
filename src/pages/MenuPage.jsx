@@ -127,9 +127,21 @@ export function MenuPage() {
 
           {!loading && !searching && error && (
             <div className="emptyState">
-              <h2>Network issue</h2>
-              <p className="muted">Check your connection and try again.</p>
-              <button className="btn primary" onClick={refetch}>Try again</button>
+              <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <h2>Unable to load menu</h2>
+              <p className="muted">{error}</p>
+              <div style={{ marginTop: "16px", display: "flex", gap: "8px", justifyContent: "center" }}>
+                <button className="btn primary" onClick={refetch}>Try again</button>
+              </div>
+              <p className="muted" style={{ marginTop: "12px", fontSize: "0.85rem", opacity: 0.7 }}>
+                Check console for detailed error logs
+              </p>
             </div>
           )}
 
