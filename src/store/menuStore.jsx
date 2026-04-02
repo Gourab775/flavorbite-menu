@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClient";
 
 const MenuContext = createContext(null);
@@ -9,48 +9,41 @@ const DEFAULT_SLUG = "demo-restaurant";
 
 function normalizeCategories(data) {
   if (!Array.isArray(data)) return [];
-  return data
-    .map((c) => ({
-      id: String(c.id ?? ""),
-      name: String(c.name ?? ""),
-      imageUrl: String(c.image ?? c.image_url ?? c.imageUrl ?? ""),
-      sortOrder: Number(c.sort_order ?? c.sortOrder ?? 0),
-    }))
-    .filter((c) => c.id && c.name)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  return data.map((c) => ({
+    id: String(c.id ?? ""),
+    name: String(c.name ?? ""),
+    imageUrl: String(c.image ?? c.image_url ?? c.imageUrl ?? ""),
+    sortOrder: Number(c.sort_order ?? c.sortOrder ?? 0),
+  })).filter((c) => c.id && c.name).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function normalizeMenuItems(data) {
   if (!Array.isArray(data)) return [];
-  return data
-    .map((i) => ({
-      id: String(i.id ?? ""),
-      name: String(i.name ?? ""),
-      price: Number(i.price ?? 0),
-      isVeg: Boolean(i.is_veg ?? false),
-      isAvailable: Boolean(i.is_available ?? true),
-      categoryId: String(i.category_id ?? ""),
-      imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
-      description: String(i.description ?? ""),
-    }))
-    .filter((i) => i.id && i.name && i.categoryId);
+  return data.map((i) => ({
+    id: String(i.id ?? ""),
+    name: String(i.name ?? ""),
+    price: Number(i.price ?? 0),
+    isVeg: Boolean(i.is_veg ?? false),
+    isAvailable: Boolean(i.is_available ?? true),
+    categoryId: String(i.category_id ?? ""),
+    imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
+    description: String(i.description ?? ""),
+  })).filter((i) => i.id && i.name && i.categoryId);
 }
 
 function normalizeFeaturedItems(data) {
   if (!Array.isArray(data)) return [];
-  return data
-    .map((i) => ({
-      id: String(i.id ?? ""),
-      imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
-      redirectUrl: String(i.redirect_url ?? ""),
-      displayOrder: Number(i.display_order ?? i.displayOrder ?? 0),
-    }))
-    .filter((i) => i.imageUrl);
+  return data.map((i) => ({
+    id: String(i.id ?? ""),
+    imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
+    redirectUrl: String(i.redirect_url ?? ""),
+    displayOrder: Number(i.display_order ?? i.displayOrder ?? 0),
+  })).filter((i) => i.imageUrl);
 }
 
-function cleanSlug(slug) {
-  if (!slug) return null;
-  return String(slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+function cleanSlug(raw) {
+  if (!raw || typeof raw !== "string") return DEFAULT_SLUG;
+  return raw.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
 }
 
 const initialState = {
@@ -75,11 +68,9 @@ function reducer(state, action) {
   }
 }
 
-function useReducer(reducer, initialState) {
-  const [state, setState] = useState(initialState);
-  const dispatch = useCallback((action) => {
-    setState((prev) => reducer(prev, action));
-  }, []);
+function useReducer(reducer, init) {
+  const [state, setState] = useState(init);
+  const dispatch = useCallback((action) => setState((prev) => reducer(prev, action)), []);
   return [state, dispatch];
 }
 
@@ -87,35 +78,24 @@ export function MenuProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchKey = useRef(null);
 
-  const loadMenu = useCallback(async (inputSlug) => {
-    const slug = cleanSlug(inputSlug) || DEFAULT_SLUG;
+  const loadMenu = useCallback(async (rawInput) => {
+    // GUARD: Ensure we only work with string
+    const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
+    const slug = cleanSlug(inputSlug);
 
-    // Debug: Log everything at entry
-    console.group("[menuStore] FETCH START");
-    console.log("Input slug:", JSON.stringify(inputSlug));
-    console.log("Cleaned slug:", slug);
-    console.log("Supabase URL:", supabaseUrl);
-    console.log("Supabase configured:", isSupabaseConfigured);
+    console.log("[MENU] slug:", slug);
+    console.log("[MENU] supabaseUrl:", supabaseUrl);
+    console.log("[MENU] configured:", isSupabaseConfigured);
 
-    // Return cached if same slug
     if (menuCache.has(slug)) {
-      console.log("Returning cached data for:", slug);
+      console.log("[MENU] cache hit");
       dispatch({ type: "SET_DATA", payload: menuCache.get(slug) });
-      console.groupEnd();
       return;
     }
 
-    // Skip duplicate fetch for same slug
-    if (fetchKey.current === slug) {
-      console.log("Already fetching slug:", slug);
-      console.groupEnd();
-      return;
-    }
-
+    if (fetchKey.current === slug) return;
     if (!isSupabaseConfigured || !supabase) {
-      console.error("Supabase not configured - check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY");
-      dispatch({ type: "SET_ERROR", payload: "App configuration error" });
-      console.groupEnd();
+      dispatch({ type: "SET_ERROR", payload: "Config error" });
       return;
     }
 
@@ -123,113 +103,105 @@ export function MenuProvider({ children }) {
     dispatch({ type: "START_LOADING" });
 
     try {
-      console.log("Querying: supabase.from('restaurants').select('*').eq('slug', " + JSON.stringify(slug) + ").maybeSingle()");
+      console.log("[MENU] query: slug =", slug);
 
-      const result = await supabase
+      const rawResult = await supabase
         .from("restaurants")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
+        .select("id, name, slug, logo, payment_id")
+        .eq("slug", slug);
 
-      console.log("Query result:");
-      console.log("  data:", result.data);
-      console.log("  error:", result.error);
-      console.log("  status:", result.status);
-      console.log("  count:", result.count);
+      // SAFE LOGGING: Only log primitives, no circular objects
+      console.log("[MENU] result: data count =", rawResult.data?.length ?? 0);
+      console.log("[MENU] result: error =", rawResult.error?.message ?? "none");
 
-      const { data: restData, error: restErr } = result;
-
-      if (restErr) {
-        console.error("Query error:");
-        console.error("  message:", restErr.message);
-        console.error("  code:", restErr.code);
-        console.error("  details:", restErr.details);
-        console.error("  hint:", restErr.hint);
-        dispatch({ type: "SET_ERROR", payload: `Query error: ${restErr.message}` });
-        console.groupEnd();
+      if (rawResult.error) {
+        dispatch({ type: "SET_ERROR", payload: rawResult.error.message });
         return;
       }
 
-      if (!restData) {
-        console.warn("No data returned for slug:", slug);
-        console.warn("To fix: Run this SQL in Supabase:");
-        console.warn(`  SELECT * FROM restaurants WHERE LOWER(TRIM(slug)) = '${slug}';`);
-        console.warn("If empty, insert the row:");
-        console.warn(`  INSERT INTO restaurants (id, name, slug) VALUES (gen_random_uuid(), 'Demo', '${slug}');`);
-        console.warn("Check RLS policy:");
-        console.warn("  CREATE POLICY 'public_read' ON restaurants FOR SELECT USING (true);");
+      if (!rawResult.data || rawResult.data.length === 0) {
+        // Try ILIKE fallback
+        const ilikeResult = await supabase
+          .from("restaurants")
+          .select("id, name, slug, logo, payment_id")
+          .ilike("slug", `%${slug}%`);
+
+        console.log("[MENU] ilike: found =", ilikeResult.data?.length ?? 0);
+
+        if (ilikeResult.data && ilikeResult.data.length > 0) {
+          const row = ilikeResult.data[0];
+          const restaurantId = String(row.id);
+          const restaurant = {
+            id: restaurantId,
+            name: String(row.name ?? ""),
+            slug: String(row.slug ?? ""),
+            logo: String(row.logo ?? ""),
+            paymentId: String(row.payment_id ?? ""),
+          };
+
+          const [cats, items, feat] = await Promise.all([
+            supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
+            supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
+            supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
+          ]);
+
+          const data = {
+            restaurant,
+            categories: normalizeCategories(cats.data),
+            menuItems: normalizeMenuItems(items.data),
+            featuredItems: normalizeFeaturedItems(feat.data),
+          };
+
+          menuCache.set(slug, data);
+          dispatch({ type: "SET_DATA", payload: data });
+          console.log("[MENU] success via ilike");
+          return;
+        }
+
         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
-        console.groupEnd();
         return;
       }
 
-      console.log("Restaurant found:", restData.name);
-
-      const restaurantId = restData.id;
+      const row = rawResult.data[0];
+      const restaurantId = String(row.id);
       const restaurant = {
         id: restaurantId,
-        name: restData.name ?? "",
-        slug: restData.slug ?? "",
-        logo: restData.logo ?? "",
-        paymentId: restData.payment_id ?? "",
+        name: String(row.name ?? ""),
+        slug: String(row.slug ?? ""),
+        logo: String(row.logo ?? ""),
+        paymentId: String(row.payment_id ?? ""),
       };
 
-      const [catsResult, itemsResult, featuredResult] = await Promise.all([
-        supabase
-          .from("categories")
-          .select("id, name, image, sort_order")
-          .eq("restaurant_id", restaurantId)
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("menu_items")
-          .select("id, name, description, price, is_veg, is_available, category_id, image_url")
-          .eq("restaurant_id", restaurantId)
-          .eq("is_available", true),
-        supabase
-          .from("featured_items")
-          .select("id, image_url, redirect_url, display_order")
-          .eq("restaurant_id", restaurantId)
-          .eq("is_active", true)
-          .order("display_order", { ascending: true }),
+      const [cats, items, feat] = await Promise.all([
+        supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
+        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
+        supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
       ]);
-
-      console.log("Categories:", catsResult.data?.length || 0);
-      console.log("Menu items:", itemsResult.data?.length || 0);
-      console.log("Featured:", featuredResult.data?.length || 0);
 
       const data = {
         restaurant,
-        categories: normalizeCategories(catsResult.data),
-        menuItems: normalizeMenuItems(itemsResult.data),
-        featuredItems: normalizeFeaturedItems(featuredResult.data),
+        categories: normalizeCategories(cats.data),
+        menuItems: normalizeMenuItems(items.data),
+        featuredItems: normalizeFeaturedItems(feat.data),
       };
 
       menuCache.set(slug, data);
       dispatch({ type: "SET_DATA", payload: data });
-      console.log("FETCH SUCCESS");
-      console.groupEnd();
+      console.log("[MENU] success");
     } catch (err) {
-      console.error("FETCH ERROR:", err);
-      dispatch({ type: "SET_ERROR", payload: "Failed to load menu" });
-      console.groupEnd();
+      console.error("[MENU] error:", err?.message ?? String(err));
+      dispatch({ type: "SET_ERROR", payload: "Failed to load" });
     }
   }, []);
 
-  const refetch = useCallback((slug) => {
-    const clean = cleanSlug(slug);
-    if (clean) menuCache.delete(clean);
+  const refetch = useCallback((rawInput) => {
+    const slug = cleanSlug(rawInput);
+    menuCache.delete(slug);
     fetchKey.current = null;
     loadMenu(slug);
   }, [loadMenu]);
 
-  const value = useMemo(
-    () => ({
-      ...state,
-      loadMenu,
-      refetch,
-    }),
-    [state, loadMenu, refetch]
-  );
+  const value = useMemo(() => ({ ...state, loadMenu, refetch }), [state, loadMenu, refetch]);
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
 }

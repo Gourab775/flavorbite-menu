@@ -25,17 +25,9 @@ export function MenuPage() {
   const { slug, tableId } = useParams();
   const { loadMenu } = useMenuStore();
 
-  // Debug: Log slug extraction
   useEffect(() => {
-    console.log("[MenuPage] useParams slug:", slug);
-    console.log("[MenuPage] useParams tableId:", tableId);
-  }, [slug, tableId]);
-
-  // Trigger fetch when slug is available
-  useEffect(() => {
-    if (slug) {
+    if (slug && typeof slug === "string") {
       setStoredSlug(slug);
-      console.log("[MenuPage] Triggering loadMenu for slug:", slug);
       loadMenu(slug);
     }
   }, [slug, loadMenu]);
