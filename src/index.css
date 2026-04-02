@@ -1366,9 +1366,9 @@ body {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 16px;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
   text-align: left;
@@ -1380,32 +1380,43 @@ body {
 .payBtn:not(:disabled):active { transform: scale(0.98); }
 
 .payBtn--counter {
-  background: var(--card);
-  color: var(--text);
-  box-shadow: 0 2px 8px var(--shadow);
+  background: #1f2937;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.payBtn--counter:hover {
+  background: #111827;
 }
 
 .payBtn--online {
-  background: var(--accent);
-  color: var(--text);
-  box-shadow: 0 4px 12px rgba(255,122,24,0.25);
+  background: #ff7a18;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 122, 24, 0.25);
+}
+
+.payBtn--online:hover {
+  background: #ff9a4b;
 }
 
 .payBtnIcon {
-  font-size: 22px;
+  font-size: 24px;
   flex-shrink: 0;
 }
 
 .payBtnLabel {
-  font-size: 15px;
-  font-weight: 900;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .payBtnSub {
-  font-size: 11px;
-  font-weight: 600;
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
   opacity: 0.7;
-  margin-top: 2px;
+  margin-top: 4px;
+  letter-spacing: 0.01em;
 }
 
 .btnSpinner {

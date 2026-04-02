@@ -183,11 +183,13 @@ export function WaitingPage() {
             justifyContent: "center",
             zIndex: 1000
           }}
+          onClick={() => setShowCancelModal(false)}
         >
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             style={{ background: "#fff", borderRadius: "12px", padding: "24px", maxWidth: "320px", textAlign: "center" }}
+            onClick={(e) => e.stopPropagation()}
           >
             <p style={{ fontSize: "16px", marginBottom: "24px" }}>
               Are you sure you want to cancel this order?
