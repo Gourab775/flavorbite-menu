@@ -86,45 +86,6 @@ body {
 
 .pressable:active { transform: scale(0.97); }
 
-/* ── Phone frame (mobile-only, full-screen) ── */
-.themeSwitcher {
-  position: fixed;
-  top: max(8px, env(safe-area-inset-top, 8px));
-  right: 8px;
-  z-index: 9999;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 8px var(--shadow);
-}
-
-.themeSwitcherBtn {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 200ms ease;
-  white-space: nowrap;
-}
-
-.themeSwitcherBtn:hover {
-  color: var(--text);
-}
-
-.themeSwitcherBtn.active {
-  background: var(--accent);
-  color: var(--btn-text);
-  box-shadow: 0 2px 8px rgba(255, 122, 24, 0.3);
-}
-
 /* Phone frame (mobile-only, full-screen) ── */
 .appBackdrop {
   min-height: 100dvh;
@@ -205,12 +166,12 @@ body {
   transform: scale(0.98);
 }
 
-/* ── Header ── */
+/* Header */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 60px;
   padding: 0 16px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
@@ -218,23 +179,24 @@ body {
 
 .brand {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 12px;
   background: transparent;
   border: none;
-  padding: 6px 0;
+  padding: 4px 0;
   cursor: pointer;
 }
 
 .brandLogoWrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   overflow: hidden;
   background: var(--accent);
   flex-shrink: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .brandLogoImg {
@@ -244,9 +206,9 @@ body {
 }
 
 .brandLogoInitial {
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
   line-height: 1;
 }
 
@@ -254,29 +216,20 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  line-height: 1.1;
+  gap: 2px;
 }
 
 .brandName {
-  font-weight: 900;
-  font-size: 15px;
-  line-height: 1.15;
-}
-
-.brandTag {
-  margin-top: 5px;
-  font-size: 8px;
-  letter-spacing: 1px;
-  color: rgba(17,24,39,0.45);
-  font-weight: 700;
-  line-height: 1;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
 }
 
 .brandSkeleton {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  background: rgba(255,255,255,0.3);
+  background: var(--border);
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
@@ -300,43 +253,48 @@ body {
   50% { opacity: 1; }
 }
 
-/* ── Modern cart button ── */
+/* Cart button */
 .cartBtn {
   position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  border: none;
-  background: #1a1a2e;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--text);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 1px 3px var(--shadow);
+  transition: all 150ms ease;
   flex-shrink: 0;
 }
 
+.cartBtn:hover {
+  background: var(--bg-secondary);
+  transform: scale(1.02);
+}
+
 .cartBtn:active {
-  transform: scale(0.93);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transform: scale(0.96);
 }
 
 .cartBtnBadge {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 19px;
-  height: 19px;
-  padding: 0 4px;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   background: var(--accent);
-  color: var(--text);
-  display: grid;
-  place-items: center;
-  border: 2px solid #fff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 
@@ -357,16 +315,15 @@ body {
   border: 2px solid #fff;
 }
 
-/* ── Top section (sticky header + search + categories) ── */
+/* Top section */
 .topSection {
   position: sticky;
   top: 0;
   z-index: 100;
   background: var(--card);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
-/* ── Sticky header ── */
 .stickyHeader {
   background: var(--card);
   border-bottom: 1px solid var(--border-light);
@@ -376,10 +333,9 @@ body {
 .stickyHeader.scrolled {
   background: var(--card);
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 12px var(--shadow);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
-/* ── Category wrapper ── */
 .categoryWrapper {
   background: var(--card);
   transition: all 200ms ease;
@@ -389,28 +345,28 @@ body {
   background: var(--card);
 }
 
-/* ── Search row (inside sticky header) ── */
+/* Search row */
 .stickySearchRow {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  padding: 10px 14px 8px;
+  padding: 12px 14px 10px;
 }
 
-/* ── Search bar ── */
+/* Search bar */
 .searchField input {
   width: 100%;
-  height: 48px;
-  border-radius: 16px;
+  height: 44px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--input-bg);
-  padding: 0 44px 0 44px;
+  padding: 0 40px 0 40px;
   color: var(--text);
   outline: none;
   font-size: 14px;
   font-family: inherit;
-  box-shadow: 0 2px 8px var(--shadow);
-  transition: all 200ms ease;
+  box-shadow: 0 1px 2px var(--shadow);
+  transition: all 150ms ease;
   -webkit-appearance: none;
 }
 
@@ -420,7 +376,7 @@ body {
 
 .searchField input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.15), 0 4px 12px var(--shadow);
+  box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.15);
 }
 
 .searchIcon {
@@ -428,7 +384,7 @@ body {
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(31, 31, 31, 0.45);
+  color: var(--muted);
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -439,24 +395,25 @@ body {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(31, 31, 31, 0.1);
-  color: rgba(31, 31, 31, 0.6);
-  display: grid;
-  place-items: center;
+  background: var(--border);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .searchClearBtn:hover {
-  background: rgba(31, 31, 31, 0.2);
-  color: rgba(31, 31, 31, 0.8);
+  background: var(--text-secondary);
+  color: #fff;
 }
 
-/* ── Veg Toggle Pill ── */
+/* Veg Toggle Pill */
 .vegTogglePill {
   position: relative;
   display: flex;
@@ -750,38 +707,35 @@ body {
   50% { opacity: 0.4; transform: scale(0.7); }
 }
 
-/* ── Menu item card ── */
+/* Menu item card */
 .menuCard {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 16px;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
   background: var(--card);
   border: 1px solid var(--border-light);
-  box-shadow: 0 2px 8px var(--shadow);
-  transition: all 200ms ease;
+  box-shadow: 0 1px 3px var(--shadow);
+  transition: all 150ms ease;
   position: relative;
-  overflow: hidden;
 }
 
 .menuCard:hover {
-  box-shadow: 0 4px 16px var(--shadow);
-  transform: translateY(-2px);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .menuCard:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .menuImgWrap {
-  width: 100px;
-  height: 100px;
-  border-radius: 14px;
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
   overflow: hidden;
   background: var(--bg-secondary);
   flex: 0 0 auto;
   position: relative;
-  box-shadow: inset 0 1px 2px var(--shadow);
   border: 1px solid var(--border-light);
 }
 
@@ -1008,20 +962,20 @@ body {
   color: var(--text);
 }
 
-/* ── Cart bar ── */
+/* Cart bar */
 .cartBarOuter {
   position: fixed;
-  bottom: max(14px, env(safe-area-inset-bottom, 14px));
-  left: 16px;
-  right: 16px;
+  bottom: max(12px, env(safe-area-inset-bottom, 12px));
+  left: 12px;
+  right: 12px;
   z-index: 999;
   width: auto;
   max-width: 480px;
   margin: 0 auto;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
   pointer-events: none;
-  transition: all 200ms ease;
+  transition: all 150ms ease;
 }
 
 .cartBarOuter--visible {
@@ -1035,63 +989,56 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-radius: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  box-shadow: 0 4px 16px var(--shadow);
+  box-shadow: 0 2px 10px var(--shadow);
   cursor: pointer;
   font-family: inherit;
-  transition: all 200ms ease;
-}
-
-.cartBar:hover {
-  box-shadow: 0 6px 20px var(--shadow);
-  transform: translateY(-1px);
+  transition: all 150ms ease;
 }
 
 .cartBar:active { 
-  transform: scale(0.98); 
+  transform: scale(0.99); 
 }
 
 .cartBarLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cartBarIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255,140,58,0.2), rgba(255,140,58,0.1));
-  display: grid;
-  place-items: center;
-  color: #ff8c3a;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
 .cartBarCount {
   font-size: 12px;
-  color: rgba(255,255,255,0.55);
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .cartBarAmt {
-  font-size: 17px;
-  font-weight: 900;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
-  margin-top: 2px;
 }
 
 .cartBarCta {
   font-size: 14px;
-  font-weight: 800;
-  color: #ff8c3a;
+  font-weight: 600;
+  color: var(--accent);
   flex-shrink: 0;
-  letter-spacing: 0.5px;
 }
 
 /* ── Cart page ── */
