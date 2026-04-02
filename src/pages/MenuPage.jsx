@@ -7,6 +7,7 @@ import { HeroBanner } from "../components/HeroBanner";
 import { CategorySlider } from "../components/CategorySlider";
 import { MenuItemCard } from "../components/MenuItemCard";
 import { useMenu } from "../hooks/useMenu";
+import { useMenuStore } from "../store/menuStore";
 import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
@@ -22,13 +23,22 @@ function slugify(text) {
 
 export function MenuPage() {
   const { slug, tableId } = useParams();
+  const { loadMenu } = useMenuStore();
 
-  // Store slug and tableId when available
+  // Debug: Log slug extraction
+  useEffect(() => {
+    console.log("[MenuPage] useParams slug:", slug);
+    console.log("[MenuPage] useParams tableId:", tableId);
+  }, [slug, tableId]);
+
+  // Trigger fetch when slug is available
   useEffect(() => {
     if (slug) {
       setStoredSlug(slug);
+      console.log("[MenuPage] Triggering loadMenu for slug:", slug);
+      loadMenu(slug);
     }
-  }, [slug]);
+  }, [slug, loadMenu]);
 
   useEffect(() => {
     if (tableId) {

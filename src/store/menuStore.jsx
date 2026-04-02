@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClient";
-import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
@@ -49,15 +48,8 @@ function normalizeFeaturedItems(data) {
     .filter((i) => i.imageUrl);
 }
 
-function getSlugFromPath() {
-  if (typeof window === "undefined") return null;
-  const path = window.location.pathname;
-  const segments = path.split("/").filter(Boolean);
-  return segments[0] || null;
-}
-
 function cleanSlug(slug) {
-  if (!slug) return DEFAULT_SLUG;
+  if (!slug) return null;
   return String(slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
 }
 
@@ -93,89 +85,85 @@ function useReducer(reducer, initialState) {
 
 export function MenuProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const hasFetched = useRef(false);
-  const currentSlug = useRef(null);
+  const fetchKey = useRef(null);
 
   const loadMenu = useCallback(async (inputSlug) => {
-    const rawSlug = inputSlug || getStoredSlug() || DEFAULT_SLUG;
-    const slug = cleanSlug(rawSlug);
+    const slug = cleanSlug(inputSlug) || DEFAULT_SLUG;
 
-    console.log("[menuStore] === FETCH START ===");
-    console.log("[menuStore] Input slug:", rawSlug);
-    console.log("[menuStore] Cleaned slug:", slug);
-    console.log("[menuStore] Supabase URL:", supabaseUrl);
+    // Debug: Log everything at entry
+    console.group("[menuStore] FETCH START");
+    console.log("Input slug:", JSON.stringify(inputSlug));
+    console.log("Cleaned slug:", slug);
+    console.log("Supabase URL:", supabaseUrl);
+    console.log("Supabase configured:", isSupabaseConfigured);
 
+    // Return cached if same slug
     if (menuCache.has(slug)) {
-      console.log("[menuStore] Using cached data for:", slug);
-      const cached = menuCache.get(slug);
-      dispatch({ type: "SET_DATA", payload: cached });
+      console.log("Returning cached data for:", slug);
+      dispatch({ type: "SET_DATA", payload: menuCache.get(slug) });
+      console.groupEnd();
       return;
     }
 
-    if (currentSlug.current === slug && hasFetched.current) {
-      console.log("[menuStore] Already fetched for:", slug);
+    // Skip duplicate fetch for same slug
+    if (fetchKey.current === slug) {
+      console.log("Already fetching slug:", slug);
+      console.groupEnd();
       return;
     }
 
     if (!isSupabaseConfigured || !supabase) {
-      console.error("[menuStore] Supabase not configured");
+      console.error("Supabase not configured - check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY");
       dispatch({ type: "SET_ERROR", payload: "App configuration error" });
+      console.groupEnd();
       return;
     }
 
+    fetchKey.current = slug;
     dispatch({ type: "START_LOADING" });
-    hasFetched.current = true;
-    currentSlug.current = slug;
 
     try {
-      console.log("[menuStore] Querying restaurant with slug:", slug);
-      
-      // Defensive query: use maybeSingle() to avoid 406
-      const restaurantQuery = await supabase
+      console.log("Querying: supabase.from('restaurants').select('*').eq('slug', " + JSON.stringify(slug) + ").maybeSingle()");
+
+      const result = await supabase
         .from("restaurants")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
 
-      console.log("[menuStore] Restaurant query result:");
-      console.log("  - data:", restaurantQuery.data);
-      console.log("  - error:", restaurantQuery.error);
-      console.log("  - status:", restaurantQuery.status);
-      console.log("  - count:", restaurantQuery.count);
+      console.log("Query result:");
+      console.log("  data:", result.data);
+      console.log("  error:", result.error);
+      console.log("  status:", result.status);
+      console.log("  count:", result.count);
 
-      const { data: restData, error: restErr } = restaurantQuery;
+      const { data: restData, error: restErr } = result;
 
-      // Handle errors
       if (restErr) {
-        console.error("[menuStore] Restaurant query error details:");
-        console.error("  - message:", restErr.message);
-        console.error("  - code:", restErr.code);
-        console.error("  - details:", restErr.details);
-        console.error("  - hint:", restErr.hint);
-        
-        if (restErr.code === "PGRST301" || restErr.message?.includes("JWT")) {
-          dispatch({ type: "SET_ERROR", payload: "Access denied - check RLS policies" });
-        } else if (restErr.message?.includes("not found") || restErr.code === "42P01") {
-          dispatch({ type: "SET_ERROR", payload: "Database table not found" });
-        } else {
-          dispatch({ type: "SET_ERROR", payload: "Failed to load restaurant" });
-        }
+        console.error("Query error:");
+        console.error("  message:", restErr.message);
+        console.error("  code:", restErr.code);
+        console.error("  details:", restErr.details);
+        console.error("  hint:", restErr.hint);
+        dispatch({ type: "SET_ERROR", payload: `Query error: ${restErr.message}` });
+        console.groupEnd();
         return;
       }
 
-      // Handle no data
       if (!restData) {
-        console.warn("[menuStore] No restaurant found for slug:", slug);
-        console.warn("[menuStore] Possible causes:");
-        console.warn("  1. Slug does not exist in database");
-        console.warn("  2. RLS policy blocking access");
-        console.warn("  3. Slug value mismatch (check exact match)");
-        
+        console.warn("No data returned for slug:", slug);
+        console.warn("To fix: Run this SQL in Supabase:");
+        console.warn(`  SELECT * FROM restaurants WHERE LOWER(TRIM(slug)) = '${slug}';`);
+        console.warn("If empty, insert the row:");
+        console.warn(`  INSERT INTO restaurants (id, name, slug) VALUES (gen_random_uuid(), 'Demo', '${slug}');`);
+        console.warn("Check RLS policy:");
+        console.warn("  CREATE POLICY 'public_read' ON restaurants FOR SELECT USING (true);");
         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
+        console.groupEnd();
         return;
       }
 
-      console.log("[menuStore] Restaurant found:", restData.name);
+      console.log("Restaurant found:", restData.name);
 
       const restaurantId = restData.id;
       const restaurant = {
@@ -186,9 +174,6 @@ export function MenuProvider({ children }) {
         paymentId: restData.payment_id ?? "",
       };
 
-      // Fetch all menu data in parallel
-      console.log("[menuStore] Fetching menu data for restaurant_id:", restaurantId);
-      
       const [catsResult, itemsResult, featuredResult] = await Promise.all([
         supabase
           .from("categories")
@@ -208,13 +193,9 @@ export function MenuProvider({ children }) {
           .order("display_order", { ascending: true }),
       ]);
 
-      console.log("[menuStore] Categories:", catsResult.data?.length || 0, "items");
-      console.log("[menuStore] Menu items:", itemsResult.data?.length || 0, "items");
-      console.log("[menuStore] Featured:", featuredResult.data?.length || 0, "items");
-
-      if (catsResult.error) console.error("[menuStore] Categories error:", catsResult.error);
-      if (itemsResult.error) console.error("[menuStore] Menu items error:", itemsResult.error);
-      if (featuredResult.error) console.error("[menuStore] Featured error:", featuredResult.error);
+      console.log("Categories:", catsResult.data?.length || 0);
+      console.log("Menu items:", itemsResult.data?.length || 0);
+      console.log("Featured:", featuredResult.data?.length || 0);
 
       const data = {
         restaurant,
@@ -225,43 +206,29 @@ export function MenuProvider({ children }) {
 
       menuCache.set(slug, data);
       dispatch({ type: "SET_DATA", payload: data });
-      console.log("[menuStore] === FETCH SUCCESS ===");
+      console.log("FETCH SUCCESS");
+      console.groupEnd();
     } catch (err) {
-      console.error("[menuStore] === FETCH ERROR ===");
-      console.error("[menuStore] Error type:", err?.constructor?.name);
-      console.error("[menuStore] Error message:", err?.message);
-      console.error("[menuStore] Error stack:", err?.stack);
+      console.error("FETCH ERROR:", err);
       dispatch({ type: "SET_ERROR", payload: "Failed to load menu" });
+      console.groupEnd();
     }
   }, []);
 
-  useEffect(() => {
-    const slug = getSlugFromPath() || getStoredSlug();
-    loadMenu(slug);
-  }, [loadMenu]);
-
-  const refetch = useCallback(() => {
-    const slug = getSlugFromPath() || getStoredSlug();
-    const cleanedSlug = cleanSlug(slug);
-    menuCache.delete(cleanedSlug);
-    hasFetched.current = false;
+  const refetch = useCallback((slug) => {
+    const clean = cleanSlug(slug);
+    if (clean) menuCache.delete(clean);
+    fetchKey.current = null;
     loadMenu(slug);
   }, [loadMenu]);
 
   const value = useMemo(
     () => ({
-      categories: state.categories,
-      menuItems: state.menuItems,
-      featuredItems: state.featuredItems,
-      restaurant: state.restaurant,
-      restaurantLoading: state.loading,
-      restaurantError: state.error,
-      loading: state.loading,
-      error: state.error,
+      ...state,
+      loadMenu,
       refetch,
-      justUpdated: false,
     }),
-    [state, refetch]
+    [state, loadMenu, refetch]
   );
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
