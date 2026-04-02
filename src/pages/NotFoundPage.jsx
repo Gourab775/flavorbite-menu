@@ -1,15 +1,54 @@
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import lottie from "lottie-web";
+import errorAnimation from "../assets/animations/Error 404.json";
 
 export function NotFoundPage() {
   const [, navigate] = useLocation();
+  const animationRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current && !animationRef.current) {
+      animationRef.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        animationData: errorAnimation
+      });
+    }
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.destroy();
+        animationRef.current = null;
+      }
+    };
+  }, []);
+
+  const goHome = () => {
+    const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
+    if (storedTableId) {
+      navigate(`/t/${storedTableId}`);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
-    <div className="page">
-      <main className="container">
-        <div className="emptyState">
-          <h2>Page not found</h2>
-          <p className="muted">That route doesn’t exist.</p>
-          <button className="btn" onClick={() => navigate("/")}>
-            Go to menu
+    <div className="pageLayout">
+      <header className="topBar">
+        <h1 className="topBarTitle">Error</h1>
+      </header>
+      <main className="errorPage">
+        <div className="errorContent">
+          <div className="errorAnimationWrap">
+            <div ref={containerRef} className="errorAnimation" />
+          </div>
+          <h2 className="errorTitle">Page Not Found</h2>
+          <p className="errorMessage">The page you're looking for doesn't exist or has been moved.</p>
+          <button className="errorBtn" onClick={goHome}>
+            Go Back Home
           </button>
         </div>
       </main>

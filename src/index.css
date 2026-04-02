@@ -580,17 +580,19 @@ body {
   font-weight: 800;
 }
 
-/* ── Hero banner ── */
-/* ── Featured Section — full-width slide carousel ── */
+/* Featured Section */
 .featuredSection {
   margin: 0;
+  padding: 0 12px;
 }
 
 .featuredCarousel {
   position: relative;
   width: 100%;
+  max-width: 100%;
   height: 200px;
   overflow: hidden;
+  border-radius: 16px;
   cursor: pointer;
 }
 
@@ -1789,5 +1791,71 @@ body {
   font-weight: 600;
   color: rgba(255,255,255,0.3);
   letter-spacing: 0.3px;
+}
+
+/* Error Page */
+.errorPage {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--bg);
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 360px;
+}
+
+.errorAnimationWrap {
+  width: 240px;
+  height: 240px;
+  margin-bottom: 20px;
+}
+
+.errorAnimation {
+  width: 100%;
+  height: 100%;
+}
+
+.errorTitle {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.errorMessage {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.errorBtn {
+  width: 100%;
+  max-width: 200px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #fff;
+  background: var(--accent);
+  transition: all 150ms ease;
+}
+
+.errorBtn:hover {
+  background: var(--accent-2);
+}
+
+.errorBtn:active {
+  transform: scale(0.98);
 }
 
