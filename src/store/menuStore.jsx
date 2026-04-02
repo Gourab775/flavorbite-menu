@@ -5,7 +5,8 @@ import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClie
 const MenuContext = createContext(null);
 
 const menuCache = new Map();
-const DEFAULT_SLUG = "demo-restaurant";
+// Use environment variable if available, otherwise demo-restaurant
+const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function normalizeCategories(data) {
   if (!Array.isArray(data)) return [];

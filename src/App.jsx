@@ -18,6 +18,12 @@ import { setStoredSlug, setStoredTableId, getStoredSlug } from "./utils/constant
 // Default restaurant slug for direct access
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
+// Debug logging
+if (typeof window !== "undefined") {
+  console.log("[APP] VITE_RESTAURANT_SLUG from env:", import.meta.env.VITE_RESTAURANT_SLUG);
+  console.log("[APP] Using DEFAULT_SLUG:", DEFAULT_SLUG);
+}
+
 function AppRoutes() {
   // Slug-based routes
   const [isMenuRoute, menuParams] = useRoute("/:slug");
@@ -58,10 +64,10 @@ function AppRoutes() {
 
   // Entry logic: Always load menu directly
   useEffect(() => {
-    // If at root, redirect to default slug
+    // If at root, redirect to configured slug (from env var if available)
     if (location === "/" || location === "") {
-      const storedSlug = getStoredSlug();
-      const targetSlug = storedSlug || DEFAULT_SLUG;
+      // Prefer environment variable over localStorage
+      const targetSlug = DEFAULT_SLUG; // DEFAULT_SLUG already reads from env var
       setLocation(`/${targetSlug}`, { replace: true });
     } else {
       setIsReady(true);
