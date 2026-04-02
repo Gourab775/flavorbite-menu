@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider } from "./store/menuStore";
-import { ThemeProvider } from "./context/ThemeContext";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
@@ -15,7 +14,6 @@ import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { TableRequiredPage } from "./pages/TableRequiredPage";
 import { CartBar } from "./components/CartBar";
-import { ThemeSwitcher } from "./components/ThemeSwitcher";
 
 const TABLE_KEY = "tableId";
 
@@ -65,7 +63,6 @@ function AppRoutes() {
 
   return (
     <>
-      <ThemeSwitcher />
       <Switch>
         <Route path="/" component={MenuPage} />
         <Route path="/t/:tableId" component={MenuPage} />
@@ -81,18 +78,6 @@ function AppRoutes() {
       </Switch>
       {showCartBar && <CartBar />}
     </>
-  );
-}
-
-function EtherealBackground() {
-  return (
-    <div className="etherealBg">
-      <div className="etherealShape etherealShape--1" />
-      <div className="etherealShape etherealShape--2" />
-      <div className="etherealShape etherealShape--3" />
-      <div className="etherealShape etherealShape--4" />
-      <div className="etherealGrain" />
-    </div>
   );
 }
 
@@ -114,14 +99,11 @@ export default function App() {
   return (
     <CartProvider>
       <MenuProvider>
-        <ThemeProvider>
-          <div className="appBackdrop">
-            <EtherealBackground />
-            <div className="phoneFrame">
-              <AppRoutes />
-            </div>
+        <div className="appBackdrop">
+          <div className="phoneFrame">
+            <AppRoutes />
           </div>
-        </ThemeProvider>
+        </div>
       </MenuProvider>
     </CartProvider>
   );
