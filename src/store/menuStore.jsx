@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClient";
 import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
@@ -56,6 +56,11 @@ function getSlugFromPath() {
   return segments[0] || null;
 }
 
+function cleanSlug(slug) {
+  if (!slug) return DEFAULT_SLUG;
+  return String(slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+}
+
 const initialState = {
   categories: [],
   menuItems: [],
@@ -91,48 +96,86 @@ export function MenuProvider({ children }) {
   const hasFetched = useRef(false);
   const currentSlug = useRef(null);
 
-  const loadMenu = useCallback(async (slug) => {
-    const targetSlug = slug || getStoredSlug() || DEFAULT_SLUG;
-    const cleanSlug = String(targetSlug).trim().toLowerCase();
+  const loadMenu = useCallback(async (inputSlug) => {
+    const rawSlug = inputSlug || getStoredSlug() || DEFAULT_SLUG;
+    const slug = cleanSlug(rawSlug);
 
-    if (menuCache.has(cleanSlug)) {
-      const cached = menuCache.get(cleanSlug);
+    console.log("[menuStore] === FETCH START ===");
+    console.log("[menuStore] Input slug:", rawSlug);
+    console.log("[menuStore] Cleaned slug:", slug);
+    console.log("[menuStore] Supabase URL:", supabaseUrl);
+
+    if (menuCache.has(slug)) {
+      console.log("[menuStore] Using cached data for:", slug);
+      const cached = menuCache.get(slug);
       dispatch({ type: "SET_DATA", payload: cached });
       return;
     }
 
-    if (currentSlug.current === cleanSlug && hasFetched.current) {
+    if (currentSlug.current === slug && hasFetched.current) {
+      console.log("[menuStore] Already fetched for:", slug);
       return;
     }
 
     if (!isSupabaseConfigured || !supabase) {
+      console.error("[menuStore] Supabase not configured");
       dispatch({ type: "SET_ERROR", payload: "App configuration error" });
       return;
     }
 
     dispatch({ type: "START_LOADING" });
     hasFetched.current = true;
-    currentSlug.current = cleanSlug;
+    currentSlug.current = slug;
 
     try {
-      // Use maybeSingle() instead of single() to avoid 406 error
-      const { data: restData, error: restErr } = await supabase
+      console.log("[menuStore] Querying restaurant with slug:", slug);
+      
+      // Defensive query: use maybeSingle() to avoid 406
+      const restaurantQuery = await supabase
         .from("restaurants")
-        .select("id, name, slug, logo, payment_id")
-        .eq("slug", cleanSlug)
+        .select("*")
+        .eq("slug", slug)
         .maybeSingle();
 
+      console.log("[menuStore] Restaurant query result:");
+      console.log("  - data:", restaurantQuery.data);
+      console.log("  - error:", restaurantQuery.error);
+      console.log("  - status:", restaurantQuery.status);
+      console.log("  - count:", restaurantQuery.count);
+
+      const { data: restData, error: restErr } = restaurantQuery;
+
+      // Handle errors
       if (restErr) {
-        console.error("[menuStore] Restaurant fetch error:", restErr.message);
-        dispatch({ type: "SET_ERROR", payload: "Failed to load restaurant" });
+        console.error("[menuStore] Restaurant query error details:");
+        console.error("  - message:", restErr.message);
+        console.error("  - code:", restErr.code);
+        console.error("  - details:", restErr.details);
+        console.error("  - hint:", restErr.hint);
+        
+        if (restErr.code === "PGRST301" || restErr.message?.includes("JWT")) {
+          dispatch({ type: "SET_ERROR", payload: "Access denied - check RLS policies" });
+        } else if (restErr.message?.includes("not found") || restErr.code === "42P01") {
+          dispatch({ type: "SET_ERROR", payload: "Database table not found" });
+        } else {
+          dispatch({ type: "SET_ERROR", payload: "Failed to load restaurant" });
+        }
         return;
       }
 
+      // Handle no data
       if (!restData) {
-        console.warn("[menuStore] No restaurant found for slug:", cleanSlug);
+        console.warn("[menuStore] No restaurant found for slug:", slug);
+        console.warn("[menuStore] Possible causes:");
+        console.warn("  1. Slug does not exist in database");
+        console.warn("  2. RLS policy blocking access");
+        console.warn("  3. Slug value mismatch (check exact match)");
+        
         dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
         return;
       }
+
+      console.log("[menuStore] Restaurant found:", restData.name);
 
       const restaurantId = restData.id;
       const restaurant = {
@@ -143,7 +186,9 @@ export function MenuProvider({ children }) {
         paymentId: restData.payment_id ?? "",
       };
 
-      // Fetch categories, menu items, and featured items in parallel
+      // Fetch all menu data in parallel
+      console.log("[menuStore] Fetching menu data for restaurant_id:", restaurantId);
+      
       const [catsResult, itemsResult, featuredResult] = await Promise.all([
         supabase
           .from("categories")
@@ -163,6 +208,14 @@ export function MenuProvider({ children }) {
           .order("display_order", { ascending: true }),
       ]);
 
+      console.log("[menuStore] Categories:", catsResult.data?.length || 0, "items");
+      console.log("[menuStore] Menu items:", itemsResult.data?.length || 0, "items");
+      console.log("[menuStore] Featured:", featuredResult.data?.length || 0, "items");
+
+      if (catsResult.error) console.error("[menuStore] Categories error:", catsResult.error);
+      if (itemsResult.error) console.error("[menuStore] Menu items error:", itemsResult.error);
+      if (featuredResult.error) console.error("[menuStore] Featured error:", featuredResult.error);
+
       const data = {
         restaurant,
         categories: normalizeCategories(catsResult.data),
@@ -170,10 +223,14 @@ export function MenuProvider({ children }) {
         featuredItems: normalizeFeaturedItems(featuredResult.data),
       };
 
-      menuCache.set(cleanSlug, data);
+      menuCache.set(slug, data);
       dispatch({ type: "SET_DATA", payload: data });
+      console.log("[menuStore] === FETCH SUCCESS ===");
     } catch (err) {
-      console.error("[menuStore] Unexpected error:", err);
+      console.error("[menuStore] === FETCH ERROR ===");
+      console.error("[menuStore] Error type:", err?.constructor?.name);
+      console.error("[menuStore] Error message:", err?.message);
+      console.error("[menuStore] Error stack:", err?.stack);
       dispatch({ type: "SET_ERROR", payload: "Failed to load menu" });
     }
   }, []);
@@ -185,11 +242,10 @@ export function MenuProvider({ children }) {
 
   const refetch = useCallback(() => {
     const slug = getSlugFromPath() || getStoredSlug();
-    if (slug) {
-      menuCache.delete(slug.trim().toLowerCase());
-      hasFetched.current = false;
-      loadMenu(slug);
-    }
+    const cleanedSlug = cleanSlug(slug);
+    menuCache.delete(cleanedSlug);
+    hasFetched.current = false;
+    loadMenu(slug);
   }, [loadMenu]);
 
   const value = useMemo(
