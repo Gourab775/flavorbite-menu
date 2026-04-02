@@ -1,16 +1,19 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams, useSearch } from "wouter";
 import { supabase } from "../lib/supabaseClient";
-import { RESTAURANT_ID } from "../utils/constants";
+import { useMenu } from "../hooks/useMenu";
+import { getStoredSlug, getStoredTableId } from "../utils/constants";
 import lottie from "lottie-web";
 import animationData from "../assets/animations/loading.json";
 
 export function OnlineWaitingPage() {
   const [, navigate] = useLocation();
   const search = useSearch();
-  const { tableId, orderId } = useParams();
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
+  const { slug: urlSlug, tableId: urlTableId, orderId } = useParams();
+  
+  const slug = urlSlug || getStoredSlug();
+  const tableId = urlTableId || getStoredTableId();
+  const { restaurant } = useMenu();
 
   const searchParams = new URLSearchParams(search);
   const orderCode = searchParams.get("code");
@@ -21,12 +24,16 @@ export function OnlineWaitingPage() {
   const animationRef = useRef(null);
   const containerRef = useRef(null);
 
+  // Build base path with optional table
+  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+
   useEffect(() => {
     const fetchPhone = async () => {
+      if (!restaurant.id) return;
       const { data } = await supabase
         .from("restaurants")
         .select("contact_number")
-        .eq("id", RESTAURANT_ID)
+        .eq("id", restaurant.id)
         .single();
 
       if (data?.contact_number) {
@@ -35,7 +42,7 @@ export function OnlineWaitingPage() {
     };
 
     fetchPhone();
-  }, []);
+  }, [restaurant.id]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -65,7 +72,7 @@ export function OnlineWaitingPage() {
         { event: "UPDATE", schema: "public", table: "live_orders" },
         (payload) => {
           if (payload.new.id === orderId && payload.new.status === "accepted") {
-            navigate(`/t/${currentTableId}/order-confirmed`);
+            navigate(`${basePath}/order-confirmed`);
           }
         }
       )
@@ -74,7 +81,7 @@ export function OnlineWaitingPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orderId, navigate, currentTableId]);
+  }, [orderId, navigate, basePath]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -94,7 +101,7 @@ export function OnlineWaitingPage() {
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
     console.log("Cart cleared after cancel");
-    navigate(`/t/${currentTableId}`);
+    navigate(basePath);
   };
 
   useEffect(() => {

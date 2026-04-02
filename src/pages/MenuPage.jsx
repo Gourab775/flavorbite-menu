@@ -10,6 +10,7 @@ import { useMenu } from "../hooks/useMenu";
 import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
+import { setStoredSlug, setStoredTableId } from "../utils/constants";
 
 function slugify(text) {
   return String(text ?? "")
@@ -20,11 +21,18 @@ function slugify(text) {
 }
 
 export function MenuPage() {
-  const { tableId } = useParams();
+  const { slug, tableId } = useParams();
+
+  // Store slug and tableId when available
+  useEffect(() => {
+    if (slug) {
+      setStoredSlug(slug);
+    }
+  }, [slug]);
 
   useEffect(() => {
     if (tableId) {
-      sessionStorage.setItem("tableId", tableId);
+      setStoredTableId(tableId);
     }
   }, [tableId]);
 

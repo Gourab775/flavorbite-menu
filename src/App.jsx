@@ -12,73 +12,94 @@ import { OrderConfirmedPage } from "./pages/OrderConfirmedPage";
 import { WaitingPage } from "./pages/WaitingPage";
 import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { TableRequiredPage } from "./pages/TableRequiredPage";
 import { CartBar } from "./components/CartBar";
-import { RESTAURANT_ID } from "./utils/constants";
-
-const TABLE_KEY = "tableId";
-
-function getStoredTableId() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TABLE_KEY);
-}
+import { getStoredSlug, setStoredSlug, getStoredTableId, setStoredTableId } from "./utils/constants";
 
 function AppRoutes() {
-  const [isTableRoute, tableParams] = useRoute("/t/:tableId");
-  const [isCartRoute, cartParams] = useRoute("/t/:tableId/cart");
-  const [isCheckoutRoute] = useRoute("/t/:tableId/checkout");
-  const [isPaymentRoute, paymentParams] = useRoute("/t/:tableId/payment/:orderId");
-  const [isOrderSuccessRoute] = useRoute("/t/:tableId/order-success");
-  const [isOrderStatusRoute] = useRoute("/t/:tableId/order-status");
-  const [isOrderConfirmedRoute] = useRoute("/t/:tableId/order-confirmed");
-  const [isWaitingRoute, waitingParams] = useRoute("/t/:tableId/waiting/:orderId");
-  const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/t/:tableId/online-waiting/:orderId");
-  const [location, setLocation] = useLocation();
+  // Slug-based routes
+  const [isMenuRoute, menuParams] = useRoute("/:slug");
+  const [isTableRoute, tableParams] = useRoute("/:slug/t/:tableId");
+  const [isCartRoute, cartParams] = useRoute("/:slug/cart");
+  const [isCheckoutRoute] = useRoute("/:slug/checkout");
+  const [isPaymentRoute, paymentParams] = useRoute("/:slug/payment/:orderId");
+  const [isOrderSuccessRoute] = useRoute("/:slug/order-success");
+  const [isOrderStatusRoute] = useRoute("/:slug/order-status");
+  const [isOrderConfirmedRoute] = useRoute("/:slug/order-confirmed");
+  const [isWaitingRoute, waitingParams] = useRoute("/:slug/waiting/:orderId");
+  const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/:slug/online-waiting/:orderId");
 
-  const tableId = tableParams?.tableId || cartParams?.tableId || paymentParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
+  const [location] = useLocation();
 
+  // Extract slug from any route
+  const slug = menuParams?.slug || tableParams?.slug || cartParams?.slug || paymentParams?.slug || waitingParams?.slug || onlineWaitingParams?.slug;
+
+  // Extract tableId from route
+  const tableId = tableParams?.tableId || waitingParams?.tableId || onlineWaitingParams?.tableId;
+
+  // Store slug and tableId when available
   useEffect(() => {
-    const stored = getStoredTableId();
-    if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute) {
-      if (stored && location === "/") {
-        setLocation(`/t/${stored}`);
-      }
+    if (slug) {
+      setStoredSlug(slug);
     }
-  }, [location, isTableRoute, isCartRoute, isCheckoutRoute, isPaymentRoute, isOrderSuccessRoute, isOrderStatusRoute, isOrderConfirmedRoute, isWaitingRoute, isOnlineWaitingRoute, setLocation]);
+  }, [slug]);
 
   useEffect(() => {
     if (tableId) {
-      localStorage.setItem(TABLE_KEY, tableId);
+      setStoredTableId(tableId);
     }
   }, [tableId]);
 
-  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute && location === "/") {
-    if (!RESTAURANT_ID) {
-      return <div className="pageLayout"><div className="errorPage"><div className="errorContent"><h2 className="errorTitle">Invalid QR Code</h2><p className="errorMessage">This QR code doesn't appear to be valid. Please scan a fresh QR code from the restaurant.</p><button className="errorBtn" onClick={() => window.location.href = "/"}>Try Again</button></div></div></div>;
-    }
-    return <TableRequiredPage />;
-  }
+  // Check for any slug-based route
+  const isAnySlugRoute = isMenuRoute || isTableRoute || isCartRoute || isCheckoutRoute || isPaymentRoute || isOrderSuccessRoute || isOrderStatusRoute || isOrderConfirmedRoute || isWaitingRoute || isOnlineWaitingRoute;
 
-  if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute) {
+  // Redirect root to stored slug if available
+  useEffect(() => {
+    if (location === "/") {
+      const storedSlug = getStoredSlug();
+      if (storedSlug) {
+        window.location.replace(`/${storedSlug}`);
+      }
+    }
+  }, [location]);
+
+  // Redirect to not found if no slug route matches and we're not at root
+  if (!isAnySlugRoute && location !== "/" && !location.startsWith("/static")) {
     return <NotFoundPage />;
   }
 
-  const showCartBar = isTableRoute || isCartRoute || isWaitingRoute || isOnlineWaitingRoute;
+  // Root page without slug
+  if (location === "/") {
+    return (
+      <div className="pageLayout">
+        <header className="topBar">
+          <h1 className="topBarTitle">QR Menu</h1>
+        </header>
+        <main className="errorPage">
+          <div className="errorContent">
+            <h2 className="errorTitle">Welcome</h2>
+            <p className="errorMessage">Scan a QR code to access your restaurant's menu.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const showCartBar = isMenuRoute || isTableRoute || isWaitingRoute || isOnlineWaitingRoute;
 
   return (
     <>
       <Switch>
-        <Route path="/" component={MenuPage} />
-        <Route path="/t/:tableId" component={MenuPage} />
-        <Route path="/t/:tableId/cart" component={CartPage} />
-        <Route path="/t/:tableId/checkout" component={CheckoutPage} />
-        <Route path="/t/:tableId/payment/:orderId" component={PaymentPage} />
-        <Route path="/t/:tableId/order-success" component={OrderSuccessPage} />
-        <Route path="/t/:tableId/order-status" component={OrderStatusPage} />
-        <Route path="/t/:tableId/order-confirmed" component={OrderConfirmedPage} />
-        <Route path="/t/:tableId/waiting/:orderId" component={WaitingPage} />
-        <Route path="/t/:tableId/online-waiting/:orderId" component={OnlineWaitingPage} />
-        <Route component={NotFoundPage} />
+        <Route path="/:slug" component={MenuPage} />
+        <Route path="/:slug/t/:tableId" component={MenuPage} />
+        <Route path="/:slug/cart" component={CartPage} />
+        <Route path="/:slug/checkout" component={CheckoutPage} />
+        <Route path="/:slug/payment/:orderId" component={PaymentPage} />
+        <Route path="/:slug/order-success" component={OrderSuccessPage} />
+        <Route path="/:slug/order-status" component={OrderStatusPage} />
+        <Route path="/:slug/order-confirmed" component={OrderConfirmedPage} />
+        <Route path="/:slug/waiting/:orderId" component={WaitingPage} />
+        <Route path="/:slug/online-waiting/:orderId" component={OnlineWaitingPage} />
+        <Route path="/:slug/*" component={NotFoundPage} />
       </Switch>
       {showCartBar && <CartBar />}
     </>

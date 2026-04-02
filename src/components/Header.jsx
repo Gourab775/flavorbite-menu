@@ -1,20 +1,25 @@
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
+import { getStoredSlug, getStoredTableId } from "../utils/constants";
 
 export function Header() {
   const [, navigate] = useLocation();
-  const { tableId } = useParams();
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
+  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  
+  const slug = urlSlug || getStoredSlug();
+  const tableId = urlTableId || getStoredTableId();
   const { totalItems } = useCart();
   const { restaurant, restaurantLoading, restaurantError } = useMenu();
 
   const displayName = restaurant.name || (restaurantLoading ? "" : "Restaurant");
 
+  // Build base path with optional table
+  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+
   return (
     <header className="header">
-      <button className="brand" onClick={() => navigate(`/t/${currentTableId}`)} aria-label="Go to menu">
+      <button className="brand" onClick={() => navigate(basePath)} aria-label="Go to menu">
         <div className="brandLogoWrap">
           {restaurantLoading ? (
             <span className="brandLogoInitial" aria-hidden="true">
@@ -54,7 +59,7 @@ export function Header() {
 
       <button
         className="cartBtn pressable"
-        onClick={() => navigate(`/t/${currentTableId}/cart`)}
+        onClick={() => navigate(`${basePath}/cart`)}
         aria-label={`Open cart — ${totalItems} item${totalItems === 1 ? "" : "s"}`}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

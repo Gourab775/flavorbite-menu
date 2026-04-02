@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { RESTAURANT_ID, INVALID_RESTAURANT_ERROR } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
@@ -46,198 +46,131 @@ function normalizeFeaturedItems(data) {
     .filter((i) => i.imageUrl);
 }
 
+function getSlugFromPath() {
+  if (typeof window === "undefined") return null;
+  const path = window.location.pathname;
+  const segments = path.split("/").filter(Boolean);
+  return segments[0] || null;
+}
+
 export function MenuProvider({ children }) {
   const [categories, setCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [featuredItems, setFeaturedItems] = useState([]);
-  const [restaurant, setRestaurant] = useState({ name: "", slug: "", logo: "", paymentId: "" });
+  const [restaurant, setRestaurant] = useState({ id: "", name: "", slug: "", logo: "", paymentId: "" });
   const [restaurantLoading, setRestaurantLoading] = useState(true);
   const [restaurantError, setRestaurantError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!RESTAURANT_ID) {
-      setRestaurantError(INVALID_RESTAURANT_ERROR);
+  const loadMenu = useCallback(async (slug) => {
+    if (!slug) {
+      setRestaurantError("Invalid URL - No restaurant specified");
       setRestaurantLoading(false);
       setLoading(false);
       return;
     }
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-
-      if (!isSupabaseConfigured || !supabase) {
-        console.error("[menuStore] Supabase not configured. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env");
-        setRestaurantError("Supabase not configured");
-        setLoading(false);
-        return;
-      }
-
-      console.log(`[menuStore] Fetching restaurant (ID: ${RESTAURANT_ID})…`);
-
-      const { data: restData, error: restErr } = await supabase
-        .from("restaurants")
-        .select("name, slug, logo, payment_id")
-        .eq("id", RESTAURANT_ID)
-        .single();
-
-      if (cancelled) return;
-
-      if (restErr) {
-        console.error(`[menuStore] Restaurant fetch error:`, restErr);
-        setRestaurantError(restErr.message ?? "Failed to load restaurant");
-        setRestaurantLoading(false);
-      } else if (restData) {
-        console.log(`[menuStore] Restaurant loaded:`, restData);
-        setRestaurant({
-          name: restData.name ?? "",
-          slug: restData.slug ?? "",
-          logo: restData.logo ?? "",
-          paymentId: restData.payment_id ?? "",
-        });
-        setRestaurantError(null);
-      } else {
-        console.warn(`[menuStore] No restaurant found for ID: ${RESTAURANT_ID}`);
-        setRestaurantError("Restaurant not found");
-      }
+    if (!isSupabaseConfigured || !supabase) {
+      setRestaurantError("App configuration error");
       setRestaurantLoading(false);
-
-      const [catsResult, itemsResult, featuredResult] = await Promise.all([
-        supabase
-          .from("categories")
-          .select("id, name, image, sort_order")
-          .eq("restaurant_id", RESTAURANT_ID)
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("menu_items")
-          .select("id, name, description, price, is_veg, is_available, category_id, image_url")
-          .eq("restaurant_id", RESTAURANT_ID)
-          .eq("is_available", true),
-        supabase
-          .from("featured_items")
-          .select("id, image_url, redirect_url, display_order")
-          .eq("restaurant_id", RESTAURANT_ID)
-          .eq("is_active", true)
-          .order("display_order", { ascending: true }),
-      ]);
-
-      if (cancelled) return;
-
-      if (!catsResult.error) {
-        console.log("[menuStore] Categories:", catsResult.data);
-        setCategories(normalizeCategories(catsResult.data));
-      } else {
-        console.error("[menuStore] Categories error:", catsResult.error);
-      }
-
-      if (!itemsResult.error) {
-        console.log("[menuStore] Menu items:", itemsResult.data);
-        setMenuItems(normalizeMenuItems(itemsResult.data));
-      } else {
-        console.error("[menuStore] Menu items error:", itemsResult.error);
-      }
-
-      if (!featuredResult.error) {
-        console.log("[menuStore] Featured items:", featuredResult.data);
-        setFeaturedItems(normalizeFeaturedItems(featuredResult.data));
-      } else {
-        console.error("[menuStore] Featured items error:", featuredResult.error);
-      }
-
-      if (catsResult.error || itemsResult.error) {
-        setError("Failed to load menu data from Supabase.");
-      }
       setLoading(false);
-    };
-
-    load();
-
-    if (isSupabaseConfigured && supabase) {
-      const channel = supabase
-        .channel("restaurant-realtime")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "restaurants",
-            filter: `id=eq.${RESTAURANT_ID}`,
-          },
-          (payload) => {
-            if (cancelled) return;
-            console.log("[menuStore] Realtime restaurant update:", payload);
-            if (payload.new) {
-              setRestaurant((prev) => ({
-                ...prev,
-                name: payload.new.name ?? prev.name ?? "",
-                slug: payload.new.slug ?? prev.slug ?? "",
-                logo: payload.new.logo ?? prev.logo ?? "",
-                paymentId: payload.new.payment_id ?? prev.paymentId ?? "",
-              }));
-            }
-          }
-        )
-        .subscribe();
-
-      return () => {
-        cancelled = true;
-        supabase.removeChannel(channel);
-      };
+      return;
     }
 
-    return () => { cancelled = true; };
-  }, []);
-
-  const refetch = useCallback(async () => {
-    if (!isSupabaseConfigured || !supabase) return;
-    if (!RESTAURANT_ID) return;
     setLoading(true);
     setError(null);
+    setRestaurantLoading(true);
 
+    // Step 1: Fetch restaurant by slug
     const { data: restData, error: restErr } = await supabase
       .from("restaurants")
-      .select("name, slug, logo, payment_id")
-      .eq("id", RESTAURANT_ID)
+      .select("id, name, slug, logo, payment_id")
+      .eq("slug", slug)
       .single();
 
-    if (!restErr && restData) {
-      console.log("[menuStore] Refetch — Restaurant:", restData);
-      setRestaurant({
-        name: restData.name ?? "",
-        slug: restData.slug ?? "",
-        logo: restData.logo ?? "",
-        paymentId: restData.payment_id ?? "",
-      });
-      setRestaurantError(null);
-    } else if (restErr) {
-      console.error("[menuStore] Refetch — Restaurant error:", restErr);
-      setRestaurantError(restErr.message ?? "Failed to reload restaurant");
+    if (restErr || !restData) {
+      console.error("[menuStore] Restaurant fetch error:", restErr);
+      setRestaurantError("Restaurant not found");
+      setRestaurantLoading(false);
+      setLoading(false);
+      return;
     }
 
-    const [catsResult, itemsResult] = await Promise.all([
-      supabase
-        .from("categories")
-        .select("id, name, image, sort_order")
-        .eq("restaurant_id", RESTAURANT_ID)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("menu_items")
-        .select("id, name, description, price, is_veg, is_available, category_id, image_url")
-        .eq("restaurant_id", RESTAURANT_ID)
-        .eq("is_available", true),
-    ]);
+    console.log("[menuStore] Restaurant loaded:", restData);
+    const restaurantId = restData.id;
 
-    if (!catsResult.error) setCategories(normalizeCategories(catsResult.data));
-    if (!itemsResult.error) setMenuItems(normalizeMenuItems(itemsResult.data));
+    setRestaurant({
+      id: restaurantId,
+      name: restData.name ?? "",
+      slug: restData.slug ?? "",
+      logo: restData.logo ?? "",
+      paymentId: restData.payment_id ?? "",
+    });
+    setRestaurantError(null);
+    setRestaurantLoading(false);
+
+    // Step 2: Load categories
+    const catsResult = await supabase
+      .from("categories")
+      .select("id, name, image, sort_order")
+      .eq("restaurant_id", restaurantId)
+      .order("sort_order", { ascending: true });
+
+    if (!catsResult.error) {
+      setCategories(normalizeCategories(catsResult.data));
+    } else {
+      console.error("[menuStore] Categories error:", catsResult.error);
+    }
+
+    // Step 3: Load menu items
+    const itemsResult = await supabase
+      .from("menu_items")
+      .select("id, name, description, price, is_veg, is_available, category_id, image_url")
+      .eq("restaurant_id", restaurantId)
+      .eq("is_available", true);
+
+    if (!itemsResult.error) {
+      setMenuItems(normalizeMenuItems(itemsResult.data));
+    } else {
+      console.error("[menuStore] Menu items error:", itemsResult.error);
+    }
+
+    // Step 4: Load featured items
+    const featuredResult = await supabase
+      .from("featured_items")
+      .select("id, image_url, redirect_url, display_order")
+      .eq("restaurant_id", restaurantId)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+
+    if (!featuredResult.error) {
+      setFeaturedItems(normalizeFeaturedItems(featuredResult.data));
+    } else {
+      console.error("[menuStore] Featured items error:", featuredResult.error);
+    }
+
     if (catsResult.error || itemsResult.error) {
-      setError("Failed to reload menu data.");
+      setError("Failed to load menu data.");
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const slug = getSlugFromPath() || getStoredSlug();
+
+    if (!cancelled) {
+      loadMenu(slug);
+    }
+
+    return () => { cancelled = true; };
+  }, [loadMenu]);
+
+  const refetch = useCallback(() => {
+    const slug = getSlugFromPath() || getStoredSlug();
+    return loadMenu(slug);
+  }, [loadMenu]);
 
   const value = useMemo(
     () => ({

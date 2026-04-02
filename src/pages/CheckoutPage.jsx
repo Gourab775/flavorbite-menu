@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
+import { useMenu } from "../hooks/useMenu";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
-import { RESTAURANT_ID } from "../utils/constants";
+import { getStoredSlug, getStoredTableId } from "../utils/constants";
 
 function generateOrderCode() {
   const num = Math.floor(1000 + Math.random() * 9000);
@@ -12,10 +13,13 @@ function generateOrderCode() {
 
 export function CheckoutPage() {
   const [, navigate] = useLocation();
-  const { tableId } = useParams();
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
+  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  
+  const slug = urlSlug || getStoredSlug();
+  const tableId = urlTableId || getStoredTableId();
+  
   const { cart, subtotal, tax, grandTotal } = useCart();
+  const { restaurant } = useMenu();
 
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -23,8 +27,11 @@ export function CheckoutPage() {
 
   const orderNote = typeof window !== "undefined" ? sessionStorage.getItem("cart_order_note") || "" : "";
 
+  // Build base path with optional table
+  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+
   const handleCounterOrder = async () => {
-    console.log("Restaurant ID:", RESTAURANT_ID);
+    console.log("Restaurant ID:", restaurant.id);
     console.log("Counter flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
@@ -32,8 +39,8 @@ export function CheckoutPage() {
       return;
     }
 
-    if (!RESTAURANT_ID) {
-      setToastMsg("Restaurant ID missing");
+    if (!restaurant.id) {
+      setToastMsg("Restaurant not found");
       setToastType("error");
       return;
     }
@@ -52,9 +59,9 @@ export function CheckoutPage() {
       const { data, error } = await supabase
         .from("live_orders")
         .insert({
-          restaurant_id: RESTAURANT_ID,
+          restaurant_id: restaurant.id,
           items: itemsPayload,
-          table: currentTableId,
+          table: tableId,
           status: "pending",
           payment_mode: "counter",
           order_code: generateOrderCode(),
@@ -66,7 +73,7 @@ export function CheckoutPage() {
 
       if (error) throw error;
 
-      navigate(`/t/${currentTableId}/waiting/${data.id}`);
+      navigate(`${basePath}/waiting/${data.id}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);
@@ -77,7 +84,7 @@ export function CheckoutPage() {
   };
 
   const handleOnlineOrder = async () => {
-    console.log("Restaurant ID:", RESTAURANT_ID);
+    console.log("Restaurant ID:", restaurant.id);
     console.log("Online flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
@@ -85,8 +92,8 @@ export function CheckoutPage() {
       return;
     }
 
-    if (!RESTAURANT_ID) {
-      setToastMsg("Restaurant ID missing");
+    if (!restaurant.id) {
+      setToastMsg("Restaurant not found");
       setToastType("error");
       return;
     }
@@ -105,9 +112,9 @@ export function CheckoutPage() {
       const { data, error } = await supabase
         .from("live_orders")
         .insert({
-          restaurant_id: RESTAURANT_ID,
+          restaurant_id: restaurant.id,
           items: itemsPayload,
-          table: currentTableId,
+          table: tableId,
           status: "pending",
           payment_mode: "online",
           order_code: generateOrderCode(),
@@ -124,7 +131,7 @@ export function CheckoutPage() {
         orderCode: data.order_code,
         amount: grandTotal
       }));
-      navigate(`/t/${currentTableId}/payment/${data.id}?code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
+      navigate(`${basePath}/payment/${data.id}?code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);
@@ -139,7 +146,7 @@ export function CheckoutPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => navigate(`/t/${currentTableId}/cart`)}
+          onClick={() => navigate(`${basePath}/cart`)}
           aria-label="Back to cart"
         >
           ←

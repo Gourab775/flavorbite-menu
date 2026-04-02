@@ -1,13 +1,14 @@
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
+import { getStoredSlug, getStoredTableId } from "../utils/constants";
 
 export function CartBar() {
-  const [location, navigate] = useLocation();
-  const { tableId } = useParams();
+  const [location] = useLocation();
+  const { slug: urlSlug, tableId: urlTableId } = useParams();
   const { totalItems, grandTotal } = useCart();
 
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
+  const slug = urlSlug || getStoredSlug();
+  const tableId = urlTableId || getStoredTableId();
 
   const isHidden =
     location?.includes("/cart") ||
@@ -20,13 +21,16 @@ export function CartBar() {
 
   if (isHidden) return null;
   if (totalItems === 0) return null;
-  if (!currentTableId) return null;
+  if (!slug) return null;
+
+  // Build base path with optional table
+  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
 
   return (
     <div className="cartBarOuter cartBarOuter--visible">
       <button
         className="cartBar pressable"
-        onClick={() => navigate(`/t/${currentTableId}/cart`)}
+        onClick={() => window.location.href = `${basePath}/cart`}
         aria-label={`View cart — ${totalItems} item${totalItems === 1 ? "" : "s"}, ₹${Math.round(grandTotal)}`}
       >
         <div className="cartBarLeft">

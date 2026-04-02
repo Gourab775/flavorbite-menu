@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { RESTAURANT_ID } from "../utils/constants";
+import { useMenuStore } from "../store/menuStore";
 
 const DEBOUNCE_MS = 300;
 
@@ -22,13 +22,14 @@ export function useMenuSearch(searchQuery) {
   const [searching, setSearching] = useState(false);
   const timerRef = useRef(null);
   const abortRef = useRef(null);
+  const { restaurant } = useMenuStore();
 
   const fetchResults = useCallback(async (q) => {
     abortRef.current = false;
     setSearching(true);
 
     try {
-      if (!isSupabaseConfigured || !supabase) {
+      if (!isSupabaseConfigured || !supabase || !restaurant.id) {
         setResults([]);
         setSearching(false);
         return;
@@ -37,7 +38,7 @@ export function useMenuSearch(searchQuery) {
       let itemsQuery = supabase
         .from("menu_items")
         .select("id, name, price, description, is_veg, is_available, category_id, image_url")
-        .eq("restaurant_id", RESTAURANT_ID)
+        .eq("restaurant_id", restaurant.id)
         .eq("is_available", true)
         .order("name");
 
@@ -51,7 +52,6 @@ export function useMenuSearch(searchQuery) {
         console.error("[useMenuSearch] error:", error);
         setResults([]);
       } else {
-        // Normalize so isAvailable matches what MenuItemCard expects
         setResults((data ?? []).map(normalizeItem));
       }
     } catch (e) {
@@ -60,7 +60,7 @@ export function useMenuSearch(searchQuery) {
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [restaurant.id]);
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
