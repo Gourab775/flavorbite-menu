@@ -173,7 +173,9 @@ export function PaymentPage() {
             <span className="orderSummaryLabel">Amount to pay</span>
             <span className="orderSummaryAmount">₹{Math.round(amount)}</span>
           </div>
-          <p className="orderSummaryNote">Tap an app to pay directly</p>
+          {selectedAppName && (
+            <p className="orderSummaryMethod">via {selectedAppName}</p>
+          )}
         </div>
 
         <h2 className="paymentSectionTitle"> Select Payment App</h2>
@@ -221,9 +223,6 @@ export function PaymentPage() {
           onClick={handlePay}
         >
           Pay ₹{Math.round(amount)}
-          {selectedAppName && (
-            <span className="paymentContinueAmount">via {selectedAppName}</span>
-          )}
         </button>
       </div>
     </div>

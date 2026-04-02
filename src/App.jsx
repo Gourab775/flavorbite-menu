@@ -14,6 +14,7 @@ import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { TableRequiredPage } from "./pages/TableRequiredPage";
 import { CartBar } from "./components/CartBar";
+import { RESTAURANT_ID } from "./utils/constants";
 
 const TABLE_KEY = "tableId";
 
@@ -52,6 +53,9 @@ function AppRoutes() {
   }, [tableId]);
 
   if (!isTableRoute && !isCartRoute && !isCheckoutRoute && !isPaymentRoute && !isOrderSuccessRoute && !isOrderStatusRoute && !isOrderConfirmedRoute && !isWaitingRoute && !isOnlineWaitingRoute && location === "/") {
+    if (!RESTAURANT_ID) {
+      return <div className="pageLayout"><div className="errorPage"><div className="errorContent"><h2 className="errorTitle">Invalid QR Code</h2><p className="errorMessage">This QR code doesn't appear to be valid. Please scan a fresh QR code from the restaurant.</p><button className="errorBtn" onClick={() => window.location.href = "/"}>Try Again</button></div></div></div>;
+    }
     return <TableRequiredPage />;
   }
 

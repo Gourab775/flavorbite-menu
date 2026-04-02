@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { RESTAURANT_ID } from "../utils/constants";
+import { RESTAURANT_ID, INVALID_RESTAURANT_ERROR } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
@@ -58,6 +58,13 @@ export function MenuProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!RESTAURANT_ID) {
+      setRestaurantError(INVALID_RESTAURANT_ERROR);
+      setRestaurantLoading(false);
+      setLoading(false);
+      return;
+    }
 
     const load = async () => {
       setLoading(true);
@@ -187,6 +194,7 @@ export function MenuProvider({ children }) {
 
   const refetch = useCallback(async () => {
     if (!isSupabaseConfigured || !supabase) return;
+    if (!RESTAURANT_ID) return;
     setLoading(true);
     setError(null);
 
