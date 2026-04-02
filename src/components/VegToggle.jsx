@@ -6,7 +6,7 @@ export function VegToggle() {
   return (
     <button
       onClick={() => setVegMode(!vegMode)}
-      className={`vegTogglePill ${vegMode ? "active" : ""}`}
+      className={`vegTogglePill w-24 md:w-28 h-10 ${vegMode ? "active" : ""}`}
       aria-pressed={vegMode}
       title={vegMode ? "Showing veg items only" : "Showing all items"}
     >

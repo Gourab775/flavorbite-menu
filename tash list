@@ -1,0 +1,80 @@
+[33mafdc0c0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m update
+[33mca082a5[m update
+[33m6dc7115[m update
+[33m15f6ce1[m update
+[33mdda885f[m update
+[33m6887876[m update
+[33m62487b1[m update
+[33m2588ecc[m update
+[33m7cedd00[m update
+[33m5cd4b03[m update
+[33m7e08d80[m update
+[33m99f0fad[m update
+[33m1a68e51[m update
+[33m9d02b85[m update
+[33m42aa9ec[m update
+[33m344513c[m update
+[33m2d0f0a5[m update
+[33m34e663a[m update
+[33m6632085[m update
+[33m11fd6cc[m update
+[33m8d6ec60[m update
+[33m133152f[m update
+[33m5352837[m update
+[33m81e8da7[m update
+[33m537cbe8[m update
+[33mbf46138[m update
+[33m9032bd2[m update
+[33m78a0b19[m update
+[33m2379a8d[m update
+[33m2647e4f[m update
+[33m163a3c2[m update
+[33mebfbcee[m update
+[33ma814cce[m update
+[33ma668227[m update
+[33m83b5ed9[m update
+[33mcf7a1e5[m update
+[33m100275f[m update
+[33mcdc9388[m update
+[33m0cc731b[m update
+[33me6821fa[m update
+[33m07cce57[m update
+[33mb0777de[m update
+[33md92db10[m Add Pay at Counter flow - order status page with realtime updates
+[33m9f19807[m update
+[33m429da8c[m Remove redundant table field from items array - keep only top-level table
+[33ma826b3b[m Add debug logs for order placement - helps debug 404 and tableId issues
+[33m3e31413[m Add tableId to order payload - includes table in order and items
+[33me2a3ec3[m Fix checkout flow - all pages now use /t/:tableId/* routes
+[33mcc6d19f[m Fix table routing - proper /t/:tableId/* routes with localStorage persistence
+[33m20ca562[m Fix table routing - /t/:tableId now shows menu directly
+[33me5558f3[m Fix table-based routing - /t/:tableId now works properly
+[33m9330554[m Add table field to cart items for table-based routing
+[33me6da6c4[m Add table-based routing with /t/:tableId and TableRequiredPage fallback
+[33m9abeee6[m Add Remove button and note input to cart page with checkout integration
+[33mc25c731[m update
+[33mdd7e4e6[m Fix sticky layout - menuScroll is now main scroll container with 100vh height
+[33ma2e86c0[m Add sticky layout for top section with proper overflow handling
+[33m4ec33da[m Simplify category sync with getBoundingClientRect
+[33maeccf8f[m Restore UI to original stable state
+[33m3c8cdbe[m Restore original UI and use scroll listener for category sync
+[33m190d28c[m Restore working scroll and sync behavior
+[33m1dc748d[m Clean up category sync and scroll handling
+[33m243f9fa[m update
+[33m7d693d5[m update
+[33m41ed2c4[m update
+[33m43354f5[m update
+[33mc405b81[m update
+[33macbba7c[m update
+[33m06fe1f3[m update
+[33mdafcf8b[m update
+[33m48ff770[m update
+[33m9f627bc[m update
+[33mb04c9f9[m update
+[33m8e41e0a[m update
+[33m6acee93[m update
+[33mfb538a7[m update
+[33md3e7ecb[m update
+[33md03b195[m update
+[33m4807c9c[m first commit
+[33m39ac45e[m first deploy
