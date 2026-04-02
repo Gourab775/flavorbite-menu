@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams, useSearch } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { RESTAURANT_ID } from "../utils/constants";
+import lottie from "lottie-web";
+import animationData from "../assets/animations/loading.json";
 
 export function OnlineWaitingPage() {
   const [, navigate] = useLocation();
@@ -16,6 +18,8 @@ export function OnlineWaitingPage() {
   const [timeLeft, setTimeLeft] = useState(120);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [phone, setPhone] = useState("");
+  const animationRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const fetchPhone = async () => {
@@ -93,14 +97,34 @@ export function OnlineWaitingPage() {
     navigate(`/t/${currentTableId}`);
   };
 
+  useEffect(() => {
+    if (containerRef.current && !animationRef.current) {
+      animationRef.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        animationData: animationData
+      });
+    }
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.destroy();
+        animationRef.current = null;
+      }
+    };
+  }, []);
+
   return (
     <div className="pageLayout">
       <header className="topBar">
         <h1 className="topBarTitle">Payment Status</h1>
       </header>
 
-      <main className="checkoutBody hideScrollbar" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 20px" }}>
-        <div style={{ fontSize: "64px", marginBottom: "24px" }}>⏳</div>
+      <main className="checkoutBody hideScrollbar" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 20px", minHeight: "calc(100vh - 60px)" }}>
+        <div style={{ width: "85vw", height: "85vw", maxWidth: "400px", maxHeight: "400px", marginBottom: "24px" }}>
+          <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+        </div>
         <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px" }}>
           Waiting for Payment Confirmation
         </h2>

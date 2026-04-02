@@ -1,11 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
+import lottie from "lottie-web";
+import successAnimation from "../assets/animations/loading.json";
 
 export function OrderConfirmedPage() {
   const [, navigate] = useLocation();
   const { tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+
+  const animationRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     localStorage.removeItem("qr_menu_cart");
@@ -14,6 +19,24 @@ export function OrderConfirmedPage() {
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
     console.log("Cart cleared after order confirmed");
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current && !animationRef.current) {
+      animationRef.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: false,
+        autoplay: true,
+        animationData: successAnimation
+      });
+    }
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.destroy();
+        animationRef.current = null;
+      }
+    };
   }, []);
 
   const goToMenu = () => {
@@ -31,8 +54,11 @@ export function OrderConfirmedPage() {
       </header>
 
       <main className="emptyWrap">
-        <div className="emptyIllo" aria-hidden="true">
-          ✅
+        <div 
+          className="w-[85vw] h-[85vw] sm:w-[350px] sm:h-[350px] md:w-[400px] md:h-[400px] mx-auto mb-8"
+          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
         </div>
         <h2 className="emptyTitle">Order Confirmed!</h2>
         <p className="emptySub">

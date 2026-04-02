@@ -1,17 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { motion } from "framer-motion";
-
-let Lottie = null;
-let loadingAnimation = null;
-
-try {
-  Lottie = require("lottie-react").default || require("lottie-react");
-  loadingAnimation = require("../assets/animations/loading.json").default || require("../assets/animations/loading.json");
-} catch (e) {
-  console.warn("Lottie not available:", e.message);
-}
+import lottie from "lottie-web";
+import animationData from "../assets/animations/loading.json";
 
 export function WaitingPage() {
   const [, navigate] = useLocation();
@@ -20,8 +12,8 @@ export function WaitingPage() {
   const currentTableId = tableId || storedTableId;
   const [order, setOrder] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
-
-  const lottieData = useMemo(() => loadingAnimation, []);
+  const animationRef = useRef(null);
+  const containerRef = useRef(null);
 
   const handleCancel = () => {
     setShowCancelModal(true);
@@ -73,31 +65,33 @@ export function WaitingPage() {
     fetchOrder();
   }, [orderId]);
 
-  const renderAnimation = () => {
-    if (!Lottie || !lottieData) {
-      return (
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
-          className="text-9xl sm:text-[10rem]"
-        >
-          ⏳
-        </motion.div>
-      );
+  useEffect(() => {
+    if (containerRef.current && !animationRef.current) {
+      animationRef.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        animationData: animationData
+      });
     }
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.destroy();
+        animationRef.current = null;
+      }
+    };
+  }, []);
+
+  const renderAnimation = () => {
     return (
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-[60vw] h-[60vw] sm:w-80 sm:h-80 md:w-96 md:h-96 max-w-[400px] max-h-[400px]"
+        className="w-[85vw] h-[85vw] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px]"
       >
-        <Lottie 
-          animationData={lottieData} 
-          loop={true}
-          style={{ width: "100%", height: "100%" }}
-        />
+        <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
       </motion.div>
     );
   };
