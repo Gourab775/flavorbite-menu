@@ -137,9 +137,9 @@ export function WaitingPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1f1f1f] leading-tight"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1f1f1f] leading-tight"
           >
-            Waiting for restaurant confirmation...
+            Complete Payment at Counter
           </motion.h2>
           
           {order?.order_code && (
@@ -147,7 +147,7 @@ export function WaitingPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
-              className="text-lg sm:text-xl text-[#666] font-medium"
+              className="text-base sm:text-lg text-[#666] font-medium"
             >
               Order ID: <span className="text-[#1f1f1f] font-bold">{order.order_code}</span>
             </motion.p>
@@ -159,7 +159,7 @@ export function WaitingPage() {
             transition={{ delay: 0.5, duration: 0.4 }}
             className="text-sm sm:text-base text-[#999] mt-2 max-w-sm leading-relaxed"
           >
-            Please do not refresh or leave this page
+            Please visit the counter to complete your payment. Your order will be confirmed once payment is received.
           </motion.p>
         </div>
 
