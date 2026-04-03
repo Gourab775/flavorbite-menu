@@ -165,14 +165,21 @@ export function CheckoutPage() {
         <section className="checkoutSection">
           <h2 className="checkoutSectionTitle">Items</h2>
           <div className="checkoutItems">
-            {cart.map((item) => (
+            {cart.map((item) => {
+              const isVeg = Boolean(item.isVeg);
+              return (
               <div className="checkoutItem" key={item.id}>
-                <span className={`vegDot ${item.isVeg ? "" : "nonveg"}`} aria-label={item.isVeg ? "Veg" : "Non-veg"} />
+                <span
+                  className={`vegDot ${isVeg ? "" : "nonveg"}`}
+                  title={isVeg ? "Veg" : "Non-veg"}
+                  aria-label={isVeg ? "Veg item" : "Non-veg item"}
+                />
                 <span className="checkoutItemName">{item.name}</span>
                 <span className="checkoutItemQty">×{item.quantity}</span>
                 <span className="checkoutItemPrice">₹{item.price * item.quantity}</span>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
