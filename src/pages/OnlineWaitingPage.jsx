@@ -133,81 +133,62 @@ export function OnlineWaitingPage() {
         <h1 className="topBarTitle">Payment Status</h1>
       </header>
 
-      <main className="checkoutBody hideScrollbar" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "40px 20px", minHeight: "calc(100vh - 60px)" }}>
-        <div style={{ width: "85vw", height: "85vw", maxWidth: "400px", maxHeight: "400px", marginBottom: "24px" }}>
-          <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+      <main className="checkoutBody hideScrollbar">
+        <div className="onlineWaitingContent">
+          <div className="onlineWaitingAnimation">
+            <div ref={containerRef} />
+          </div>
+          <h2 className="onlineWaitingTitle">Waiting for Payment Confirmation</h2>
+          <p className="onlineWaitingOrderId">
+            Order ID: <strong>{orderCode || orderId}</strong>
+          </p>
+          <p className="onlineWaitingTimer">
+            Time remaining: {formatTime(timeLeft)}
+          </p>
+          <p className="onlineWaitingSubtext">
+            Processing your payment. Please wait...
+          </p>
+          <p className="onlineWaitingHelp">
+            If you have completed payment, please wait for confirmation.
+            If payment is done but order is not confirmed, contact the manager.
+          </p>
+
+          <button
+            className="onlineWaitingCancelBtn pressable"
+            onClick={handleCancel}
+          >
+            Cancel Order
+          </button>
+
+          <p className="onlineWaitingContact">
+            Still not confirmed after 2 minutes?{" "}
+            {phone && (
+              <span
+                className="onlineWaitingContactLink"
+                onClick={() => window.location.href = `tel:${phone}`}
+              >
+                Contact us
+              </span>
+            )}
+          </p>
         </div>
-        <h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "16px" }}>
-          Waiting for Payment Confirmation
-        </h2>
-        <p style={{ color: "#666", fontSize: "16px", marginBottom: "8px" }}>
-          Order ID: <strong>{orderCode || orderId}</strong>
-        </p>
-        <p style={{ color: "#ff7a18", fontSize: "16px", marginBottom: "24px" }}>
-          Time remaining: {formatTime(timeLeft)}
-        </p>
-        <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>
-          Processing your payment. Please wait...
-        </p>
-        <p style={{ color: "#999", fontSize: "13px", maxWidth: "300px", lineHeight: "1.5" }}>
-          If you have completed payment, please wait for confirmation.
-          If payment is done but order is not confirmed, contact the manager.
-        </p>
-
-        <button
-          onClick={handleCancel}
-          style={{ marginTop: "32px", background: "none", border: "2px solid #dc3545", borderRadius: "8px", color: "#dc3545", fontSize: "14px", fontWeight: "600", padding: "10px 20px", cursor: "pointer" }}
-        >
-          Cancel Order
-        </button>
-
-        <p style={{ marginTop: "24px", color: "#666", fontSize: "14px" }}>
-          Still not confirmed after 2 minutes?{" "}
-          {phone && (
-            <span
-              onClick={() => window.location.href = `tel:${phone}`}
-              style={{ color: "#1890ff", textDecoration: "underline", cursor: "pointer" }}
-            >
-              Contact us
-            </span>
-          )}
-        </p>
       </main>
 
       {showCancelModal && (
         <div 
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000
-          }}
+          className="modalOverlay"
           onClick={() => setShowCancelModal(false)}
         >
           <div 
-            style={{ background: "#fff", borderRadius: "12px", padding: "24px", maxWidth: "320px", textAlign: "center" }}
+            className="modalContent"
             onClick={(e) => e.stopPropagation()}
           >
-            <p style={{ fontSize: "16px", marginBottom: "24px" }}>
+            <p className="modalText">
               If your payment is completed, your order will be automatically confirmed.
             </p>
             <button
+              className="modalConfirmBtn pressable"
               onClick={handleCancelConfirm}
-              style={{
-                background: "#ff7a18",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "12px 32px",
-                fontSize: "16px",
-                cursor: "pointer"
-              }}
             >
               OK
             </button>

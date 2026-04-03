@@ -2095,3 +2095,239 @@ body {
   transform: scale(0.98);
 }
 
+/* ── Order Success Page (legacy) ── */
+.orderSuccess.fadeIn {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.successCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 340px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  background: var(--card);
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 20px var(--shadow);
+}
+
+.successIcon {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 20px;
+}
+
+.successIcon svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(34, 197, 94, 0.3));
+}
+
+.successTitle {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.successSub {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.successDivider {
+  width: 60px;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  margin-bottom: 24px;
+}
+
+.successBtn.primary {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #fff;
+  background: var(--accent);
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(255, 122, 24, 0.25);
+}
+
+.successBtn.primary:hover {
+  background: var(--accent-2);
+  box-shadow: 0 6px 16px rgba(255, 122, 24, 0.3);
+  transform: translateY(-1px);
+}
+
+.successBtn.primary:active {
+  transform: scale(0.98);
+}
+
+/* ── Online Waiting Page ── */
+.onlineWaitingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  min-height: calc(100vh - 60px);
+  gap: 8px;
+}
+
+.onlineWaitingAnimation {
+  width: 85vw;
+  height: 85vw;
+  max-width: 400px;
+  max-height: 400px;
+  margin-bottom: 24px;
+}
+
+.onlineWaitingAnimation > div {
+  width: 100%;
+  height: 100%;
+}
+
+.onlineWaitingTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.onlineWaitingOrderId {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.onlineWaitingOrderId strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.onlineWaitingTimer {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.onlineWaitingSubtext {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.onlineWaitingHelp {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.onlineWaitingCancelBtn {
+  margin-top: 32px;
+  background: transparent;
+  border: 2px solid #dc3545;
+  border-radius: 12px;
+  color: #dc3545;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 200ms ease;
+}
+
+.onlineWaitingCancelBtn:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.onlineWaitingCancelBtn:active {
+  transform: scale(0.96);
+}
+
+.onlineWaitingContact {
+  margin-top: 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.onlineWaitingContactLink {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modalText {
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.modalConfirmBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(255, 122, 24, 0.25);
+}
+
+.modalConfirmBtn:hover {
+  background: var(--accent-2);
+  transform: translateY(-1px);
+}
+
+.modalConfirmBtn:active {
+  transform: scale(0.96);
+}
+
