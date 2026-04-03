@@ -208,10 +208,12 @@ function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
         <div className="cartCardTop">
           <div className="cartCardNameRow">
             <span
-              className={`vegDot ${isVeg ? "veg" : "nonveg"}`}
-              title={isVeg ? "Veg" : "Non-veg"}
-              aria-label={isVeg ? "Veg item" : "Non-veg item"}
-            />
+              className={`cartVegBadge ${isVeg ? "cartVegBadge--veg" : "cartVegBadge--nonveg"}`}
+              title={isVeg ? "Vegetarian" : "Non-vegetarian"}
+              aria-label={isVeg ? "Vegetarian" : "Non-vegetarian"}
+            >
+              {isVeg ? "Veg" : "Non-Veg"}
+            </span>
             <span className="cartCardName">{item.name}</span>
           </div>
           <button
