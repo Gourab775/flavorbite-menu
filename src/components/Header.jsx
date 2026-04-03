@@ -47,6 +47,7 @@ export function Header() {
           ) : (
             <>
               <span className="brandName">{displayName}</span>
+              <span className="brandSubtitle">Premium Dining</span>
             </>
           )}
           {restaurantError && !restaurantLoading && (

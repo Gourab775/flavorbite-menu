@@ -6,13 +6,13 @@ export function VegToggle() {
   return (
     <button
       onClick={() => setVegMode(!vegMode)}
-      className={`vegTogglePill w-24 md:w-28 h-10 ${vegMode ? "active" : ""}`}
+      className={`vegTogglePill ${vegMode ? "active" : ""}`}
       aria-pressed={vegMode}
       title={vegMode ? "Showing veg items only" : "Showing all items"}
     >
-      <span className="vegToggleLabel vegToggleLabel--off">OFF</span>
-      <span className="vegToggleLabel vegToggleLabel--on">VEG</span>
       <span className="vegToggleSlider" />
+      <span className={`vegToggleLabel vegToggleLabel--off ${!vegMode ? "vegToggleLabel--active" : ""}`}>All</span>
+      <span className={`vegToggleLabel vegToggleLabel--on ${vegMode ? "vegToggleLabel--active" : ""}`}>Veg</span>
     </button>
   );
 }
