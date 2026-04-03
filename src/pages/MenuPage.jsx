@@ -183,15 +183,10 @@ export function MenuPage() {
                   <h2>No dishes found</h2>
                   <p className="muted">Try a different search term.</p>
                 </>
-              ) : menuItems.length === 0 ? (
-                <>
-                  <h2>Menu loading…</h2>
-                  <p className="muted">Waiting for menu data from Supabase.</p>
-                </>
               ) : (
                 <>
-                  <h2>No dishes found</h2>
-                  <p className="muted">Try turning off Veg mode.</p>
+                  <h2>No menu items available</h2>
+                  <p className="muted">Check back later for new items.</p>
                 </>
               )}
             </div>

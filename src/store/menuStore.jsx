@@ -52,7 +52,7 @@ const initialState = {
   menuItems: [],
   featuredItems: [],
   restaurant: { id: "", name: "", slug: "", logo: "", paymentId: "" },
-  loading: true,
+  loading: false,
   error: null,
 };
 
@@ -80,18 +80,21 @@ export function MenuProvider({ children }) {
   const fetchKey = useRef(null);
 
   const loadMenu = useCallback(async (rawInput) => {
-    // GUARD: Ensure we only work with string
     const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
     const slug = cleanSlug(inputSlug);
+
+    if (!slug) {
+      dispatch({ type: "SET_ERROR", payload: "No restaurant slug provided." });
+      return;
+    }
 
     if (menuCache.has(slug)) {
       dispatch({ type: "SET_DATA", payload: menuCache.get(slug) });
       return;
     }
 
-    if (fetchKey.current === slug) return;
     if (!isSupabaseConfigured || !supabase) {
-      dispatch({ type: "SET_ERROR", payload: "Config error" });
+      dispatch({ type: "SET_ERROR", payload: "Supabase is not configured. Please check your environment variables." });
       return;
     }
 
@@ -105,19 +108,13 @@ export function MenuProvider({ children }) {
          .eq("slug", slug)
          .maybeSingle();
 
-        // SAFE LOGGING: Only log primitives, no circular objects
-
-        // Diagnose the issue
        if (error) {
-         console.error("[MENU] Query error (likely RLS or network):", error.message);
+         fetchKey.current = null;
          dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
          return;
        }
 
        if (!restaurantData) {
-         console.warn("[MENU] No restaurant found for slug:", slug, "- trying ilike fallback");
-         
-         // Try ILIKE fallback for case-insensitive matching
           const { data: ilikeData, error: ilikeError } = await supabase
             .from("restaurants")
             .select("id, name, slug, logo, payment_id")
@@ -125,50 +122,49 @@ export function MenuProvider({ children }) {
             .maybeSingle();
 
           if (ilikeError) {
-           console.error("[MENU] ILIKE query error:", ilikeError.message);
-           dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
-           return;
-         }
+            fetchKey.current = null;
+            dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
+            return;
+          }
 
-          if (ilikeData) {
-            const row = ilikeData;
-           const restaurantId = String(row.id);
-           const restaurant = {
-             id: restaurantId,
-             name: String(row.name ?? ""),
-             slug: String(row.slug ?? ""),
-             logo: String(row.logo ?? ""),
-             paymentId: String(row.payment_id ?? ""),
-           };
+           if (ilikeData) {
+             const row = ilikeData;
+            const restaurantId = String(row.id);
+            const restaurant = {
+              id: restaurantId,
+              name: String(row.name ?? ""),
+              slug: String(row.slug ?? ""),
+              logo: String(row.logo ?? ""),
+              paymentId: String(row.payment_id ?? ""),
+            };
 
-           const [cats, items, feat] = await Promise.all([
-             supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
-             supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-             supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
-           ]);
+            const [cats, items, feat] = await Promise.all([
+              supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
+              supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
+              supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
+            ]);
 
-           const data = {
-             restaurant,
-             categories: normalizeCategories(cats.data),
-             menuItems: normalizeMenuItems(items.data),
-             featuredItems: normalizeFeaturedItems(feat.data),
-           };
+            const data = {
+              restaurant,
+              categories: normalizeCategories(cats.data),
+              menuItems: normalizeMenuItems(items.data),
+              featuredItems: normalizeFeaturedItems(feat.data),
+            };
 
             menuCache.set(slug, data);
+            fetchKey.current = null;
             dispatch({ type: "SET_DATA", payload: data });
             return;
-         }
+          }
 
-         // No data found in either query
-         console.error("[MENU] Restaurant not found in database for slug:", slug);
-         dispatch({ 
-           type: "SET_ERROR", 
-           payload: `Restaurant "${slug}" not found. Please check the slug and ensure the restaurant exists in the database.` 
-         });
-         return;
-       }
+          fetchKey.current = null;
+          dispatch({ 
+            type: "SET_ERROR", 
+            payload: `Restaurant "${slug}" not found. Please check the slug and ensure the restaurant exists in the database.` 
+          });
+          return;
+        }
 
-       // Successfully found restaurant data
        const row = restaurantData;
       const restaurantId = String(row.id);
       const restaurant = {
@@ -193,9 +189,10 @@ export function MenuProvider({ children }) {
       };
 
       menuCache.set(slug, data);
+      fetchKey.current = null;
       dispatch({ type: "SET_DATA", payload: data });
     } catch (err) {
-      console.error("[MENU] Network/Fetch error:", err?.message ?? String(err));
+      fetchKey.current = null;
       dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });
     }
   }, []);
