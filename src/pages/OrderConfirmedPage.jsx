@@ -94,6 +94,12 @@ export function OrderConfirmedPage() {
             </div>
           )}
 
+          <div className="orderDeliveryInfo">
+            <p className="orderDeliveryInfoText">
+              Your order is being prepared and will be served directly to your table once ready. No further action is needed — please relax and we'll take care of the rest.
+            </p>
+          </div>
+
           <button className="successBtn" onClick={goToMenu}>
             Back to Menu
           </button>

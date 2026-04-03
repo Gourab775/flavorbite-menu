@@ -1611,6 +1611,24 @@ body {
   color: var(--text);
 }
 
+/* Order Delivery Info */
+.orderDeliveryInfo {
+  background: linear-gradient(135deg, rgba(255, 122, 24, 0.06), rgba(255, 154, 75, 0.04));
+  border: 1px solid rgba(255, 122, 24, 0.12);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  max-width: 320px;
+}
+
+.orderDeliveryInfoText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-weight: 500;
+}
+
 /* Order Progress */
 .orderProgress {
   display: flex;
