@@ -1,10 +1,12 @@
 import { useLocation, useParams } from "wouter";
+import { getStoredSlug } from "../utils/constants";
 
 export function OrderSuccessPage() {
   const [, navigate] = useLocation();
-  const { tableId } = useParams();
+  const { slug: urlSlug, tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+  const slug = urlSlug || getStoredSlug();
 
   return (
     <div className="orderSuccess fadeIn">
@@ -32,7 +34,7 @@ export function OrderSuccessPage() {
 
         <button
           className="successBtn primary pressable"
-          onClick={() => navigate(`/t/${currentTableId}`)}
+          onClick={() => navigate(`/${slug}/t/${currentTableId}`)}
         >
           Browse Menu
         </button>

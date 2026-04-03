@@ -1,12 +1,22 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { useMenuStore } from "../store/menuStore";
+import { getStoredSlug } from "../utils/constants";
 
 export function OrderStatusPage() {
   const [, navigate] = useLocation();
-  const { tableId } = useParams();
+  const { slug: urlSlug, tableId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+  const slug = urlSlug || getStoredSlug();
+  const { loadMenu } = useMenuStore();
+
+  useEffect(() => {
+    if (slug) {
+      loadMenu(slug);
+    }
+  }, [slug, loadMenu]);
   
   const [lastOrderId] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -29,7 +39,7 @@ export function OrderStatusPage() {
           const newStatus = payload.new.status;
           
           if (newStatus === "accepted") {
-            navigate(`/t/${currentTableId}/order-confirmed`);
+            navigate(`/${slug}/t/${currentTableId}/order-confirmed`);
           }
         }
       )
@@ -41,8 +51,8 @@ export function OrderStatusPage() {
   }, [lastOrderId, navigate, currentTableId]);
 
   const goToMenu = useCallback(() => {
-    navigate(`/t/${currentTableId}`);
-  }, [navigate, currentTableId]);
+    navigate(`/${slug}/t/${currentTableId}`);
+  }, [navigate, currentTableId, slug]);
 
   return (
     <div className="pageLayout">

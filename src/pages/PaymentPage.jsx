@@ -106,7 +106,7 @@ export function PaymentPage() {
         },
         (payload) => {
           if (payload.new.id === orderId && payload.new.status === "accepted") {
-            navigate(`/t/${currentTableId}/order-confirmed`);
+            navigate(`/${slug}/t/${currentTableId}/order-confirmed`);
           }
         }
       )
@@ -147,7 +147,7 @@ export function PaymentPage() {
     const link = buildUpiLink(selectedPayment);
 
     if (link) {
-      navigate(`/t/${currentTableId}/online-waiting/${orderId}?code=${encodeURIComponent(orderCode)}`);
+      navigate(`/${slug}/t/${currentTableId}/online-waiting/${orderId}?code=${encodeURIComponent(orderCode)}`);
       setTimeout(() => { window.location.href = link; }, 100);
     }
   };

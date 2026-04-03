@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import lottie from "lottie-web";
 import errorAnimation from "../assets/animations/Error 404.json";
+import { getStoredSlug } from "../utils/constants";
 
 export function NotFoundPage() {
   const [, navigate] = useLocation();
@@ -28,8 +29,11 @@ export function NotFoundPage() {
 
   const goHome = () => {
     const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-    if (storedTableId) {
-      navigate(`/t/${storedTableId}`);
+    const storedSlug = getStoredSlug();
+    if (storedSlug && storedTableId) {
+      navigate(`/${storedSlug}/t/${storedTableId}`);
+    } else if (storedSlug) {
+      navigate(`/${storedSlug}`);
     } else {
       navigate("/");
     }

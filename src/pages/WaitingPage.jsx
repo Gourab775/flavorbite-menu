@@ -1,15 +1,25 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
+import { useMenuStore } from "../store/menuStore";
+import { getStoredSlug } from "../utils/constants";
 import { motion } from "framer-motion";
 import lottie from "lottie-web";
 import animationData from "../assets/animations/loading.json";
 
 export function WaitingPage() {
   const [, navigate] = useLocation();
-  const { tableId, orderId } = useParams();
+  const { slug: urlSlug, tableId, orderId } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
+  const slug = urlSlug || getStoredSlug();
+  const { loadMenu } = useMenuStore();
+
+  useEffect(() => {
+    if (slug) {
+      loadMenu(slug);
+    }
+  }, [slug, loadMenu]);
   const [order, setOrder] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const animationRef = useRef(null);
@@ -26,7 +36,7 @@ export function WaitingPage() {
     sessionStorage.removeItem("orderData");
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
-    navigate(`/t/${currentTableId}`);
+    navigate(`/${slug}/t/${currentTableId}`);
   };
 
   useEffect(() => {
@@ -41,7 +51,7 @@ export function WaitingPage() {
         },
         (payload) => {
           if (payload.new.id === orderId && payload.new.status === "accepted") {
-            navigate(`/t/${currentTableId}/order-confirmed`);
+            navigate(`/${slug}/t/${currentTableId}/order-confirmed`);
           }
         }
       )
