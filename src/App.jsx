@@ -18,12 +18,6 @@ import { setStoredSlug, setStoredTableId, getStoredSlug } from "./utils/constant
 // Default restaurant slug for direct access
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
-// Debug logging
-if (typeof window !== "undefined") {
-  console.log("[APP] VITE_RESTAURANT_SLUG from env:", import.meta.env.VITE_RESTAURANT_SLUG);
-  console.log("[APP] Using DEFAULT_SLUG:", DEFAULT_SLUG);
-}
-
 function AppRoutes() {
   // Routes without table ID
   const [isMenuRoute, menuParams] = useRoute("/:slug");

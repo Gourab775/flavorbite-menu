@@ -51,8 +51,6 @@ export function PaymentPage() {
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
-
-    console.log("Order:", orderId, orderCode, amount);
   }, []);
 
   const [paymentApps, setPaymentApps] = useState([]);
@@ -97,7 +95,6 @@ export function PaymentPage() {
           table: "live_orders",
         },
         (payload) => {
-          console.log("[PaymentPage] Order update:", payload.new);
           if (payload.new.id === orderId && payload.new.status === "accepted") {
             navigate(`/t/${currentTableId}/order-confirmed`);
           }
@@ -138,7 +135,6 @@ export function PaymentPage() {
     }
 
     const link = buildUpiLink(selectedPayment);
-    console.log("Opening:", link);
 
     if (link) {
       navigate(`/t/${currentTableId}/online-waiting/${orderId}?code=${encodeURIComponent(orderCode)}`);

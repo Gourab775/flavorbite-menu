@@ -116,7 +116,6 @@ export function OrderConfirmedPage() {
           filter: `id=eq.${orderId}`,
         },
         (payload) => {
-          console.log("[OrderConfirmed] Real-time update:", payload.new);
           if (payload.new?.status) {
             setOrderStatus(payload.new.status);
             setLastUpdate(new Date().toLocaleTimeString());
@@ -127,10 +126,8 @@ export function OrderConfirmedPage() {
         }
       )
       .subscribe((status) => {
-        console.log("[OrderConfirmed] Subscription status:", status);
         // If subscription fails, start polling
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.log("[OrderConfirmed] Falling back to polling");
           pollIntervalRef.current = setInterval(() => {
             fetchOrderStatus(orderId);
           }, 5000);

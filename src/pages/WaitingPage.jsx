@@ -26,7 +26,6 @@ export function WaitingPage() {
     sessionStorage.removeItem("orderData");
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
-    console.log("Cart cleared after cancel");
     navigate(`/t/${currentTableId}`);
   };
 

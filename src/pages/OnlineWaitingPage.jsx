@@ -63,8 +63,6 @@ export function OnlineWaitingPage() {
   useEffect(() => {
     if (!orderId) return;
 
-    console.log("Realtime active for:", orderId);
-
     const channel = supabase
       .channel("order-status")
       .on(
@@ -100,7 +98,6 @@ export function OnlineWaitingPage() {
     sessionStorage.removeItem("orderData");
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
-    console.log("Cart cleared after cancel");
     navigate(basePath);
   };
 

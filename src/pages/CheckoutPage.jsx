@@ -31,8 +31,6 @@ export function CheckoutPage() {
   const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
 
   const handleCounterOrder = async () => {
-    console.log("Restaurant ID:", restaurant.id);
-    console.log("Counter flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
       setToastType("error");
@@ -84,8 +82,6 @@ export function CheckoutPage() {
   };
 
   const handleOnlineOrder = async () => {
-    console.log("Restaurant ID:", restaurant.id);
-    console.log("Online flow triggered");
     if (!cart || cart.length === 0) {
       setToastMsg("Your cart is empty.");
       setToastType("error");

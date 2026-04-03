@@ -84,12 +84,7 @@ export function MenuProvider({ children }) {
     const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
     const slug = cleanSlug(inputSlug);
 
-    console.log("[MENU] slug:", slug);
-    console.log("[MENU] supabaseUrl:", supabaseUrl);
-    console.log("[MENU] configured:", isSupabaseConfigured);
-
     if (menuCache.has(slug)) {
-      console.log("[MENU] cache hit");
       dispatch({ type: "SET_DATA", payload: menuCache.get(slug) });
       return;
     }
@@ -104,19 +99,15 @@ export function MenuProvider({ children }) {
     dispatch({ type: "START_LOADING" });
 
     try {
-      console.log("[MENU] query: slug =", slug);
-
        const { data: restaurantData, error } = await supabase
          .from("restaurants")
          .select("id, name, slug, logo, payment_id")
          .eq("slug", slug)
          .maybeSingle();
 
-       // SAFE LOGGING: Only log primitives, no circular objects
-       console.log("[MENU] result: data =", restaurantData ? "found" : "null");
-       console.log("[MENU] result: error =", error?.message ?? "none");
+        // SAFE LOGGING: Only log primitives, no circular objects
 
-       // Diagnose the issue
+        // Diagnose the issue
        if (error) {
          console.error("[MENU] Query error (likely RLS or network):", error.message);
          dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
@@ -127,24 +118,20 @@ export function MenuProvider({ children }) {
          console.warn("[MENU] No restaurant found for slug:", slug, "- trying ilike fallback");
          
          // Try ILIKE fallback for case-insensitive matching
-         const { data: ilikeData, error: ilikeError } = await supabase
-           .from("restaurants")
-           .select("id, name, slug, logo, payment_id")
-           .ilike("slug", `%${slug}%`)
-           .maybeSingle();
+          const { data: ilikeData, error: ilikeError } = await supabase
+            .from("restaurants")
+            .select("id, name, slug, logo, payment_id")
+            .ilike("slug", `%${slug}%`)
+            .maybeSingle();
 
-         console.log("[MENU] ilike: data =", ilikeData ? "found" : "null");
-         console.log("[MENU] ilike: error =", ilikeError?.message ?? "none");
-
-         if (ilikeError) {
+          if (ilikeError) {
            console.error("[MENU] ILIKE query error:", ilikeError.message);
            dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
            return;
          }
 
-         if (ilikeData) {
-           console.log("[MENU] Found via ilike fallback, slug was:", ilikeData.slug);
-           const row = ilikeData;
+          if (ilikeData) {
+            const row = ilikeData;
            const restaurantId = String(row.id);
            const restaurant = {
              id: restaurantId,
@@ -167,10 +154,9 @@ export function MenuProvider({ children }) {
              featuredItems: normalizeFeaturedItems(feat.data),
            };
 
-           menuCache.set(slug, data);
-           dispatch({ type: "SET_DATA", payload: data });
-           console.log("[MENU] success via ilike");
-           return;
+            menuCache.set(slug, data);
+            dispatch({ type: "SET_DATA", payload: data });
+            return;
          }
 
          // No data found in either query
@@ -208,7 +194,6 @@ export function MenuProvider({ children }) {
 
       menuCache.set(slug, data);
       dispatch({ type: "SET_DATA", payload: data });
-      console.log("[MENU] success");
     } catch (err) {
       console.error("[MENU] Network/Fetch error:", err?.message ?? String(err));
       dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });
