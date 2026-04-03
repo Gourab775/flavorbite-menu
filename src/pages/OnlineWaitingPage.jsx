@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams, useSearch } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
+import { useMenuStore } from "../store/menuStore";
 import { getStoredSlug, getStoredTableId } from "../utils/constants";
 import lottie from "lottie-web";
 import animationData from "../assets/animations/loading.json";
@@ -14,6 +15,13 @@ export function OnlineWaitingPage() {
   const slug = urlSlug || getStoredSlug();
   const tableId = urlTableId || getStoredTableId();
   const { restaurant } = useMenu();
+  const { loadMenu } = useMenuStore();
+
+  useEffect(() => {
+    if (slug && !restaurant.id) {
+      loadMenu(slug);
+    }
+  }, [slug, restaurant.id, loadMenu]);
 
   const searchParams = new URLSearchParams(search);
   const orderCode = searchParams.get("code");

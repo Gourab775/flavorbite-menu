@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
+import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug, getStoredTableId } from "../utils/constants";
@@ -19,16 +20,25 @@ export function CheckoutPage() {
   const tableId = urlTableId || getStoredTableId();
   
   const { cart, subtotal, tax, grandTotal } = useCart();
-  const { restaurant } = useMenu();
+  const { restaurant, loading: menuLoading } = useMenu();
+  const { loadMenu } = useMenuStore();
 
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
 
   const orderNote = typeof window !== "undefined" ? sessionStorage.getItem("cart_order_note") || "" : "";
 
-  // Build base path with optional table
   const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+
+  useEffect(() => {
+    if (slug && !restaurant.id) {
+      loadMenu(slug);
+    }
+  }, [slug, restaurant.id, loadMenu]);
+
+  const isLoading = localLoading || menuLoading;
+  const hasRestaurant = restaurant && restaurant.id;
 
   const handleCounterOrder = async () => {
     if (!cart || cart.length === 0) {
@@ -37,13 +47,13 @@ export function CheckoutPage() {
       return;
     }
 
-    if (!restaurant.id) {
-      setToastMsg("Restaurant not found");
+    if (!hasRestaurant) {
+      setToastMsg("Restaurant data not loaded. Please go back and try again.");
       setToastType("error");
       return;
     }
 
-    setLoading(true);
+    setLocalLoading(true);
 
     try {
       const itemsPayload = cart.map((item) => ({
@@ -77,7 +87,7 @@ export function CheckoutPage() {
       setToastMsg(message);
       setToastType("error");
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -88,13 +98,13 @@ export function CheckoutPage() {
       return;
     }
 
-    if (!restaurant.id) {
-      setToastMsg("Restaurant not found");
+    if (!hasRestaurant) {
+      setToastMsg("Restaurant data not loaded. Please go back and try again.");
       setToastType("error");
       return;
     }
 
-    setLoading(true);
+    setLocalLoading(true);
 
     try {
       const itemsPayload = cart.map((item) => ({
@@ -133,7 +143,7 @@ export function CheckoutPage() {
       setToastMsg(message);
       setToastType("error");
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -187,33 +197,41 @@ export function CheckoutPage() {
         </section>
 
         <section className="checkoutSection">
-          <button
-            className="payBtn payBtn--counter pressable"
-            onClick={handleCounterOrder}
-            disabled={loading}
-            style={{ width: "100%", marginBottom: "12px" }}
-          >
-            <span className="payBtnIcon" aria-hidden="true">💳</span>
-            <span>
-              <span className="payBtnLabel">Pay at Counter</span>
-              <span className="payBtnSub">Cash/Card Only</span>
-            </span>
-            {loading && <span className="btnSpinner" />}
-          </button>
+          {!hasRestaurant ? (
+            <div style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+              Loading restaurant data...
+            </div>
+          ) : (
+            <>
+              <button
+                className="payBtn payBtn--counter pressable"
+                onClick={handleCounterOrder}
+                disabled={isLoading}
+                style={{ width: "100%", marginBottom: "12px" }}
+              >
+                <span className="payBtnIcon" aria-hidden="true">💳</span>
+                <span>
+                  <span className="payBtnLabel">Pay at Counter</span>
+                  <span className="payBtnSub">Cash/Card Only</span>
+                </span>
+                {isLoading && <span className="btnSpinner" />}
+              </button>
 
-          <button
-            className="payBtn payBtn--online pressable"
-            onClick={handleOnlineOrder}
-            disabled={loading}
-            style={{ width: "100%" }}
-          >
-            <span className="payBtnIcon" aria-hidden="true">📱</span>
-            <span>
-              <span className="payBtnLabel">Pay Online</span>
-              <span className="payBtnSub">UPI Only</span>
-            </span>
-            {loading && <span className="btnSpinner" />}
-          </button>
+              <button
+                className="payBtn payBtn--online pressable"
+                onClick={handleOnlineOrder}
+                disabled={isLoading}
+                style={{ width: "100%" }}
+              >
+                <span className="payBtnIcon" aria-hidden="true">📱</span>
+                <span>
+                  <span className="payBtnLabel">Pay Online</span>
+                  <span className="payBtnSub">UPI Only</span>
+                </span>
+                {isLoading && <span className="btnSpinner" />}
+              </button>
+            </>
+          )}
         </section>
       </main>
 

@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useLocation, useSearch, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
+import { useMenuStore } from "../store/menuStore";
+import { getStoredSlug } from "../utils/constants";
 
 function parseAmount(raw) {
   const n = Number(raw);
@@ -28,10 +30,18 @@ function getAppKey(appName) {
 export function PaymentPage() {
   const [, setLocation] = useLocation();
   const search = useSearch();
-  const { tableId, orderId: paramOrderId } = useParams();
+  const { tableId, orderId: paramOrderId, slug: urlSlug } = useParams();
   const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
   const currentTableId = tableId || storedTableId;
   const { restaurant } = useMenu();
+  const { loadMenu } = useMenuStore();
+  const slug = urlSlug || getStoredSlug();
+
+  useEffect(() => {
+    if (slug && !restaurant.id) {
+      loadMenu(slug);
+    }
+  }, [slug, restaurant.id, loadMenu]);
 
   const searchParams = new URLSearchParams(search);
   let orderId = paramOrderId || searchParams.get("orderId");
