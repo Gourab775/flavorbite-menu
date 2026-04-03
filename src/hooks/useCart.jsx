@@ -26,6 +26,7 @@ function loadCart() {
   if (parsed && typeof parsed === "object" && Array.isArray(parsed.items)) {
     return parsed.items.map((i) => ({
       ...i,
+      isVeg: Boolean(i.isVeg ?? false),
       imageUrl: i.imageUrl ?? i.image_url ?? i.imageUrl,
       table: i.table ?? tableId ?? null,
     }));
@@ -36,6 +37,7 @@ function loadCart() {
   if (Array.isArray(legacy)) {
     return legacy.map((i) => ({
       ...i,
+      isVeg: Boolean(i.isVeg ?? false),
       imageUrl: i.imageUrl ?? i.image_url ?? i.imageUrl,
       table: tableId ?? null,
     }));
@@ -67,7 +69,9 @@ export function CartProvider({ children }) {
           name: i.name,
           price: i.price,
           quantity: i.quantity ?? 0,
+          isVeg: Boolean(i.isVeg),
           image_url: i.imageUrl ?? i.image_url ?? "",
+          imageUrl: i.imageUrl ?? i.image_url ?? "",
           table: i.table ?? tableId ?? null,
         })),
       };
