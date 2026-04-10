@@ -5,7 +5,6 @@ import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClie
 const MenuContext = createContext(null);
 
 const menuCache = new Map();
-// Use environment variable if available, otherwise demo-restaurant
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function normalizeCategories(data) {
@@ -102,70 +101,62 @@ export function MenuProvider({ children }) {
     dispatch({ type: "START_LOADING" });
 
     try {
-       const { data: restaurantData, error } = await supabase
-         .from("restaurants")
-         .select("id, name, slug, logo, payment_id")
-         .eq("slug", slug)
-         .maybeSingle();
+      const { data: restaurantData, error } = await supabase
+        .from("restaurants")
+        .select("id, name, slug, logo, payment_id")
+        .eq("slug", slug)
+        .maybeSingle();
 
-       if (error) {
-         fetchKey.current = null;
-         dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
-         return;
-       }
+      if (error) {
+        fetchKey.current = null;
+        dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
+        return;
+      }
 
-       if (!restaurantData) {
-          const { data: ilikeData, error: ilikeError } = await supabase
-            .from("restaurants")
-            .select("id, name, slug, logo, payment_id")
-            .ilike("slug", `%${slug}%`)
-            .maybeSingle();
+      let restaurantRow = restaurantData;
 
-          if (ilikeError) {
-            fetchKey.current = null;
-            dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
-            return;
-          }
+      if (!restaurantData) {
+        const { data: ilikeData, error: ilikeError } = await supabase
+          .from("restaurants")
+          .select("id, name, slug, logo, payment_id")
+          .ilike("slug", `%${slug}%`)
+          .maybeSingle();
 
-           if (ilikeData) {
-             const row = ilikeData;
-            const restaurantId = String(row.id);
-            const restaurant = {
-              id: restaurantId,
-              name: String(row.name ?? ""),
-              slug: String(row.slug ?? ""),
-              logo: String(row.logo ?? ""),
-              paymentId: String(row.payment_id ?? ""),
-            };
-
-            const [cats, items, feat] = await Promise.all([
-              supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
-              supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-              supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
-            ]);
-
-            const data = {
-              restaurant,
-              categories: normalizeCategories(cats.data),
-              menuItems: normalizeMenuItems(items.data),
-              featuredItems: normalizeFeaturedItems(feat.data),
-            };
-
-            menuCache.set(slug, data);
-            fetchKey.current = null;
-            dispatch({ type: "SET_DATA", payload: data });
-            return;
-          }
-
+        if (ilikeError) {
           fetchKey.current = null;
-          dispatch({ 
-            type: "SET_ERROR", 
-            payload: `Restaurant "${slug}" not found. Please check the slug and ensure the restaurant exists in the database.` 
-          });
+          dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
           return;
         }
 
-       const row = restaurantData;
+        if (ilikeData) {
+          restaurantRow = ilikeData;
+        } else {
+          const { data: firstData, error: firstError } = await supabase
+            .from("restaurants")
+            .select("id, name, slug, logo, payment_id")
+            .limit(1)
+            .maybeSingle();
+
+          if (firstError) {
+            fetchKey.current = null;
+            dispatch({ type: "SET_ERROR", payload: `Database error: ${firstError.message}` });
+            return;
+          }
+
+          if (firstData) {
+            restaurantRow = firstData;
+          } else {
+            fetchKey.current = null;
+            dispatch({ 
+              type: "SET_ERROR", 
+              payload: "No restaurant found. Please create a restaurant in the database first." 
+            });
+            return;
+          }
+        }
+      }
+
+      const row = restaurantRow;
       const restaurantId = String(row.id);
       const restaurant = {
         id: restaurantId,
