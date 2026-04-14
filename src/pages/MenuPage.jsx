@@ -78,11 +78,32 @@ export function MenuPage() {
   // ── Scroll sync: container scroll → update active category ──
   useCategorySync("menu-container", setActiveCategory);
 
-  // ── Scroll to section using native scrollIntoView ──
+// ── Scroll to section using native scrollIntoView ──
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    
+    const container = document.getElementById('menu-container');
+    if (!container) return;
+    
+    const topSection = container?.querySelector('.topSection');
+    const headerHeight = topSection ? topSection.offsetHeight : 0;
+    const offset = headerHeight + 16;
+    
+    const adjustScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const targetTop = containerRect.top + offset;
+      const diff = elRect.top - targetTop;
+      
+      if (Math.abs(diff) > 2) {
+        container.scrollBy({ top: -diff, behavior: 'smooth' });
+        setTimeout(adjustScroll, 50);
+      }
+    };
+    
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(adjustScroll, 100);
   };
 
   // ── Category click → scroll to section ──
