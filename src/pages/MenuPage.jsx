@@ -91,28 +91,24 @@ export function MenuPage() {
       cancelAnimationFrame(scrollRafRef.current);
     }
 
+    const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
+    
     const doScroll = () => {
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const targetTop = containerRect.top + SCROLL_HEADER_OFFSET;
       const currentScrollTop = container.scrollTop;
-      const elOffsetTop = el.offsetTop;
-      const targetScroll = elOffsetTop - SCROLL_HEADER_OFFSET;
-      
       const diff = targetScroll - currentScrollTop;
       
       if (Math.abs(diff) <= 1) return;
       
-      const nextScroll = currentScrollTop + diff * 0.3;
+      const nextScroll = currentScrollTop + diff * 0.35;
       container.scrollTop = nextScroll;
       
-      const remaining = Math.abs((elOffsetTop - SCROLL_HEADER_OFFSET) - container.scrollTop);
+      const remaining = Math.abs(targetScroll - container.scrollTop);
       if (remaining > 1) {
         scrollRafRef.current = requestAnimationFrame(doScroll);
       }
     };
 
-    el.scrollIntoView({ behavior: 'auto' });
+    container.scrollTop = targetScroll;
     requestAnimationFrame(doScroll);
   }, []);
 

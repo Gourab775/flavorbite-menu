@@ -1,11 +1,13 @@
 import { useEffect, useRef, useCallback } from "react";
 
 const HEADER_OFFSET = 180;
+const DEBOUNCE_MS = 50;
 
 export function useCategorySync(containerId, setActiveCategory) {
   const tickingRef = useRef(false);
   const lastActiveRef = useRef(null);
   const rafIdRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
   const updateActiveCategory = useCallback(() => {
     const container = document.getElementById(containerId);
@@ -37,6 +39,15 @@ export function useCategorySync(containerId, setActiveCategory) {
     tickingRef.current = false;
   }, [containerId, setActiveCategory]);
 
+  const debouncedUpdate = useCallback(() => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      updateActiveCategory();
+    }, DEBOUNCE_MS);
+  }, [updateActiveCategory]);
+
   useEffect(() => {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -47,18 +58,27 @@ export function useCategorySync(containerId, setActiveCategory) {
         if (rafIdRef.current) {
           cancelAnimationFrame(rafIdRef.current);
         }
-        rafIdRef.current = requestAnimationFrame(updateActiveCategory);
+        rafIdRef.current = requestAnimationFrame(() => {
+          tickingRef.current = false;
+          debouncedUpdate();
+        });
       }
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
-    requestAnimationFrame(updateActiveCategory);
+    
+    setTimeout(() => {
+      updateActiveCategory();
+    }, 100);
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
       }
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
-  }, [containerId, updateActiveCategory]);
+  }, [containerId, updateActiveCategory, debouncedUpdate]);
 }

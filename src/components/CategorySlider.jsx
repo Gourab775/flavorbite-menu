@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 function slugify(text) {
   return String(text ?? "")
@@ -10,13 +10,45 @@ function slugify(text) {
 
 export function CategorySlider({ categories, activeCategory, onCategoryClick }) {
   const isDragging = useRef(false);
+  const scrollRafRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+
+  const scrollToActiveCategory = useCallback(() => {
+    if (!activeCategory) return;
+    const container = scrollContainerRef.current;
+    const btn = document.getElementById(`cat-btn-${activeCategory}`);
+    if (!container || !btn) return;
+
+    if (scrollRafRef.current) {
+      cancelAnimationFrame(scrollRafRef.current);
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const targetLeft = btnRect.left - containerRect.left + (btnRect.width / 2) - (containerRect.width / 2);
+    
+    const doScroll = () => {
+      const currentLeft = container.scrollLeft;
+      const diff = targetLeft - currentLeft;
+      
+      if (Math.abs(diff) <= 2) return;
+      
+      const nextLeft = currentLeft + diff * 0.25;
+      container.scrollLeft = nextLeft;
+      
+      const remaining = Math.abs(targetLeft - container.scrollLeft);
+      if (remaining > 2) {
+        scrollRafRef.current = requestAnimationFrame(doScroll);
+      }
+    };
+
+    container.scrollLeft = targetLeft;
+    requestAnimationFrame(doScroll);
+  }, [activeCategory]);
 
   useEffect(() => {
-    if (!activeCategory) return;
-    const btn = document.getElementById(`cat-btn-${activeCategory}`);
-    if (!btn) return;
-    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, [activeCategory]);
+    scrollToActiveCategory();
+  }, [scrollToActiveCategory]);
 
   const handleTouchStart = () => {
     isDragging.current = false;
@@ -36,7 +68,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
 
   return (
     <nav aria-label="Menu categories">
-      <div className="catScroll">
+      <div className="catScroll" ref={scrollContainerRef}>
         {categories.map((c) => {
           const slug = slugify(c.name);
           const isActive = slug === activeCategory;
