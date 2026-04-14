@@ -31,20 +31,26 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
     const containerRect = container.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
     
-    const targetLeft = btnRect.left - containerRect.left + (btnRect.width / 2) - (containerRect.width / 2);
+    const containerWidth = containerRect.width;
+    const btnCenter = btnRect.left - containerRect.left + btnRect.width / 2;
+    const targetLeft = btnCenter - containerWidth / 2;
+    
+    const maxScroll = container.scrollWidth - containerWidth;
+    const clampedTarget = Math.max(0, Math.min(targetLeft, maxScroll));
+    
     const startLeft = container.scrollLeft;
     
-    if (Math.abs(targetLeft - startLeft) <= 4) return;
+    if (Math.abs(clampedTarget - startLeft) <= 2) return;
 
     const startTime = performance.now();
-    const duration = 300;
+    const duration = 200;
 
     const animate = (currentTime) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       
-      const currentLeft = startLeft + (targetLeft - startLeft) * easeProgress;
+      const currentLeft = startLeft + (clampedTarget - startLeft) * easeProgress;
       container.scrollLeft = currentLeft;
 
       if (progress < 1) {
