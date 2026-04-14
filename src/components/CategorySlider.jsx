@@ -10,10 +10,12 @@ function slugify(text) {
 
 export function CategorySlider({ categories, activeCategory, onCategoryClick }) {
   const isDragging = useRef(false);
+  const isUserInteracting = useRef(false);
   const rafRef = useRef(null);
+  const interactionTimeoutRef = useRef(null);
 
   useEffect(() => {
-    if (!activeCategory) return;
+    if (!activeCategory || isUserInteracting.current) return;
 
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
@@ -29,12 +31,14 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
     const targetLeft = btnRect.left - containerRect.left + (btnRect.width / 2) - (containerRect.width / 2);
     const startLeft = container.scrollLeft;
     
-    if (Math.abs(targetLeft - startLeft) <= 2) return;
+    if (Math.abs(targetLeft - startLeft) <= 4) return;
 
     const startTime = performance.now();
-    const duration = 300;
+    const duration = 350;
 
     const animate = (currentTime) => {
+      if (isUserInteracting.current) return;
+      
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easeProgress = 1 - Math.pow(1 - progress, 3);
@@ -42,7 +46,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
       const currentLeft = startLeft + (targetLeft - startLeft) * easeProgress;
       container.scrollLeft = currentLeft;
 
-      if (progress < 1) {
+      if (progress < 1 && !isUserInteracting.current) {
         rafRef.current = requestAnimationFrame(animate);
       }
     };
@@ -58,6 +62,13 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
 
   const handleTouchStart = () => {
     isDragging.current = false;
+    isUserInteracting.current = true;
+    if (interactionTimeoutRef.current) {
+      clearTimeout(interactionTimeoutRef.current);
+    }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
   };
 
   const handleTouchMove = () => {
@@ -68,13 +79,40 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
     if (!isDragging.current) {
       onCategoryClick(name);
     }
+    interactionTimeoutRef.current = setTimeout(() => {
+      isUserInteracting.current = false;
+    }, 100);
+  };
+
+  const handleMouseDown = () => {
+    isUserInteracting.current = true;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+  };
+
+  const handleMouseUp = () => {
+    interactionTimeoutRef.current = setTimeout(() => {
+      isUserInteracting.current = false;
+    }, 100);
+  };
+
+  const handleMouseLeave = () => {
+    interactionTimeoutRef.current = setTimeout(() => {
+      isUserInteracting.current = false;
+    }, 100);
   };
 
   if (!categories || categories.length === 0) return null;
 
   return (
     <nav aria-label="Menu categories">
-      <div className="catScroll">
+      <div 
+        className="catScroll"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         {categories.map((c) => {
           const slug = slugify(c.name);
           const isActive = slug === activeCategory;
