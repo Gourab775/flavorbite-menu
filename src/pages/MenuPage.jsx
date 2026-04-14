@@ -75,42 +75,21 @@ export function MenuPage() {
       .filter((g) => g.items.length > 0);
   }, [categories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
-  // ── Scroll sync: container scroll → update active category ──
-  useCategorySync("menu-container", setActiveCategory);
+// ── Scroll sync: container scroll → update active category ──
+  useCategorySync('menu-container', setActiveCategory);
 
-// ── Scroll to section using native scrollIntoView ──
+  // ── Scroll to section ──
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    
-    const container = document.getElementById('menu-container');
-    if (!container) return;
-    
-    const topSection = container?.querySelector('.topSection');
-    const headerHeight = topSection ? topSection.offsetHeight : 0;
-    const offset = headerHeight + 16;
-    
-    const adjustScroll = () => {
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const targetTop = containerRect.top + offset;
-      const diff = elRect.top - targetTop;
-      
-      if (Math.abs(diff) > 2) {
-        container.scrollBy({ top: -diff, behavior: 'smooth' });
-        setTimeout(adjustScroll, 50);
-      }
-    };
-    
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(adjustScroll, 100);
   };
 
   // ── Category click → scroll to section ──
   const handleCategoryClick = (categoryName) => {
     const slug = slugify(categoryName);
     setActiveCategory(slug);
-    setTimeout(() => scrollToSection(slug), 100);
+    setTimeout(() => scrollToSection(slug), 50);
   };
 
   return (

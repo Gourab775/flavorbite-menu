@@ -8,10 +8,10 @@ export function useCategorySync(containerId, setActiveCategory) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const updateActiveCategory = () => {
-      const sections = container.querySelectorAll(".menuSection");
-      const headerOffset = 90;
-      let closestId = "";
+const updateActiveCategory = () => {
+      const sections = container.querySelectorAll('.menuSection');
+      const headerOffset = 180;
+      let closestId = '';
       let closestDistance = Infinity;
 
       sections.forEach((section) => {
