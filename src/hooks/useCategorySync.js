@@ -5,7 +5,6 @@ const HEADER_OFFSET = 180;
 export function useCategorySync(containerId, setActiveCategory) {
   const rafRef = useRef(null);
   const lastActiveRef = useRef(null);
-  const isScrollingRef = useRef(false);
 
   useEffect(() => {
     const container = document.getElementById(containerId);
@@ -16,6 +15,7 @@ export function useCategorySync(containerId, setActiveCategory) {
       if (sections.length === 0) return;
 
       const containerRect = container.getBoundingClientRect();
+      const containerHeight = containerRect.height;
       let closestId = '';
       let closestDistance = Infinity;
 
@@ -32,9 +32,7 @@ export function useCategorySync(containerId, setActiveCategory) {
 
       if (closestId && closestId !== lastActiveRef.current) {
         lastActiveRef.current = closestId;
-        if (!isScrollingRef.current) {
-          setActiveCategory(closestId);
-        }
+        setActiveCategory(closestId);
       }
 
       rafRef.current = null;
@@ -51,7 +49,7 @@ export function useCategorySync(containerId, setActiveCategory) {
     setTimeout(() => {
       lastActiveRef.current = '__init__';
       updateCategory();
-    }, 200);
+    }, 100);
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
@@ -62,10 +60,6 @@ export function useCategorySync(containerId, setActiveCategory) {
   }, [containerId, setActiveCategory]);
 
   const markScrolling = useCallback(() => {
-    isScrollingRef.current = true;
-    setTimeout(() => {
-      isScrollingRef.current = false;
-    }, 500);
   }, []);
 
   return { markScrolling };

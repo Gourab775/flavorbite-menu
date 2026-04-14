@@ -3,6 +3,7 @@ import { useMenu } from "../hooks/useMenu";
 
 const HOLD_DURATION = 3500;
 const SWIPE_THRESHOLD = 50;
+const DRAG_THRESHOLD = 10;
 
 export function HeroBanner() {
   const { featuredItems } = useMenu();
@@ -14,7 +15,7 @@ export function HeroBanner() {
   const touchStartY = useRef(0);
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
-  const isSwipe = useRef(false);
+  const hasDragged = useRef(false);
 
   const items = featuredItems.length > 0 ? featuredItems : [];
   const itemCount = items.length;
@@ -54,7 +55,10 @@ export function HeroBanner() {
 
   const handleSlideClick = useCallback(
     (redirectUrl) => {
-      if (isSwipe.current) return;
+      if (hasDragged.current) {
+        hasDragged.current = false;
+        return;
+      }
       if (!redirectUrl) return;
 
       const selector = redirectUrl.startsWith("#") ? redirectUrl.substring(1) : redirectUrl;
@@ -70,19 +74,19 @@ export function HeroBanner() {
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
-    isSwipe.current = false;
+    hasDragged.current = false;
   };
 
   const handleTouchMove = (e) => {
     const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
     const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-    if (deltaX > deltaY && deltaX > 10) {
-      isSwipe.current = true;
+    if (deltaX > deltaY && deltaX > DRAG_THRESHOLD) {
+      hasDragged.current = true;
     }
   };
 
   const handleTouchEnd = (e, redirectUrl) => {
-    if (isSwipe.current) {
+    if (hasDragged.current) {
       const deltaX = e.changedTouches[0].clientX - touchStartX.current;
       if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
         if (deltaX > 0) {
@@ -94,24 +98,27 @@ export function HeroBanner() {
       }
     }
     handleSlideClick(redirectUrl);
+    hasDragged.current = false;
   };
 
   const handleMouseDown = (e) => {
     isDragging.current = true;
     dragStartX.current = e.clientX;
+    hasDragged.current = false;
   };
 
   const handleMouseMove = (e) => {
     if (!isDragging.current) return;
-    const deltaX = e.clientX - dragStartX.current;
-    if (Math.abs(deltaX) > 5) {
-      isSwipe.current = true;
+    const deltaX = Math.abs(e.clientX - dragStartX.current);
+    if (deltaX > DRAG_THRESHOLD) {
+      hasDragged.current = true;
     }
   };
 
   const handleMouseUp = (e) => {
     if (!isDragging.current) return;
     isDragging.current = false;
+    
     const deltaX = e.clientX - dragStartX.current;
     if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
       if (deltaX > 0) {
@@ -120,7 +127,7 @@ export function HeroBanner() {
         nextSlide();
       }
     }
-    isSwipe.current = false;
+    hasDragged.current = false;
   };
 
   const handleMouseLeave = () => {
