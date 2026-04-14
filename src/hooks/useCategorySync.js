@@ -1,84 +1,72 @@
 import { useEffect, useRef, useCallback } from "react";
 
 const HEADER_OFFSET = 180;
-const DEBOUNCE_MS = 50;
 
 export function useCategorySync(containerId, setActiveCategory) {
-  const tickingRef = useRef(false);
+  const rafRef = useRef(null);
   const lastActiveRef = useRef(null);
-  const rafIdRef = useRef(null);
-  const debounceTimeoutRef = useRef(null);
-
-  const updateActiveCategory = useCallback(() => {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const sections = container.querySelectorAll('.menuSection');
-    if (sections.length === 0) return;
-
-    const containerRect = container.getBoundingClientRect();
-    let closestId = '';
-    let closestDistance = Infinity;
-
-    sections.forEach((section) => {
-      const rect = section.getBoundingClientRect();
-      const relativeTop = rect.top - containerRect.top;
-      const distance = Math.abs(relativeTop - HEADER_OFFSET);
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestId = section.id;
-      }
-    });
-
-    if (closestId && closestId !== lastActiveRef.current) {
-      lastActiveRef.current = closestId;
-      setActiveCategory(closestId);
-    }
-
-    tickingRef.current = false;
-  }, [containerId, setActiveCategory]);
-
-  const debouncedUpdate = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-    debounceTimeoutRef.current = setTimeout(() => {
-      updateActiveCategory();
-    }, DEBOUNCE_MS);
-  }, [updateActiveCategory]);
+  const isScrollingRef = useRef(false);
 
   useEffect(() => {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const handleScroll = () => {
-      if (!tickingRef.current) {
-        tickingRef.current = true;
-        if (rafIdRef.current) {
-          cancelAnimationFrame(rafIdRef.current);
+    const updateCategory = () => {
+      const sections = container.querySelectorAll('.menuSection');
+      if (sections.length === 0) return;
+
+      const containerRect = container.getBoundingClientRect();
+      let closestId = '';
+      let closestDistance = Infinity;
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const relativeTop = rect.top - containerRect.top;
+        const distance = Math.abs(relativeTop - HEADER_OFFSET);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestId = section.id;
         }
-        rafIdRef.current = requestAnimationFrame(() => {
-          tickingRef.current = false;
-          debouncedUpdate();
-        });
+      });
+
+      if (closestId && closestId !== lastActiveRef.current) {
+        lastActiveRef.current = closestId;
+        if (!isScrollingRef.current) {
+          setActiveCategory(closestId);
+        }
+      }
+
+      rafRef.current = null;
+    };
+
+    const handleScroll = () => {
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(updateCategory);
       }
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     setTimeout(() => {
-      updateActiveCategory();
-    }, 100);
+      lastActiveRef.current = '__init__';
+      updateCategory();
+    }, 200);
 
     return () => {
       container.removeEventListener('scroll', handleScroll);
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [containerId, updateActiveCategory, debouncedUpdate]);
+  }, [containerId, setActiveCategory]);
+
+  const markScrolling = useCallback(() => {
+    isScrollingRef.current = true;
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 500);
+  }, []);
+
+  return { markScrolling };
 }

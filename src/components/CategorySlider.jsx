@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 function slugify(text) {
   return String(text ?? "")
@@ -10,45 +10,51 @@ function slugify(text) {
 
 export function CategorySlider({ categories, activeCategory, onCategoryClick }) {
   const isDragging = useRef(false);
-  const scrollRafRef = useRef(null);
-  const scrollContainerRef = useRef(null);
+  const rafRef = useRef(null);
 
-  const scrollToActiveCategory = useCallback(() => {
+  useEffect(() => {
     if (!activeCategory) return;
-    const container = scrollContainerRef.current;
+
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    const container = document.querySelector('.catScroll');
     const btn = document.getElementById(`cat-btn-${activeCategory}`);
     if (!container || !btn) return;
 
-    if (scrollRafRef.current) {
-      cancelAnimationFrame(scrollRafRef.current);
-    }
-
     const containerRect = container.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
-    const targetLeft = btnRect.left - containerRect.left + (btnRect.width / 2) - (containerRect.width / 2);
     
-    const doScroll = () => {
-      const currentLeft = container.scrollLeft;
-      const diff = targetLeft - currentLeft;
+    const targetLeft = btnRect.left - containerRect.left + (btnRect.width / 2) - (containerRect.width / 2);
+    const startLeft = container.scrollLeft;
+    
+    if (Math.abs(targetLeft - startLeft) <= 2) return;
+
+    const startTime = performance.now();
+    const duration = 300;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
       
-      if (Math.abs(diff) <= 2) return;
-      
-      const nextLeft = currentLeft + diff * 0.25;
-      container.scrollLeft = nextLeft;
-      
-      const remaining = Math.abs(targetLeft - container.scrollLeft);
-      if (remaining > 2) {
-        scrollRafRef.current = requestAnimationFrame(doScroll);
+      const currentLeft = startLeft + (targetLeft - startLeft) * easeProgress;
+      container.scrollLeft = currentLeft;
+
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
       }
     };
 
-    container.scrollLeft = targetLeft;
-    requestAnimationFrame(doScroll);
-  }, [activeCategory]);
+    rafRef.current = requestAnimationFrame(animate);
 
-  useEffect(() => {
-    scrollToActiveCategory();
-  }, [scrollToActiveCategory]);
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [activeCategory]);
 
   const handleTouchStart = () => {
     isDragging.current = false;
@@ -68,7 +74,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
 
   return (
     <nav aria-label="Menu categories">
-      <div className="catScroll" ref={scrollContainerRef}>
+      <div className="catScroll">
         {categories.map((c) => {
           const slug = slugify(c.name);
           const isActive = slug === activeCategory;
