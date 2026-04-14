@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "wouter";
 import { Header } from "../components/Header";
 import { SearchBar } from "../components/SearchBar";
@@ -20,6 +20,8 @@ function slugify(text) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+const SCROLL_HEADER_OFFSET = 180;
 
 export function MenuPage() {
   const { slug, tableId } = useParams();
@@ -75,22 +77,51 @@ export function MenuPage() {
       .filter((g) => g.items.length > 0);
   }, [categories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
-// ── Scroll sync: container scroll → update active category ──
+  // ── Scroll sync: container scroll → update active category ──
   useCategorySync('menu-container', setActiveCategory);
 
-  // ── Scroll to section ──
-  const scrollToSection = (id) => {
+  // ── Interruptible smooth scroll with precise offset ──
+  const scrollRafRef = useRef(null);
+  const scrollToSection = useCallback((id) => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+    const container = document.getElementById('menu-container');
+    if (!el || !container) return;
+
+    if (scrollRafRef.current) {
+      cancelAnimationFrame(scrollRafRef.current);
+    }
+
+    const doScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const targetTop = containerRect.top + SCROLL_HEADER_OFFSET;
+      const currentScrollTop = container.scrollTop;
+      const elOffsetTop = el.offsetTop;
+      const targetScroll = elOffsetTop - SCROLL_HEADER_OFFSET;
+      
+      const diff = targetScroll - currentScrollTop;
+      
+      if (Math.abs(diff) <= 1) return;
+      
+      const nextScroll = currentScrollTop + diff * 0.3;
+      container.scrollTop = nextScroll;
+      
+      const remaining = Math.abs((elOffsetTop - SCROLL_HEADER_OFFSET) - container.scrollTop);
+      if (remaining > 1) {
+        scrollRafRef.current = requestAnimationFrame(doScroll);
+      }
+    };
+
+    el.scrollIntoView({ behavior: 'auto' });
+    requestAnimationFrame(doScroll);
+  }, []);
 
   // ── Category click → scroll to section ──
-  const handleCategoryClick = (categoryName) => {
+  const handleCategoryClick = useCallback((categoryName) => {
     const slug = slugify(categoryName);
     setActiveCategory(slug);
-    setTimeout(() => scrollToSection(slug), 50);
-  };
+    scrollToSection(slug);
+  }, [scrollToSection]);
 
   return (
     <div className="menuLayout">
