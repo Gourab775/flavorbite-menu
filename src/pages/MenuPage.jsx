@@ -78,7 +78,7 @@ export function MenuPage() {
   }, [categories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
   // ── Scroll sync: container scroll → update active category ──
-  const { markScrolling } = useCategorySync('menu-container', setActiveCategory);
+  useCategorySync('menu-container', setActiveCategory);
 
   // ── Interruptible smooth scroll with precise offset ──
   const scrollRafRef = useRef(null);
@@ -92,7 +92,6 @@ export function MenuPage() {
     }
 
     const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
-    markScrolling();
     
     const doScroll = () => {
       const currentScrollTop = container.scrollTop;
@@ -111,7 +110,7 @@ export function MenuPage() {
 
     container.scrollTop = targetScroll;
     requestAnimationFrame(doScroll);
-  }, [markScrolling]);
+  }, []);
 
   // ── Category click → scroll to section ──
   const handleCategoryClick = useCallback((categoryName) => {

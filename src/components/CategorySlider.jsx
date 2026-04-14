@@ -9,16 +9,11 @@ function slugify(text) {
 }
 
 export function CategorySlider({ categories, activeCategory, onCategoryClick }) {
-  const isDragging = useRef(false);
-  const isUserInteracting = useRef(false);
   const rafRef = useRef(null);
-  const interactionTimeoutRef = useRef(null);
-  const lastActiveRef = useRef(null);
+  const isInteractingRef = useRef(false);
 
   useEffect(() => {
-    if (!activeCategory) return;
-    if (activeCategory === lastActiveRef.current && isUserInteracting.current) return;
-    lastActiveRef.current = activeCategory;
+    if (!activeCategory || isInteractingRef.current) return;
 
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
@@ -43,9 +38,11 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
     if (Math.abs(clampedTarget - startLeft) <= 2) return;
 
     const startTime = performance.now();
-    const duration = 200;
+    const duration = 180;
 
     const animate = (currentTime) => {
+      if (isInteractingRef.current) return;
+      
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easeProgress = 1 - Math.pow(1 - progress, 3);
@@ -53,7 +50,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
       const currentLeft = startLeft + (clampedTarget - startLeft) * easeProgress;
       container.scrollLeft = currentLeft;
 
-      if (progress < 1) {
+      if (progress < 1 && !isInteractingRef.current) {
         rafRef.current = requestAnimationFrame(animate);
       }
     };
@@ -68,45 +65,35 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
   }, [activeCategory]);
 
   const handleTouchStart = () => {
-    isDragging.current = false;
-    isUserInteracting.current = true;
-    if (interactionTimeoutRef.current) {
-      clearTimeout(interactionTimeoutRef.current);
-    }
+    isInteractingRef.current = true;
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
   };
 
-  const handleTouchMove = () => {
-    isDragging.current = true;
-  };
-
-  const handleTouchEnd = (name) => {
-    if (!isDragging.current) {
+  const handleTouchEnd = (name, e) => {
+    isInteractingRef.current = false;
+    if (!e) {
       onCategoryClick(name);
     }
-    interactionTimeoutRef.current = setTimeout(() => {
-      isUserInteracting.current = false;
-    }, 100);
   };
 
   const handleMouseDown = () => {
-    isUserInteracting.current = true;
+    isInteractingRef.current = true;
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
   };
 
   const handleMouseUp = () => {
-    interactionTimeoutRef.current = setTimeout(() => {
-      isUserInteracting.current = false;
+    setTimeout(() => {
+      isInteractingRef.current = false;
     }, 100);
   };
 
   const handleMouseLeave = () => {
-    interactionTimeoutRef.current = setTimeout(() => {
-      isUserInteracting.current = false;
+    setTimeout(() => {
+      isInteractingRef.current = false;
     }, 100);
   };
 
@@ -130,8 +117,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
               className={`catPill ${isActive ? "catPill--active" : ""}`}
               onClick={() => onCategoryClick(c.name)}
               onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={() => handleTouchEnd(c.name)}
+              onTouchEnd={(e) => handleTouchEnd(c.name, e)}
               role="tab"
               aria-selected={isActive}
               aria-label={`${c.name} category`}
