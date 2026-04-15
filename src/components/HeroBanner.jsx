@@ -4,6 +4,7 @@ import { useMenu } from "../hooks/useMenu";
 const HOLD_DURATION = 3500;
 const SWIPE_THRESHOLD = 50;
 const DRAG_THRESHOLD = 10;
+const SCROLL_THRESHOLD = 15;
 
 export function HeroBanner() {
   const { featuredItems } = useMenu();
@@ -13,9 +14,9 @@ export function HeroBanner() {
   const timerRef = useRef(null);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
   const hasDragged = useRef(false);
+  const isScrolling = useRef(false);
+  const scrollTimerRef = useRef(null);
 
   const items = featuredItems.length > 0 ? featuredItems : [];
   const itemCount = items.length;
@@ -55,8 +56,9 @@ export function HeroBanner() {
 
   const handleSlideClick = useCallback(
     (redirectUrl) => {
-      if (hasDragged.current) {
+      if (hasDragged.current || isScrolling.current) {
         hasDragged.current = false;
+        isScrolling.current = false;
         return;
       }
       if (!redirectUrl) return;
@@ -80,8 +82,11 @@ export function HeroBanner() {
   const handleTouchMove = (e) => {
     const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
     const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-    if (deltaX > deltaY && deltaX > DRAG_THRESHOLD) {
+    if (Math.abs(deltaX) > DRAG_THRESHOLD && deltaX > deltaY) {
       hasDragged.current = true;
+    }
+    if (Math.abs(deltaY) > DRAG_THRESHOLD && deltaY > deltaX) {
+      isScrolling.current = true;
     }
   };
 
@@ -94,44 +99,46 @@ export function HeroBanner() {
         } else {
           nextSlide();
         }
+        hasDragged.current = false;
+        isScrolling.current = false;
         return;
       }
     }
-    handleSlideClick(redirectUrl);
+    if (!isScrolling.current) {
+      handleSlideClick(redirectUrl);
+    }
     hasDragged.current = false;
+    isScrolling.current = false;
   };
 
-  const handleMouseDown = (e) => {
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
-    hasDragged.current = false;
+  const handleMouseEnter = () => {
   };
 
-  const handleMouseMove = (e) => {
-    if (!isDragging.current) return;
-    const deltaX = Math.abs(e.clientX - dragStartX.current);
-    if (deltaX > DRAG_THRESHOLD) {
-      hasDragged.current = true;
+  const handleMouseDown = () => {
+    hasDragged.current = false;
+    isScrolling.current = false;
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
     }
   };
 
-  const handleMouseUp = (e) => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    
-    const deltaX = e.clientX - dragStartX.current;
-    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
-      if (deltaX > 0) {
-        prevSlide();
-      } else {
-        nextSlide();
-      }
+  const handleMouseUp = () => {
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
     }
-    hasDragged.current = false;
+    scrollTimerRef.current = setTimeout(() => {
+      isScrolling.current = false;
+    }, 50);
   };
 
-  const handleMouseLeave = () => {
-    isDragging.current = false;
+  const handleScroll = () => {
+    isScrolling.current = true;
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
+    }
+    scrollTimerRef.current = setTimeout(() => {
+      isScrolling.current = false;
+    }, 200);
   };
 
   if (itemCount === 0) return null;
@@ -141,10 +148,10 @@ export function HeroBanner() {
       <div
         ref={containerRef}
         className="featuredCarousel"
+        onMouseEnter={handleMouseEnter}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
+        onScroll={handleScroll}
       >
         {items.map((item, i) => {
           const hasImage = item.imageUrl && item.imageUrl.trim() !== "";
@@ -197,7 +204,7 @@ export function HeroBanner() {
               }}
               aria-label="Previous slide"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
@@ -209,7 +216,7 @@ export function HeroBanner() {
               }}
               aria-label="Next slide"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>

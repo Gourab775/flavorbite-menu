@@ -673,7 +673,7 @@ body {
 .featuredImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center center;
   display: block;
   transform: scale(1);
@@ -729,25 +729,19 @@ body {
 /* Navigation Dots */
 .featuredDots {
   position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 12px;
+  left: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   z-index: 3;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .featuredDot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
   transition: width 280ms ease, background 280ms ease, opacity 280ms ease;
   flex-shrink: 0;
   cursor: pointer;
@@ -756,12 +750,12 @@ body {
 }
 
 .featuredDot:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .featuredDot.active {
-  width: 24px;
-  background: #fff;
+  width: 16px;
+  background: rgba(255, 255, 255, 0.9);
   opacity: 1;
 }
 
@@ -770,47 +764,50 @@ body {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 3;
-  opacity: 0;
-  transition: opacity 250ms ease, background 200ms ease, transform 150ms ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.5;
+  transition: opacity 200ms ease, background 200ms ease, transform 150ms ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .featuredArrow:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  opacity: 1;
 }
 
 .featuredArrow:active {
   transform: translateY(-50%) scale(0.92);
 }
 
-.featuredCarousel:hover .featuredArrow {
-  opacity: 1;
+.featuredArrow {
+  opacity: 0.4;
 }
 
 .featuredArrow--prev {
-  left: 12px;
+  left: 10px;
 }
 
 .featuredArrow--next {
-  right: 12px;
+  right: 10px;
 }
 
 @media (max-width: 640px) {
   .featuredArrow {
-    display: none;
+    width: 32px;
+    height: 32px;
+    opacity: 0.35;
   }
 }
 
