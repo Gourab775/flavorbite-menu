@@ -1,21 +1,18 @@
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
-import { getStoredSlug, getStoredTableId } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
 
 export function Header() {
   const [, navigate] = useLocation();
-  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  const { slug: urlSlug } = useParams();
   
   const slug = urlSlug || getStoredSlug();
-  const tableId = urlTableId || getStoredTableId();
   const { totalItems } = useCart();
   const { restaurant, restaurantLoading, restaurantError } = useMenu();
 
   const displayName = restaurant.name || (restaurantLoading ? "" : "Restaurant");
-
-  // Build base path with optional table
-  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+  const basePath = `/${slug}`;
 
   return (
     <header className="header">

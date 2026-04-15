@@ -2,18 +2,16 @@ import { useCallback, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
-import { getStoredSlug, getStoredTableId } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
 
 const CART_NOTE_KEY = "cart_order_note";
 
 export function CartPage() {
   const [, navigate] = useLocation();
-  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  const { slug: urlSlug } = useParams();
   
   const slug = urlSlug || getStoredSlug();
-  const tableId = urlTableId || getStoredTableId();
-  
-  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+  const basePath = `/${slug}`;
   const {
     cart,
     increaseQty,

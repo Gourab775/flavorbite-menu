@@ -2,16 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import lottie from "lottie-web";
 import successAnimation from "../assets/animations/Success.json";
-import { getStoredSlug, getStoredTableId } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
 
 export function OrderConfirmedPage() {
   const [, navigate] = useLocation();
-  const { slug: urlSlug, tableId: urlTableId, orderId: urlOrderId } = useParams();
+  const { slug: urlSlug, orderId: urlOrderId } = useParams();
   
   const slug = urlSlug || getStoredSlug();
-  const tableId = urlTableId || getStoredTableId();
-
-  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+  const basePath = `/${slug}`;
 
   const [orderCode, setOrderCode] = useState("");
   const animationRef = useRef(null);

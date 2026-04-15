@@ -3,19 +3,29 @@ import { useLocation, useParams, useSearch } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
-import { getStoredSlug, getStoredTableId } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
+import { clearSession } from "../utils/session";
 import lottie from "lottie-web";
 import animationData from "../assets/animations/loading.json";
 
 export function OnlineWaitingPage() {
   const [, navigate] = useLocation();
   const search = useSearch();
-  const { slug: urlSlug, tableId: urlTableId, orderId } = useParams();
+  const { slug: urlSlug, orderId } = useParams();
   
   const slug = urlSlug || getStoredSlug();
-  const tableId = urlTableId || getStoredTableId();
   const { restaurant } = useMenu();
   const { loadMenu } = useMenuStore();
+
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [phone, setPhone] = useState("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [orderCode, setOrderCode] = useState("");
+  
+  const containerRef = useRef(null);
+  const animationRef = useRef(null);
+
+  const basePath = `/${slug}`;
 
   useEffect(() => {
     if (slug && !restaurant.id) {
@@ -23,21 +33,18 @@ export function OnlineWaitingPage() {
     }
   }, [slug, restaurant.id, loadMenu]);
 
-  const searchParams = new URLSearchParams(search);
-  const orderCode = searchParams.get("code");
-
-  const [timeLeft, setTimeLeft] = useState(120);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [phone, setPhone] = useState("");
-  const animationRef = useRef(null);
-  const containerRef = useRef(null);
-
-  // Build base path with optional table
-  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const code = params.get("code");
+    if (code) {
+      setOrderCode(code);
+    }
+  }, [search]);
 
   useEffect(() => {
+    if (!restaurant.id) return;
+
     const fetchPhone = async () => {
-      if (!restaurant.id) return;
       const { data } = await supabase
         .from("restaurants")
         .select("contact_number")
@@ -105,6 +112,7 @@ export function OnlineWaitingPage() {
     localStorage.removeItem("notes");
     sessionStorage.removeItem("orderData");
     sessionStorage.removeItem("cart_order_note");
+    clearSession();
     window.dispatchEvent(new Event("cart-cleared"));
     navigate(basePath);
   };

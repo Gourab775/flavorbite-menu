@@ -11,7 +11,8 @@ import { useMenuStore } from "../store/menuStore";
 import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
-import { setStoredSlug, setStoredTableId } from "../utils/constants";
+import { setStoredSlug } from "../utils/constants";
+import { initSession } from "../utils/session";
 
 function slugify(text) {
   return String(text ?? "")
@@ -24,21 +25,16 @@ function slugify(text) {
 const SCROLL_HEADER_OFFSET = 180;
 
 export function MenuPage() {
-  const { slug, tableId } = useParams();
+  const { slug } = useParams();
   const { loadMenu } = useMenuStore();
 
   useEffect(() => {
     if (slug && typeof slug === "string") {
       setStoredSlug(slug);
       loadMenu(slug);
+      initSession();
     }
   }, [slug, loadMenu]);
-
-  useEffect(() => {
-    if (tableId) {
-      setStoredTableId(tableId);
-    }
-  }, [tableId]);
 
   const { vegMode, searchQuery } = useCart();
   const { categories, menuItems, loading, error, refetch } = useMenu();

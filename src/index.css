@@ -1223,7 +1223,7 @@ body {
 .cartBarLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cartBarIcon {
@@ -1238,10 +1238,16 @@ body {
   flex-shrink: 0;
 }
 
+.cartBarInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .cartBarCount {
-  font-size: 13px;
-  color: var(--text);
-  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-light, #666);
+  font-weight: 500;
 }
 
 .cartBarAmt {

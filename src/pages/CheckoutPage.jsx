@@ -5,7 +5,7 @@ import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
-import { getStoredSlug, getStoredTableId } from "../utils/constants";
+import { getStoredSlug } from "../utils/constants";
 
 function generateOrderCode() {
   const num = Math.floor(1000 + Math.random() * 9000);
@@ -14,10 +14,9 @@ function generateOrderCode() {
 
 export function CheckoutPage() {
   const [, navigate] = useLocation();
-  const { slug: urlSlug, tableId: urlTableId } = useParams();
+  const { slug: urlSlug } = useParams();
   
   const slug = urlSlug || getStoredSlug();
-  const tableId = urlTableId || getStoredTableId();
   
   const { cart, subtotal, tax, grandTotal } = useCart();
   const { restaurant, loading: menuLoading } = useMenu();
@@ -29,7 +28,7 @@ export function CheckoutPage() {
 
   const orderNote = typeof window !== "undefined" ? sessionStorage.getItem("cart_order_note") || "" : "";
 
-  const basePath = tableId ? `/${slug}/t/${tableId}` : `/${slug}`;
+  const basePath = `/${slug}`;
 
   useEffect(() => {
     if (slug && !restaurant.id) {
@@ -64,22 +63,30 @@ export function CheckoutPage() {
         is_veg: Boolean(item.isVeg),
       }));
 
+      const orderData = {
+        restaurant_id: restaurant.id,
+        status: "pending",
+        order_code: generateOrderCode(),
+        total_price: grandTotal,
+        payment_mode: "counter",
+        items: itemsPayload,
+      };
+      
+      if (orderNote) {
+        orderData.note = orderNote;
+      }
+
       const { data, error } = await supabase
         .from("live_orders")
-        .insert({
-          restaurant_id: restaurant.id,
-          items: itemsPayload,
-          table: tableId,
-          status: "pending",
-          payment_mode: "counter",
-          order_code: generateOrderCode(),
-          total_price: grandTotal,
-          note: orderNote || null,
-        })
+        .insert(orderData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Counter order error:", error);
+        throw new Error(error.message || "Failed to create order");
+      }
+      if (!data) throw new Error("Failed to create order");
 
       navigate(`${basePath}/waiting/${data.id}`);
     } catch (err) {
@@ -115,29 +122,50 @@ export function CheckoutPage() {
         is_veg: Boolean(item.isVeg),
       }));
 
-      const { data, error } = await supabase
+      const totalAmount = Math.round(grandTotal * 100) / 100;
+
+      const insertData = {
+        restaurant_id: restaurant.id,
+        status: "pending",
+        payment_mode: "online",
+        order_code: generateOrderCode(),
+        total_price: totalAmount,
+        items: itemsPayload,
+      };
+      
+      if (orderNote) {
+        insertData.note = orderNote;
+      }
+
+      const { data: orderResponse, error: orderError } = await supabase
         .from("live_orders")
-        .insert({
-          restaurant_id: restaurant.id,
-          items: itemsPayload,
-          table: tableId,
-          status: "pending",
-          payment_mode: "online",
-          order_code: generateOrderCode(),
-          total_price: grandTotal,
-          note: orderNote || null,
-        })
+        .insert(insertData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (orderError) {
+        console.error("Order insert error:", orderError);
+        throw new Error(orderError.message || "Failed to create order");
+      }
+      if (!orderResponse) throw new Error("Failed to create order");
+
+      const tokenValue = `${orderResponse.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      
+      await supabase
+        .from("payment_tokens")
+        .insert({
+          order_id: orderResponse.id,
+          token: tokenValue,
+          expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        });
 
       sessionStorage.setItem("orderData", JSON.stringify({
-        orderId: data.id,
-        orderCode: data.order_code,
-        amount: grandTotal
+        orderId: orderResponse.id,
+        orderCode: orderResponse.order_code,
+        amount: totalAmount,
       }));
-      navigate(`${basePath}/payment/${data.id}?code=${encodeURIComponent(data.order_code)}&amount=${encodeURIComponent(grandTotal)}`);
+      
+      navigate(`${basePath}/payment/${tokenValue}`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);

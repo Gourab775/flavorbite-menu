@@ -1,22 +1,22 @@
-import { useEffect, useState, useRef } from "react";
-import { useLocation, useSearch, useParams } from "wouter";
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
 import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
 import { getStoredSlug } from "../utils/constants";
 
-function parseAmount(raw) {
-  const n = Number(raw);
-  return isNaN(n) ? 0 : n;
+function parseStoredOrder() {
+  if (typeof window === "undefined") return null;
+  
+  const saved = sessionStorage.getItem("orderData");
+  if (!saved) return null;
+  
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
 }
-
-const upiLinks = {
-  gpay: "upi://pay",
-  phonepe: "phonepe://pay",
-  paytm: "paytmmp://pay",
-  bhim: "upi://pay",
-  upi: "upi://pay",
-};
 
 function getAppKey(appName) {
   const name = appName?.toLowerCase() || "";
@@ -29,13 +29,21 @@ function getAppKey(appName) {
 
 export function PaymentPage() {
   const [, setLocation] = useLocation();
-  const search = useSearch();
-  const { tableId, orderId: paramOrderId, slug: urlSlug } = useParams();
-  const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-  const currentTableId = tableId || storedTableId;
-  const { restaurant } = useMenu();
+  const { paymentToken: urlToken, slug: urlSlug } = useParams();
+  const storedSlug = getStoredSlug();
+  const slug = urlSlug || storedSlug;
+
+  const { restaurant, loading: menuLoading } = useMenu();
   const { loadMenu } = useMenuStore();
-  const slug = urlSlug || getStoredSlug();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [orderData, setOrderData] = useState(null);
+  const [paymentApps, setPaymentApps] = useState([]);
+  const [selectedPayment, setSelectedPayment] = useState("");
+  const [selectedAppName, setSelectedAppName] = useState("");
+
+  const basePath = `/${slug}`;
 
   useEffect(() => {
     if (slug && !restaurant.id) {
@@ -43,85 +51,49 @@ export function PaymentPage() {
     }
   }, [slug, restaurant.id, loadMenu]);
 
-  const searchParams = new URLSearchParams(search);
-  let orderId = paramOrderId || searchParams.get("orderId");
-  let orderCode = searchParams.get("code");
-  let amount = parseAmount(searchParams.get("amount"));
-
-  const savedData = typeof window !== "undefined" ? sessionStorage.getItem("orderData") : null;
-  if ((!orderId || !amount) && savedData) {
-    const parsed = JSON.parse(savedData);
-    orderId = orderId || parsed.orderId;
-    orderCode = orderCode || parsed.orderCode;
-    amount = amount || parseAmount(parsed.amount);
-  }
-
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
-  }, []);
-
-  const [paymentApps, setPaymentApps] = useState([]);
-  const [selectedPayment, setSelectedPayment] = useState("");
-  const [selectedAppName, setSelectedAppName] = useState("");
-
-  const navigate = (to) => {
-    if (to === -1) {
-      window.history.back();
-    } else {
-      setLocation(to);
-    };
-  };
-
   useEffect(() => {
     const fetchApps = async () => {
       const { data, error } = await supabase
         .from("payment_apps")
         .select("*");
 
-      if (error) {
-        console.error(error);
-        return;
+      if (!error && data) {
+        setPaymentApps(data);
       }
-
-      setPaymentApps(data);
     };
 
     fetchApps();
   }, []);
 
   useEffect(() => {
-    if (!orderId) return;
+    const storedOrder = parseStoredOrder();
+    
+    if (storedOrder) {
+      setOrderData({
+        orderId: storedOrder.orderId,
+        orderCode: storedOrder.orderCode,
+        amount: storedOrder.amount,
+      });
+    } else if (!urlToken) {
+      setError("No order found. Please start from checkout.");
+    } else {
+      setError("Order data not found. Please try again.");
+    }
+  }, [urlToken]);
 
-    const channel = supabase
-      .channel("payment-status")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "live_orders",
-        },
-        (payload) => {
-          if (payload.new.id === orderId && payload.new.status === "accepted") {
-            navigate(`/${slug}/t/${currentTableId}/order-confirmed`);
-          }
-        }
-      )
-      .subscribe();
+  const navigate = (to) => {
+    if (to === -1) {
+      setLocation(basePath + "/cart");
+    } else {
+      setLocation(to);
+    }
+  };
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [orderId, navigate, currentTableId]);
-
-  const buildUpiLink = (paymentKey) => {
-    if (!restaurant.paymentId || !amount || !orderCode) return "";
-    const note = `Order #${orderCode}`;
-    const baseLink = upiLinks[paymentKey] || upiLinks.upi;
-    return `${baseLink}?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+  const redirect = (msg) => {
+    setError(msg);
+    setTimeout(() => {
+      navigate(basePath + "/cart");
+    }, 2000);
   };
 
   const handleAppSelect = (appKey, appName) => {
@@ -131,37 +103,84 @@ export function PaymentPage() {
 
   const handlePay = () => {
     if (!selectedPayment) {
-      alert("Select payment method");
+      setError("Please select a payment method");
       return;
     }
-
     if (!restaurant.paymentId) {
-      alert("Payment ID not configured. Please contact the restaurant.");
+      setError("Payment not configured. Contact restaurant.");
       return;
     }
-    if (!amount || !orderCode) {
-      alert("Order data missing.");
+    if (!orderData?.amount || !orderData?.orderCode) {
+      setError("Order data missing.");
       return;
     }
 
-    const link = buildUpiLink(selectedPayment);
-
-    if (link) {
-      navigate(`/${slug}/t/${currentTableId}/online-waiting/${orderId}?code=${encodeURIComponent(orderCode)}`);
-      setTimeout(() => { window.location.href = link; }, 100);
-    }
+    const note = `Order #${orderData.orderCode}`;
+    const upiLink = `upi://pay?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(orderData.amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+    
+    navigate(`${basePath}/online-waiting/${orderData.orderId}?code=${encodeURIComponent(orderData.orderCode)}`);
+    setTimeout(() => { window.location.href = upiLink; }, 100);
   };
+
+  const handleCancel = async () => {
+    navigate(basePath + "/cart");
+  };
+
+  if (loading || menuLoading) {
+    return (
+      <div className="paymentPage">
+        <header className="paymentHeader">
+          <button className="iconBtn pressable" onClick={handleCancel}>←</button>
+          <h1 className="paymentTitle">Loading...</h1>
+          <div style={{ width: 38 }} />
+        </header>
+        <main className="paymentBody">
+          <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+            Loading payment...
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="paymentPage">
+        <header className="paymentHeader">
+          <button className="iconBtn pressable" onClick={handleCancel}>←</button>
+          <h1 className="paymentTitle">Error</h1>
+          <div style={{ width: 38 }} />
+        </header>
+        <main className="paymentBody">
+          <div style={{ textAlign: "center", padding: "40px", color: "#ef4444" }}>
+            {error}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+    return (
+      <div className="paymentPage">
+        <header className="paymentHeader">
+          <button className="iconBtn pressable" onClick={handleCancel}>←</button>
+          <h1 className="paymentTitle">Payment</h1>
+          <div style={{ width: 38 }} />
+        </header>
+        <main className="paymentBody">
+          <div style={{ textAlign: "center", padding: "40px" }}>
+            Loading order...
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="paymentPage">
       <header className="paymentHeader">
-        <button
-          className="iconBtn pressable"
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
-        >
-          ←
-        </button>
+        <button className="iconBtn pressable" onClick={handleCancel}>←</button>
         <h1 className="paymentTitle">Complete Payment</h1>
         <div style={{ width: 38 }} />
       </header>
@@ -171,20 +190,20 @@ export function PaymentPage() {
           <div className="orderSummaryRow">
             <span className="orderSummaryLabel">Order ID</span>
             <span className="orderSummaryValue">
-              {orderCode ? `#${orderCode}` : "—"}
+              {orderData?.orderCode ? `#${orderData.orderCode}` : "—"}
             </span>
           </div>
           <div className="orderSummaryDivider" />
           <div className="orderSummaryRow">
             <span className="orderSummaryLabel">Amount to pay</span>
-            <span className="orderSummaryAmount">₹{Math.round(amount)}</span>
+            <span className="orderSummaryAmount">₹{Math.round(orderData?.amount || 0)}</span>
           </div>
           {selectedAppName && (
             <p className="orderSummaryMethod">via {selectedAppName}</p>
           )}
         </div>
 
-        <h2 className="paymentSectionTitle"> Select Payment App</h2>
+        <h2 className="paymentSectionTitle">Select Payment App</h2>
 
         {paymentApps.length === 0 ? (
           <div className="paymentEmpty">
@@ -196,22 +215,22 @@ export function PaymentPage() {
               const appKey = app.app_key || getAppKey(app.app_name);
               const isSelected = selectedPayment === appKey;
               return (
-              <button
-                key={app.id}
-                className={`paymentAppCard ${isSelected ? "selected" : ""}`}
-                onClick={() => handleAppSelect(appKey, app.app_name)}
-                aria-pressed={isSelected}
-              >
-                <img
-                  src={app.app_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`}
-                  alt={app.app_name}
-                  className="paymentAppLogo"
-                />
-                <span className="paymentAppName">{app.app_name}</span>
-                {isSelected && (
-                  <span className="paymentAppCheck" aria-hidden="true">✓</span>
-                )}
-              </button>
+                <button
+                  key={app.id}
+                  className={`paymentAppCard ${isSelected ? "selected" : ""}`}
+                  onClick={() => handleAppSelect(appKey, app.app_name)}
+                  aria-pressed={isSelected}
+                >
+                  <img
+                    src={app.app_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(app.app_name)}&background=ff7a18&color=fff&size=80&bold=true`}
+                    alt={app.app_name}
+                    className="paymentAppLogo"
+                  />
+                  <span className="paymentAppName">{app.app_name}</span>
+                  {isSelected && (
+                    <span className="paymentAppCheck" aria-hidden="true">✓</span>
+                  )}
+                </button>
               );
             })}
           </div>
@@ -228,7 +247,7 @@ export function PaymentPage() {
           disabled={!selectedPayment}
           onClick={handlePay}
         >
-          Pay ₹{Math.round(amount)}
+          Pay ₹{Math.round(orderData?.amount || 0)}
         </button>
       </div>
     </div>
