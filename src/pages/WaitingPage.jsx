@@ -36,7 +36,7 @@ export function WaitingPage() {
     sessionStorage.removeItem("orderData");
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
-    navigate(`/${slug}/t/${currentTableId}`);
+    navigate(`/${slug}`);
   };
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export function WaitingPage() {
         },
         (payload) => {
           if (payload.new.id === orderId && payload.new.status === "accepted") {
-            navigate(`/${slug}/t/${currentTableId}/order-confirmed`);
+            navigate(`/${slug}/order-confirmed`);
           }
         }
       )
@@ -60,7 +60,7 @@ export function WaitingPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orderId, currentTableId, navigate]);
+  }, [orderId, navigate, slug]);
 
   useEffect(() => {
     const fetchOrder = async () => {
