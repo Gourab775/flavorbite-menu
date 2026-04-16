@@ -116,10 +116,18 @@ export function PaymentPage() {
     }
 
     const note = `Order #${orderData.orderCode}`;
-    const upiLink = `upi://pay?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(orderData.amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
-    
-    navigate(`${basePath}/online-waiting/${orderData.orderId}?code=${encodeURIComponent(orderData.orderCode)}`);
-    setTimeout(() => { window.location.href = upiLink; }, 100);
+    const upiLink = `upi://pay?pa=${encodeURIComponent(restaurant.paymentId)}&pn=${encodeURIComponent(restaurant.name)}&am=${encodeURIComponent(Math.round(orderData.amount))}&cu=INR&tn=${encodeURIComponent(note)}`;
+
+    const waitPath = `${basePath}/online-waiting/${orderData.orderId}?code=${encodeURIComponent(orderData.orderCode)}`;
+
+    window.location.href = upiLink;
+
+    setTimeout(() => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+      window.location.href = waitPath;
+    }, 2000);
   };
 
   const handleCancel = async () => {
