@@ -150,14 +150,6 @@ export function CheckoutPage() {
       if (!orderResponse) throw new Error("Failed to create order");
 
       const tokenValue = `${orderResponse.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-      
-      await supabase
-        .from("payment_tokens")
-        .insert({
-          order_id: orderResponse.id,
-          token: tokenValue,
-          expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-        });
 
       sessionStorage.setItem("orderData", JSON.stringify({
         orderId: orderResponse.id,
