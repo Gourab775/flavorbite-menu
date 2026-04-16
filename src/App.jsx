@@ -13,6 +13,7 @@ import { WaitingPage } from "./pages/WaitingPage";
 import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { CartBar } from "./components/CartBar";
+import { GlobalOrderListener } from "./components/GlobalOrderListener";
 import { setStoredSlug, getStoredSlug } from "./utils/constants";
 
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
@@ -99,6 +100,7 @@ export default function App() {
       <MenuProvider>
         <div className="appBackdrop">
           <div className="phoneFrame">
+            <GlobalOrderListener />
             <AppRoutes />
           </div>
         </div>

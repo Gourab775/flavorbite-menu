@@ -116,26 +116,18 @@ export function PaymentPage() {
     }
 
     const pa = restaurant.paymentId;
-    const pn = restaurant.name || "Restaurant";
+    const pn = encodeURIComponent(restaurant.name || "Restaurant");
     const am = Math.round(orderData.amount);
-    const tn = `Order #${orderData.orderCode}`;
+    const tn = encodeURIComponent(`Order #${orderData.orderCode}`);
 
-    const upiUrl = `upi://pay?pa=${pa}&pn=${encodeURIComponent(pn)}&am=${am}&cu=INR&tn=${encodeURIComponent(tn)}`;
-    const intentUrl = `intent://pay?pa=${pa}&pn=${encodeURIComponent(pn)}&am=${am}&cu=INR&tn=${encodeURIComponent(tn)}#Intent;scheme=upi;end`;
+    const upiUrl = `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+    const intentUrl = `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}#Intent;scheme=upi;end`;
 
     const waitPath = `${basePath}/online-waiting/${orderData.orderId}?code=${encodeURIComponent(orderData.orderCode)}`;
 
     window.location.href = intentUrl;
-
-    setTimeout(() => {
-      window.location.href = upiUrl;
-    }, 500);
-
-    setTimeout(() => {
-      if (document.visibilityState !== "hidden") {
-        window.location.href = waitPath;
-      }
-    }, 2500);
+    setTimeout(() => { window.location.href = upiUrl; }, 800);
+    setTimeout(() => { window.location.href = waitPath; }, 3000);
   };
 
   const handleCancel = async () => {

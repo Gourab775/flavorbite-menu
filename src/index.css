@@ -1754,6 +1754,82 @@ body {
   color: var(--text);
 }
 
+.orderDetailsSection {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 24px;
+  text-align: left;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.orderDetailsTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.orderItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderItemRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.orderItemRow:last-child {
+  border-bottom: none;
+}
+
+.orderItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.orderItemName {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.orderItemQty {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.orderItemPrice {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.orderTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.orderTotalAmount {
+  color: var(--accent);
+  font-size: 18px;
+}
+
 /* Order Delivery Info */
 .orderDeliveryInfo {
   background: linear-gradient(135deg, rgba(255, 122, 24, 0.06), rgba(255, 154, 75, 0.04));
