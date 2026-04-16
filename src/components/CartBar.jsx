@@ -18,9 +18,14 @@ export function CartBar() {
 
   const basePath = `/${slug}`;
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    window.location.href = `${basePath}/cart`;
+  };
+
   return (
     <div className="cartBarOuter cartBarOuter--visible">
-      <div className="cartBar">
+      <div className="cartBar" onClick={handleClick}>
         <div className="cartBarLeft">
           <div className="cartBarIcon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -34,12 +39,12 @@ export function CartBar() {
             <span className="cartBarAmt">₹{Math.round(grandTotal)}</span>
           </div>
         </div>
-        <a href={`${basePath}/cart`} className="cartBarCta">
+        <span className="cartBarCta">
           View Cart
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="9 18 15 12 9 6" />
           </svg>
-        </a>
+        </span>
       </div>
     </div>
   );
