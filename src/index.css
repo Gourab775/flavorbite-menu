@@ -330,23 +330,49 @@ a:focus:not(:focus-visible) {
 /* Cart button - accent pill */
 .cartBtn {
   position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 14px;
-  height: 38px;
-  min-width: 38px;
-  border-radius: var(--radius-pill);
-  border: none;
-  background: var(--accent);
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 180ms ease;
-  flex-shrink: 0;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 2px 10px var(--accent-glow);
+  justify-content: center;
+  color: var(--text);
+  transition: background 150ms ease;
+}
+
+.cartBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.cartBtn:active {
+  background: var(--bg-tertiary);
+}
+
+.cartBtnBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #ff4d4f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: badgePop 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 4px rgba(255, 77, 79, 0.3);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .cartBtn:hover {
@@ -1140,35 +1166,52 @@ a:focus:not(:focus-visible) {
 .qtyStepper {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--accent);
-  background: var(--card);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.stepBtn {
-  width: 34px;
-  height: 34px;
+.qtyStepper .stepBtn {
+  width: 32px;
+  height: 32px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--accent);
-  transition: background 150ms ease;
-  line-height: 1;
+  transition: all 150ms ease;
+  padding: 0;
 }
 
-.stepBtn:hover {
-  background: var(--accent-subtle);
+.qtyStepper .stepBtn:hover {
+  background: rgba(255, 122, 24, 0.1);
 }
 
-.stepBtn:active {
+.qtyStepper .stepBtn:active {
+  transform: scale(0.95);
+}
+
+.qtyStepper .stepBtn.primary {
   background: var(--accent);
   color: #fff;
+}
+
+.qtyStepper .stepBtn.primary:hover {
+  background: var(--accent-dark);
+}
+
+.qtyStepper .qty {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  padding: 0 8px;
 }
 
 .stepBtn:disabled {
@@ -1599,18 +1642,53 @@ a:focus:not(:focus-visible) {
 .stepper {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid rgba(17,24,39,0.08);
-  background: var(--card);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.stepQty {
-  width: 20px;
+.stepper .stepBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: all 150ms ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.stepper .stepBtn:hover {
+  background: rgba(255, 122, 24, 0.1);
+}
+
+.stepper .stepBtn:active {
+  transform: scale(0.95);
+}
+
+.stepper .stepBtn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.stepper .stepBtn.primary:hover {
+  background: var(--accent-dark);
+}
+
+.stepper .stepQty {
+  min-width: 28px;
   text-align: center;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 14px;
+  color: var(--text);
+  padding: 0 8px;
 }
 
 /* ── Bill card ── */
