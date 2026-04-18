@@ -179,7 +179,7 @@ export function MenuPage() {
                   >
                     <div className="sectionHeader">
                       <h2>{category?.name ?? ""}</h2>
-                      <span className="muted">
+                      <span className="sectionItemCount">
                         {`${items.length} item${items.length === 1 ? "" : "s"}`}
                       </span>
                     </div>

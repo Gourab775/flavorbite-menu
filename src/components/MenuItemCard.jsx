@@ -26,7 +26,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
 
   return (
     <>
-      <article className="menuCard">
+      <article className={`menuCard${!item.isAvailable ? " menuCard--soldOut" : ""}`}>
         <div className="menuImgWrap">
           {!imgLoaded && <div className="imgSkeleton" aria-hidden="true" />}
           {item.imageUrl && item.imageUrl.trim() !== "" ? (
@@ -41,9 +41,9 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
               }}
             />
           ) : (
-            <div className="menuImg placeholder" />
+            <div className="menuImg menuImgPlaceholder" />
           )}
-          {!item.isAvailable && <div className="soldOutTag">Sold out</div>}
+          {!item.isAvailable && <div className="soldOutTag" aria-label="Sold out" />}
         </div>
 
         <div className="menuBody">
@@ -62,7 +62,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
             {qty > 0 ? (
               <div className="qtyStepper">
                 <button
-                  className="stepBtn pressable"
+                  className="stepBtn"
                   onClick={handleDecrease}
                   aria-label={`Decrease quantity of ${item.name}`}
                 >
@@ -70,7 +70,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
                 </button>
                 <span className="qty" aria-live="polite">{qty}</span>
                 <button
-                  className="stepBtn primary pressable"
+                  className="stepBtn primary"
                   onClick={handleIncrease}
                   aria-label={`Increase quantity of ${item.name}`}
                   disabled={!item.isAvailable}
@@ -85,7 +85,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
                 disabled={!item.isAvailable}
                 aria-label={`Add ${item.name} to cart`}
               >
-                Add
+                + Add
               </button>
             )}
           </div>
