@@ -332,7 +332,7 @@ a:focus:not(:focus-visible) {
   position: relative;
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   background: var(--accent);
   border: none;
   cursor: pointer;
