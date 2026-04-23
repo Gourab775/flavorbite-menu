@@ -165,21 +165,22 @@ a:focus:not(:focus-visible) {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: var(--card);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 8px var(--shadow);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   transition: all 300ms ease;
 }
 
 .topBar.scrolled {
-  background: var(--card);
-  border-bottom: 1px solid var(--border-light);
-  box-shadow: 0 4px 16px var(--shadow);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
 .topBarTitle {
   font-size: 17px;
   font-weight: 900;
+  color: var(--text);
   margin: 0;
 }
 
@@ -188,14 +189,15 @@ a:focus:not(:focus-visible) {
   height: 40px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: var(--bg-tertiary);
   display: grid;
   place-items: center;
   cursor: pointer;
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
   transition: all 200ms ease;
-  box-shadow: 0 1px 3px var(--shadow);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .iconBtn:hover {
@@ -214,11 +216,11 @@ a:focus:not(:focus-visible) {
   justify-content: space-between;
   height: var(--header-h);
   padding: 0 16px;
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(18, 18, 18, 0.98);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-light);
-  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.3);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -226,7 +228,7 @@ a:focus:not(:focus-visible) {
 }
 
 .header.scrolled {
-  box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.4);
   border-bottom-color: var(--border);
 }
 
@@ -1837,25 +1839,26 @@ a:focus:not(:focus-visible) {
 .payBtn:not(:disabled):active { transform: scale(0.98); }
 
 .payBtn--counter {
-  background: #1f2937;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.2);
+  background: var(--bg-tertiary);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .payBtn--counter:hover {
-  background: #111827;
-  box-shadow: 0 6px 16px rgba(31, 41, 55, 0.25);
+  background: #2a2a2a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   transform: translateY(-1px);
 }
 
 .payBtn--online {
-  background: linear-gradient(135deg, #ff7a18, #ff9a4b);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #fff;
-  box-shadow: 0 4px 16px rgba(255, 122, 24, 0.3);
+  box-shadow: 0 4px 16px var(--accent-glow);
 }
 
 .payBtn--online:hover {
-  box-shadow: 0 6px 20px rgba(255, 122, 24, 0.35);
+  box-shadow: 0 6px 20px var(--accent-glow);
   transform: translateY(-1px);
 }
 
@@ -2271,7 +2274,7 @@ a:focus:not(:focus-visible) {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: var(--card);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
 }
 
@@ -2289,7 +2292,7 @@ a:focus:not(:focus-visible) {
 }
 
 .orderSummaryCard {
-  background: #f8fafc;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 16px;
   border: 1px solid var(--border);
