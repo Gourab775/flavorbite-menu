@@ -1144,34 +1144,35 @@ a:focus:not(:focus-visible) {
 .qtyStepper {
   display: inline-flex;
   align-items: center;
-  border-radius: 24px;
+  border-radius: 20px;
   background: var(--bg-tertiary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 
 .qtyStepper .stepBtn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent);
-  transition: all 150ms ease;
+  transition: all 120ms ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .qtyStepper .stepBtn:hover {
-  background: rgba(255, 122, 24, 0.1);
+  background: rgba(255, 107, 0, 0.15);
 }
 
 .qtyStepper .stepBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .qtyStepper .stepBtn.primary {
@@ -1183,18 +1184,46 @@ a:focus:not(:focus-visible) {
   background: var(--accent-dark);
 }
 
+.qtyStepper .stepBtn.primary:active {
+  background: var(--accent-dark);
+}
+
 .qtyStepper .qty {
-  min-width: 28px;
+  min-width: 24px;
   text-align: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text);
-  padding: 0 8px;
+  padding: 0 6px;
 }
 
 .stepBtn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.stepBtn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: all 120ms ease;
+  padding: 0;
+}
+
+.stepBtn:hover {
+  background: rgba(255, 107, 0, 0.15);
+}
+
+.stepBtn:active {
+  transform: scale(0.92);
 }
 
 .stepBtn.primary {
@@ -1207,12 +1236,12 @@ a:focus:not(:focus-visible) {
 }
 
 .qty {
-  min-width: 28px;
+  min-width: 24px;
   text-align: center;
-  font-weight: 800;
-  font-size: 14px;
-  color: var(--accent);
-  padding: 0 2px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  padding: 0 6px;
 }
 
 .soldOutTag {
@@ -1620,34 +1649,34 @@ a:focus:not(:focus-visible) {
 .stepper {
   display: inline-flex;
   align-items: center;
-  border-radius: 24px;
+  border-radius: 20px;
   background: var(--bg-tertiary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
 }
 
 .stepper .stepBtn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent);
-  transition: all 150ms ease;
+  transition: all 120ms ease;
   padding: 0;
   flex-shrink: 0;
 }
 
 .stepper .stepBtn:hover {
-  background: rgba(255, 122, 24, 0.1);
+  background: rgba(255, 107, 0, 0.15);
 }
 
 .stepper .stepBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .stepper .stepBtn.primary {
@@ -1657,6 +1686,15 @@ a:focus:not(:focus-visible) {
 
 .stepper .stepBtn.primary:hover {
   background: var(--accent-dark);
+}
+
+.stepper .stepQty {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  padding: 0 6px;
 }
 
 .stepper .stepQty {
