@@ -1145,20 +1145,19 @@ a:focus:not(:focus-visible) {
   display: inline-flex;
   align-items: center;
   border-radius: 50px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  gap: 2px;
+  background: var(--accent);
+  padding: 4px;
+  gap: 4px;
 }
 
 .qtyStepper .stepBtn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  background: var(--accent);
+  background: transparent;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1170,34 +1169,38 @@ a:focus:not(:focus-visible) {
 }
 
 .qtyStepper .stepBtn:hover {
-  background: var(--accent-dark);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .qtyStepper .stepBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .qtyStepper .stepBtn.primary {
-  background: var(--accent);
+  background: #fff;
+  color: var(--accent);
 }
 
 .qtyStepper .stepBtn.primary:hover {
-  background: var(--accent-dark);
+  background: #f0f0f0;
 }
 
 .qtyStepper .qty {
   min-width: 32px;
   text-align: center;
   font-weight: 700;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 16px;
+  color: #fff;
   padding: 0 8px;
 }
 
 .stepBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
+}
+
+.stepBtn:disabled:hover {
+  background: transparent;
 }
 
 .stepBtn {
@@ -1650,19 +1653,19 @@ a:focus:not(:focus-visible) {
   display: inline-flex;
   align-items: center;
   border-radius: 50px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  gap: 2px;
+  background: var(--accent);
+  padding: 4px;
+  gap: 4px;
 }
 
 .stepper .stepBtn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  background: var(--accent);
+  background: transparent;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1674,29 +1677,28 @@ a:focus:not(:focus-visible) {
 }
 
 .stepper .stepBtn:hover {
-  background: var(--accent-dark);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .stepper .stepBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .stepper .stepBtn.primary {
-  background: var(--accent);
-  color: #fff;
+  background: #fff;
+  color: var(--accent);
 }
 
 .stepper .stepBtn.primary:hover {
-  background: var(--accent-dark);
+  background: #f0f0f0;
 }
 
 .stepper .stepQty {
   min-width: 32px;
   text-align: center;
   font-weight: 700;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 16px;
+  color: #fff;
   padding: 0 8px;
 }
 

@@ -228,6 +228,7 @@ function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
               className="stepBtn pressable"
               onClick={onDecrease}
               aria-label="Decrease quantity"
+              disabled={item.quantity === 0}
             >
               −
             </button>

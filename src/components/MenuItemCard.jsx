@@ -65,6 +65,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
                   className="stepBtn"
                   onClick={handleDecrease}
                   aria-label={`Decrease quantity of ${item.name}`}
+                  disabled={qty === 0}
                 >
                   −
                 </button>
