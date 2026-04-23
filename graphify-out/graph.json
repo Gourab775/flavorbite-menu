@@ -1,0 +1,113 @@
+{
+  "directed": false,
+  "graph": [],
+  "nodes": [
+    {
+      "id": "App.jsx",
+      "label": "App.jsx"
+    },
+    {
+      "id": "MenuPage.jsx",
+      "label": "MenuPage.jsx"
+    },
+    {
+      "id": "CartPage.jsx",
+      "label": "CartPage.jsx"
+    },
+    {
+      "id": "CheckoutPage.jsx",
+      "label": "CheckoutPage.jsx"
+    },
+    {
+      "id": "PaymentPage.jsx",
+      "label": "PaymentPage.jsx"
+    },
+    {
+      "id": "WaitingPage",
+      "label": "WaitingPage"
+    },
+    {
+      "id": "OrderConfirmedPage",
+      "label": "OrderConfirmedPage"
+    },
+    {
+      "id": "OnlineWaitingPage",
+      "label": "OnlineWaitingPage"
+    },
+    {
+      "id": "useCart.jsx",
+      "label": "useCart.jsx"
+    },
+    {
+      "id": "CartBar.jsx",
+      "label": "CartBar.jsx"
+    },
+    {
+      "id": "Header.jsx",
+      "label": "Header.jsx"
+    },
+    {
+      "id": "Supabase",
+      "label": "Supabase"
+    },
+    {
+      "id": "GlobalOrderListener",
+      "label": "GlobalOrderListener"
+    }
+  ],
+  "links": [
+    {
+      "source": "App.jsx",
+      "target": "MenuPage.jsx"
+    },
+    {
+      "source": "App.jsx",
+      "target": "CartPage.jsx"
+    },
+    {
+      "source": "App.jsx",
+      "target": "CheckoutPage.jsx"
+    },
+    {
+      "source": "App.jsx",
+      "target": "PaymentPage.jsx"
+    },
+    {
+      "source": "App.jsx",
+      "target": "WaitingPage"
+    },
+    {
+      "source": "App.jsx",
+      "target": "OrderConfirmedPage"
+    },
+    {
+      "source": "App.jsx",
+      "target": "OnlineWaitingPage"
+    },
+    {
+      "source": "App.jsx",
+      "target": "useCart.jsx"
+    },
+    {
+      "source": "App.jsx",
+      "target": "GlobalOrderListener"
+    },
+    {
+      "source": "CartPage.jsx",
+      "target": "useCart.jsx"
+    },
+    {
+      "source": "MenuPage.jsx",
+      "target": "Supabase"
+    },
+    {
+      "source": "PaymentPage.jsx",
+      "target": "Supabase"
+    },
+    {
+      "source": "OnlineWaitingPage",
+      "target": "Supabase"
+    }
+  ],
+  "multigraph": false
+}
