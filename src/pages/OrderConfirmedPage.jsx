@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { supabase } from "../lib/supabaseClient";
-import lottie from "lottie-web";
-import successAnimation from "../assets/animations/Success.json";
 import { getStoredSlug } from "../utils/constants";
 
 export function OrderConfirmedPage() {
@@ -14,45 +12,9 @@ export function OrderConfirmedPage() {
 
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const animationRef = useRef(null);
-  const containerRef = useRef(null);
+  const [showAnim, setShowAnim] = useState(true);
 
-  const orderId = (() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("orderData");
-      if (saved) {
-        try {
-          return JSON.parse(saved).orderId;
-        } catch { return urlOrderId; }
-      }
-    }
-    return urlOrderId;
-  })();
-
-  useEffect(() => {
-    if (containerRef.current && !animationRef.current) {
-      animationRef.current = lottie.loadAnimation({
-        container: containerRef.current,
-        renderer: "svg",
-        loop: false,
-        autoplay: true,
-        animationData: successAnimation
-      });
-    }
-    return () => {
-      if (animationRef.current) {
-        animationRef.current.destroy();
-        animationRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    localStorage.removeItem("qr_menu_cart");
-    localStorage.removeItem("notes");
-    sessionStorage.removeItem("cart_order_note");
-    window.dispatchEvent(new Event("cart-cleared"));
-  }, []);
+  const orderId = urlOrderId;
 
   useEffect(() => {
     if (!orderId) {
@@ -80,14 +42,19 @@ export function OrderConfirmedPage() {
     navigate(basePath);
   };
 
-  const formatDate = (isoString) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    return date.toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  };
+  useEffect(() => {
+    localStorage.removeItem("qr_menu_cart");
+    localStorage.removeItem("notes");
+    sessionStorage.removeItem("cart_order_note");
+    window.dispatchEvent(new Event("cart-cleared"));
+  }, []);
+
+  useEffect(() => {
+    if (showAnim) {
+      const timer = setTimeout(() => setShowAnim(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAnim]);
 
   if (loading) {
     return (
@@ -113,11 +80,25 @@ export function OrderConfirmedPage() {
         <h1 className="topBarTitle">Order Confirmed</h1>
         <div style={{ width: 40 }} />
       </header>
-
       <main className="orderSuccess">
         <div className="successContainer">
           <div className="successAnimationWrap">
-            <div ref={containerRef} className="successAnimation" />
+            {showAnim ? (
+              <div className="successAnimation">
+                <div className="successCheckmark">
+                  <svg viewBox="0 0 52 52" className="successCheckmarkSvg">
+                    <circle className="successCheckmarkCircle" cx="26" cy="26" r="25" fill="none" />
+                    <path className="successCheckmarkCheck" fill="none" d="M14.1 27.2l7.8 7.8c.8.8 2.1.2 2.1-.9V35c0-.6-.5-1.2-1.2-1.2h-1.5c-.7 0-1.2.5-1.2 1.2v1.5c0 1.1.9 1.5 1.5 1.5h1.5c.7 0 1.2-.5 1.2-1.2v-.7c0-.8.8-1.2 1.5-.4l.7.7c.4.4 1.1.4 1.5 0l8.1-8.1c.4-.4.4-1.1 0-1.5l-.7-.7c-.4-.4-1.1-.4-1.5 0l-6.2 6.2c-.5.5-1.4.2-1.4-.5V32h-1.5c-.7 0-1.2.5-1.2 1.2v1.5c0 .7.5 1.2 1.2 1.2H23c.7 0 1.2-.5 1.2-1.2V30.5c0-.7-.5-1.2-1.2-1.2h-1.5c-.7 0-1.2.5-1.2 1.2v.7z" />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              <div className="successAnimationFallback">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            )}
           </div>
 
           <h2 className="successTitle">Order Confirmed</h2>

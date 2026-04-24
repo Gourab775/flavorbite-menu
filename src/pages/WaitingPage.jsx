@@ -137,7 +137,7 @@ export function WaitingPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1f1f1f] leading-tight"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight"
           >
             Complete Payment at Counter
           </motion.h2>
@@ -147,9 +147,9 @@ export function WaitingPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.4 }}
-              className="text-base sm:text-lg text-[#666] font-medium"
+              className="text-base sm:text-lg text-[#e0e0e0] font-medium"
             >
-              Order ID: <span className="text-[#1f1f1f] font-bold">{order.order_code}</span>
+              Order ID: <span className="text-white font-bold">{order.order_code}</span>
             </motion.p>
           )}
           
@@ -157,7 +157,7 @@ export function WaitingPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
-            className="text-sm sm:text-base text-[#999] mt-2 max-w-sm leading-relaxed"
+            className="text-sm sm:text-base text-[#cccccc] mt-2 max-w-sm leading-relaxed"
           >
             Please visit the counter to complete your payment. Your order will be confirmed once payment is received.
           </motion.p>
@@ -186,37 +186,76 @@ export function WaitingPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.7)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000
+            zIndex: 9999,
+            backdropFilter: "blur(4px)"
           }}
           onClick={() => setShowCancelModal(false)}
         >
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            style={{ background: "#fff", borderRadius: "12px", padding: "24px", maxWidth: "320px", textAlign: "center" }}
+            style={{ 
+              background: "#1a1a1a", 
+              borderRadius: "16px", 
+              padding: "28px 24px", 
+              maxWidth: "320px", 
+              width: "85%",
+              textAlign: "center",
+              border: "1px solid #333"
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <p style={{ fontSize: "16px", marginBottom: "24px" }}>
+            <p style={{ 
+              fontSize: "17px", 
+              fontWeight: "600",
+              color: "#ffffff", 
+              marginBottom: "28px",
+              lineHeight: "1.5"
+            }}>
               Are you sure you want to cancel this order?
             </p>
-            <button
-              onClick={handleCancelConfirm}
-              style={{
-                background: "#dc3545",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "12px 32px",
-                fontSize: "16px",
-                cursor: "pointer"
-              }}
-            >
-              Yes, Cancel
-            </button>
+            <div style={{ 
+              display: "flex", 
+              gap: "12px", 
+              justifyContent: "center" 
+            }}>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                style={{
+                  background: "transparent",
+                  color: "#999",
+                  border: "1px solid #444",
+                  borderRadius: "10px",
+                  padding: "12px 24px",
+                  fontSize: "15px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  flex: "1"
+                }}
+              >
+                No, Go Back
+              </button>
+              <button
+                onClick={handleCancelConfirm}
+                style={{
+                  background: "#dc3545",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  padding: "12px 24px",
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  flex: "1"
+                }}
+              >
+                Yes, Cancel
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -125,12 +125,13 @@ export function CartPage() {
 
         {/* ── Add Note ── */}
         <div className="noteSection">
-          <textarea
+          <input
+            type="text"
             className="noteInput"
             placeholder="Add note for your order..."
             value={orderNote}
             onChange={handleNoteChange}
-            rows={2}
+            enterKeyHint="done"
             aria-label="Order note"
           />
         </div>
