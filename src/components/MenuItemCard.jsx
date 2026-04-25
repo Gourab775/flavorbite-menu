@@ -1,6 +1,8 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "./Toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChefHat } from "lucide-react";
 
 export const MenuItemCard = memo(function MenuItemCard({ item }) {
   const { qtyById, addToCart, decreaseQty } = useCart();
@@ -41,7 +43,9 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
               }}
             />
           ) : (
-            <div className="menuImg menuImgPlaceholder" />
+            <div className="menuImg menuImgPlaceholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ChefHat size={32} color="var(--border)" strokeWidth={1} />
+            </div>
           )}
           {!item.isAvailable && <div className="soldOutTag" aria-label="Sold out" />}
         </div>
@@ -59,36 +63,59 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
           <p className="menuDesc">{item.description}</p>
 
           <div className="menuActions">
-            {qty > 0 ? (
-              <div className="qtyStepper">
-                <button
-                  className="stepBtn"
-                  onClick={handleDecrease}
-                  aria-label={`Decrease quantity of ${item.name}`}
-                  disabled={qty === 0}
+            <AnimatePresence mode="wait">
+              {qty > 0 ? (
+                <motion.div 
+                  key="stepper"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  className="qtyStepper"
                 >
-                  −
-                </button>
-                <span className="qty" aria-live="polite">{qty}</span>
-                <button
-                  className="stepBtn primary"
-                  onClick={handleIncrease}
-                  aria-label={`Increase quantity of ${item.name}`}
+                  <button
+                    className="stepBtn"
+                    onClick={handleDecrease}
+                    aria-label={`Decrease quantity of ${item.name}`}
+                    disabled={qty === 0}
+                  >
+                    −
+                  </button>
+                  <motion.span 
+                    key={qty}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="qty" 
+                    aria-live="polite"
+                  >
+                    {qty}
+                  </motion.span>
+                  <button
+                    className="stepBtn primary"
+                    onClick={handleIncrease}
+                    aria-label={`Increase quantity of ${item.name}`}
+                    disabled={!item.isAvailable}
+                  >
+                    +
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="addBtn"
+                  whileTap={{ scale: 0.92 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
+                  className="addBtn"
+                  onClick={handleAdd}
                   disabled={!item.isAvailable}
+                  aria-label={`Add ${item.name} to cart`}
                 >
-                  +
-                </button>
-              </div>
-            ) : (
-              <button
-                className="addBtn pressable"
-                onClick={handleAdd}
-                disabled={!item.isAvailable}
-                aria-label={`Add ${item.name} to cart`}
-              >
-                + Add
-              </button>
-            )}
+                  + Add
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </article>

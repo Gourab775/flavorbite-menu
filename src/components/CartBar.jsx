@@ -1,6 +1,8 @@
 import { useRoute, useLocation } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { getStoredSlug } from "../utils/constants";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingBag, ChevronRight } from "lucide-react";
 
 export function CartBar() {
   const [isMenuRoute, params] = useRoute("/:slug");
@@ -24,28 +26,32 @@ export function CartBar() {
   };
 
   return (
-    <div className="cartBarOuter cartBarOuter--visible">
-      <div className="cartBar" onClick={handleClick}>
-        <div className="cartBarLeft">
-          <div className="cartBarIcon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
-            </svg>
+    <AnimatePresence>
+      <motion.div 
+        key="cartBar"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="cartBarOuter cartBarOuter--visible"
+        style={{ backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", background: "transparent" }}
+      >
+        <div className="cartBar" onClick={handleClick} style={{ boxShadow: "0 -4px 24px rgba(0,0,0,0.4)" }}>
+          <div className="cartBarLeft">
+            <div className="cartBarIcon">
+              <ShoppingBag size={20} strokeWidth={2.2} />
+            </div>
+            <div className="cartBarInfo">
+              <span className="cartBarCount">{totalItems} item{totalItems === 1 ? "" : "s"}</span>
+              <span className="cartBarAmt">₹{Math.round(grandTotal)}</span>
+            </div>
           </div>
-          <div className="cartBarInfo">
-            <span className="cartBarCount">{totalItems} item{totalItems === 1 ? "" : "s"}</span>
-            <span className="cartBarAmt">₹{Math.round(grandTotal)}</span>
-          </div>
+          <span className="cartBarCta">
+            View Cart
+            <ChevronRight size={18} strokeWidth={2.5} />
+          </span>
         </div>
-        <span className="cartBarCta">
-          View Cart
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </span>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

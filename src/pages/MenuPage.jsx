@@ -13,6 +13,7 @@ import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
 import { setStoredSlug } from "../utils/constants";
 import { initSession } from "../utils/session";
+import { AlertCircle, Search } from "lucide-react";
 
 function slugify(text) {
   return String(text ?? "")
@@ -151,11 +152,7 @@ export function MenuPage() {
           {!loading && !searching && error && (
             <div className="emptyState">
               <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle size={40} strokeWidth={1.5} />
               </div>
               <h2>Unable to load menu</h2>
               <p className="muted">{error}</p>
@@ -197,11 +194,7 @@ export function MenuPage() {
               {isSearching ? (
                 <>
                   <div className="emptyIcon" aria-label="Search icon">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.35-4.35" />
-                      <path d="M8 11h6" />
-                    </svg>
+                    <Search size={40} strokeWidth={1.5} />
                   </div>
                   <h2>No dishes found</h2>
                   <p className="muted">Try a different search term.</p>

@@ -6,6 +6,8 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
+import { ArrowLeft, CreditCard, Smartphone } from "lucide-react";
+import { motion } from "framer-motion";
 
 function generateOrderCode() {
   const num = Math.floor(1000 + Math.random() * 9000);
@@ -175,7 +177,7 @@ export function CheckoutPage() {
           onClick={() => navigate(`${basePath}/cart`)}
           aria-label="Back to cart"
         >
-          ←
+          <ArrowLeft size={20} />
         </button>
         <h1 className="topBarTitle">Checkout</h1>
         <div style={{ width: 40 }} />
@@ -230,33 +232,39 @@ export function CheckoutPage() {
             </div>
           ) : (
             <>
-              <button
-                className="payBtn payBtn--counter pressable"
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                className="payBtn payBtn--counter"
                 onClick={handleCounterOrder}
                 disabled={isLoading}
                 style={{ width: "100%", marginBottom: "12px" }}
               >
-                <span className="payBtnIcon" aria-hidden="true">💳</span>
+                <span className="payBtnIcon" aria-hidden="true">
+                  <CreditCard size={20} />
+                </span>
                 <span>
                   <span className="payBtnLabel">Pay at Counter</span>
                   <span className="payBtnSub">Cash/Card Only</span>
                 </span>
                 {isLoading && <span className="btnSpinner" />}
-              </button>
+              </motion.button>
 
-              <button
-                className="payBtn payBtn--online pressable"
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                className="payBtn payBtn--online"
                 onClick={handleOnlineOrder}
                 disabled={isLoading}
                 style={{ width: "100%" }}
               >
-                <span className="payBtnIcon" aria-hidden="true">📱</span>
+                <span className="payBtnIcon" aria-hidden="true">
+                  <Smartphone size={20} />
+                </span>
                 <span>
                   <span className="payBtnLabel">Pay Online</span>
                   <span className="payBtnSub">UPI Only</span>
                 </span>
                 {isLoading && <span className="btnSpinner" />}
-              </button>
+              </motion.button>
             </>
           )}
         </section>
