@@ -33,7 +33,7 @@ export function hasValidSession() {
   const session = getSession();
   if (!session) return false;
   
-  const maxAge = 3 * 60 * 60 * 1000;
+  const maxAge = 2 * 60 * 60 * 1000;
   return (Date.now() - session.createdAt) < maxAge;
 }
 

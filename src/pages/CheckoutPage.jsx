@@ -6,6 +6,7 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
+import { getTableData } from "../utils/session";
 import { ArrowLeft, CreditCard, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -65,6 +66,7 @@ export function CheckoutPage() {
         is_veg: Boolean(item.isVeg),
       }));
 
+      const tableData = getTableData();
       const orderData = {
         restaurant_id: restaurant.id,
         status: "pending",
@@ -72,6 +74,7 @@ export function CheckoutPage() {
         total_price: grandTotal,
         payment_mode: "counter",
         items: itemsPayload,
+        table_id: tableData?.id || null,
       };
       
       if (orderNote) {
@@ -126,6 +129,7 @@ export function CheckoutPage() {
 
       const totalAmount = Math.round(grandTotal * 100) / 100;
 
+      const tableData = getTableData();
       const insertData = {
         restaurant_id: restaurant.id,
         status: "pending",
@@ -133,6 +137,7 @@ export function CheckoutPage() {
         order_code: generateOrderCode(),
         total_price: totalAmount,
         items: itemsPayload,
+        table_id: tableData?.id || null,
       };
       
       if (orderNote) {

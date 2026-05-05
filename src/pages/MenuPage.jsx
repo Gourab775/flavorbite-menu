@@ -12,7 +12,8 @@ import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
 import { setStoredSlug } from "../utils/constants";
-import { initSession } from "../utils/session";
+import { initSession, setTableData } from "../utils/session";
+import { supabase } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
 
 function slugify(text) {
@@ -36,6 +37,31 @@ export function MenuPage() {
       initSession();
     }
   }, [slug, loadMenu]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tableNum = searchParams.get("table");
+    if (tableNum && restaurant?.id) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tableNum);
+      let query = supabase
+        .from('restaurant_tables')
+        .select('*')
+        .eq('restaurant_id', restaurant.id);
+        
+      if (isUUID) {
+        query = query.eq('id', tableNum);
+      } else {
+        query = query.eq('table_number', tableNum);
+      }
+      
+      query.single()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setTableData(data);
+          }
+        });
+    }
+  }, [restaurant?.id]);
 
   const { vegMode, searchQuery } = useCart();
   const { categories, menuItems, loading, error, refetch } = useMenu();
