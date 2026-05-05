@@ -30,6 +30,35 @@ export function MenuPage() {
   const { slug } = useParams();
   const { loadMenu } = useMenuStore();
 
+  // Restaurant state initialization
+  const [restaurant, setRestaurant] = useState(null);
+
+  // Fetch restaurant data based on slug
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRestaurant = async () => {
+      try {
+        if (!slug || typeof slug !== "string") return;
+        const { data, error } = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+        if (error) {
+          console.error("Failed to fetch restaurant:", error);
+          if (!cancelled) setRestaurant(null);
+          return;
+        }
+        if (!cancelled) setRestaurant(data);
+      } catch (e) {
+        console.error("Unexpected error fetching restaurant:", e);
+        if (!cancelled) setRestaurant(null);
+      }
+    };
+    fetchRestaurant();
+    return () => { cancelled = true; };
+  }, [slug]);
+
   useEffect(() => {
     if (slug && typeof slug === "string") {
       setStoredSlug(slug);
@@ -141,6 +170,9 @@ export function MenuPage() {
     setActiveCategory(slug);
     scrollToSection(slug);
   }, [scrollToSection]);
+
+  // Do not render until restaurant data is loaded
+  if (!restaurant) return null;
 
   return (
     <div className="menuLayout">
