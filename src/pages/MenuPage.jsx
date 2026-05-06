@@ -88,7 +88,7 @@ export function MenuPage() {
 
     const doLookup = async () => {
       try {
-        // Query using table_token column (QR code contains table_token, not id)
+        // Query using table_token column (QR code contains table_token, NOT id)
         const { data: byToken, error: tokenErr } = await supabase
           .from("restaurant_tables")
           .select("*")
@@ -96,11 +96,14 @@ export function MenuPage() {
           .maybeSingle();
 
         if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
+          console.log("FETCHED_TABLE_ID:", byToken?.id);
           console.log("[MenuPage] Table found by table_token:", byToken.table_number);
           setTableData(byToken);
           // Store the actual id (primary key) in localStorage as table_id for order insert
           localStorage.setItem("table_id", byToken.id);
+          localStorage.setItem("table_token", byToken.table_token);
           console.log("[MenuPage] Stored table_id:", byToken.id);
+          console.log("[MenuPage] Stored table_token:", byToken.table_token);
           return;
         }
 
