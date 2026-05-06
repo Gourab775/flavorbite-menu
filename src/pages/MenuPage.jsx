@@ -12,7 +12,7 @@ import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
 import { setStoredSlug } from "../utils/constants";
-import { initSession, setTableData, getTableId } from "../utils/session";
+import { initSession, setTableData } from "../utils/session";
 import { supabase } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
 
@@ -85,49 +85,41 @@ export function MenuPage() {
 
     if (!tableNum) return;
 
-    // Skip if we already resolved the table for this session
-    if (getTableId()) return;
-
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         tableNum
       );
-
-    const lookupTable = async () => {
+    
+    const doLookup = async () => {
       try {
         if (isUUID) {
-          // Try by primary key first — always safe
-          const { data: byId } = await supabase
+          // Try by primary key first (treat as table_id)
+          const { data: byId, error: idErr } = await supabase
             .from("restaurant_tables")
             .select("*")
-            .eq("restaurant_id", restaurant.id)
             .eq("id", tableNum)
             .maybeSingle();
-
-          if (byId) {
+          
+          if (!idErr && byId && byId.restaurant_id === restaurant.id) {
             console.log("[MenuPage] Table found by id:", byId.table_number);
             setTableData(byId);
             return;
           }
-
-          // Fallback: try by table_token (column may be absent on older schemas)
+          
+          // Also try by table_token if id lookup failed or wrong restaurant
           const { data: byToken, error: tokenErr } = await supabase
             .from("restaurant_tables")
             .select("*")
-            .eq("restaurant_id", restaurant.id)
             .eq("table_token", tableNum)
             .maybeSingle();
-
-          if (!tokenErr && byToken) {
+          
+          if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
             console.log("[MenuPage] Table found by token:", byToken.table_number);
             setTableData(byToken);
             return;
           }
-          if (tokenErr) {
-            console.warn("[MenuPage] table_token lookup skipped:", tokenErr.message);
-          }
         } else {
-          // Plain table_number string (e.g. "3" or "T3")
+          // Plain table_number string
           const { data: byNum, error: numErr } = await supabase
             .from("restaurant_tables")
             .select("*")
@@ -140,9 +132,6 @@ export function MenuPage() {
             setTableData(byNum);
             return;
           }
-          if (numErr) {
-            console.error("[MenuPage] table_number lookup failed:", numErr.message);
-          }
         }
 
         console.warn("[MenuPage] No matching table found for param:", tableNum);
@@ -151,7 +140,7 @@ export function MenuPage() {
       }
     };
 
-    lookupTable();
+    doLookup();
   }, [restaurant?.id]);
 
   const { vegMode, searchQuery } = useCart();
