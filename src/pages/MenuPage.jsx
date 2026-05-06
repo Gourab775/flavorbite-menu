@@ -67,9 +67,12 @@ export function MenuPage() {
       loadMenu(slug);
       initSession();
     }
-    const rawParam = new URLSearchParams(window.location.search).get("table");
-    if (rawParam) {
-      sessionStorage.setItem("qr_table_param", rawParam);
+    const params = new URLSearchParams(window.location.search);
+    const tableId = params.get("table");
+    if (tableId) {
+      sessionStorage.setItem("qr_table_param", tableId);
+      localStorage.setItem("table_id", tableId);
+      console.log("[MenuPage] Stored table_id:", tableId);
     }
   }, [slug, loadMenu]);
 
