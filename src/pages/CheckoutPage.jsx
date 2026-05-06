@@ -67,6 +67,7 @@ export function CheckoutPage() {
       }));
 
       const tableData = getTableData();
+      console.log('[Checkout] tableData:', tableData, '→ table_id:', tableData?.id || null);
       const orderData = {
         restaurant_id: restaurant.id,
         status: "pending",
