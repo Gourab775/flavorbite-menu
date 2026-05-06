@@ -54,8 +54,9 @@ export function CheckoutPage() {
       return;
     }
 
+    // Get table_id from localStorage (was stored in MenuPage after validating table_token)
     const tableId = localStorage.getItem("table_id") || null;
-    console.log("TABLE_ID_BEING_SENT:", tableId);
+    console.log("USING TABLE_ID:", tableId);
     
     if (!tableId) {
       setToastMsg("Table not found. Please scan QR code again.");
@@ -66,21 +67,6 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table id exists in restaurant_tables
-      const { data: tableData, error: tableError } = await supabase
-        .from("restaurant_tables")
-        .select("id, table_number")
-        .eq("id", tableId)
-        .single();
-
-      if (tableError || !tableData) {
-        console.error("Invalid table id:", tableId, tableError);
-        throw new Error("Invalid table. Please rescan the QR code.");
-      }
-
-      console.log("Table validated:", tableData);
-      const validatedTableId = tableData.id;
-
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
         name: String(item.name ?? "Unknown Item"),
@@ -96,7 +82,7 @@ export function CheckoutPage() {
         total_price: grandTotal,
         payment_mode: "counter",
         items: itemsPayload,
-        table_id: validatedTableId,
+        table_id: tableId,
       };
       
       if (orderNote) {
@@ -138,8 +124,9 @@ export function CheckoutPage() {
       return;
     }
 
+    // Get table_id from localStorage (was stored in MenuPage after validating table_token)
     const tableId = localStorage.getItem("table_id") || null;
-    console.log("TABLE_ID_BEING_SENT:", tableId);
+    console.log("USING TABLE_ID:", tableId);
     
     if (!tableId) {
       setToastMsg("Table not found. Please scan QR code again.");
@@ -150,21 +137,6 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table id exists in restaurant_tables
-      const { data: tableData, error: tableError } = await supabase
-        .from("restaurant_tables")
-        .select("id, table_number")
-        .eq("id", tableId)
-        .single();
-
-      if (tableError || !tableData) {
-        console.error("Invalid table id:", tableId, tableError);
-        throw new Error("Invalid table. Please rescan the QR code.");
-      }
-
-      console.log("Table validated:", tableData);
-      const validatedTableId = tableData.id;
-
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
         name: String(item.name ?? "Unknown Item"),
@@ -182,7 +154,7 @@ export function CheckoutPage() {
         order_code: generateOrderCode(),
         total_price: totalAmount,
         items: itemsPayload,
-        table_id: validatedTableId,
+        table_id: tableId,
       };
       
       if (orderNote) {

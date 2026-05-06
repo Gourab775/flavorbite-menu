@@ -98,7 +98,7 @@ export function MenuPage() {
         if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
           console.log("[MenuPage] Table found by table_token:", byToken.table_number);
           setTableData(byToken);
-          // Store the actual id (primary key) in localStorage for order insert
+          // Store the actual id (primary key) in localStorage as table_id for order insert
           localStorage.setItem("table_id", byToken.id);
           console.log("[MenuPage] Stored table_id:", byToken.id);
           return;
