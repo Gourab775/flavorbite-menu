@@ -71,11 +71,12 @@ export function useTableValidation() {
       }
 
       // URL token mode: only validate if we have a token in URL and no stored session
-      if (urlToken) {
+      const effectiveToken = urlToken || localStorage.getItem("table_token");
+      if (effectiveToken) {
         const { data, error: fetchError } = await supabase
           .from("restaurant_tables")
           .select("id, restaurant_id, table_number, table_token, capacity, is_active")
-          .eq("table_token", urlToken)
+          .eq("table_token", effectiveToken)
           .maybeSingle();
 
         if (fetchError || !data) {
@@ -86,6 +87,10 @@ export function useTableValidation() {
           throw new Error("This table is not active.");
         }
 
+        console.log("[useTableValidation] Verified token:", effectiveToken);
+        localStorage.setItem("table_token", data.table_token);
+        localStorage.setItem("table_id", data.id);
+        
         setTableDataState(data);
         setTableData(data);
         initSession();

@@ -6,7 +6,7 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
-import { ArrowLeft, CreditCard, Smartphone } from "lucide-react";
+import { ArrowLeft, CreditCard, Smartphone, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 function generateOrderCode() {
@@ -32,14 +32,55 @@ export function CheckoutPage() {
 
   const basePath = `/${slug}`;
 
+  const [tableError, setTableError] = useState(null);
+
   useEffect(() => {
     if (slug && !restaurant.id) {
       loadMenu(slug);
+    }
+    
+    // Check for table_token on mount
+    const token = localStorage.getItem("table_token") || new URLSearchParams(window.location.search).get("table");
+    if (!token) {
+      console.warn("[Checkout] No table_token found on mount.");
+      setTableError("Invalid table. Please scan the QR code from your table to proceed.");
+    } else {
+      console.log("[Checkout] table_token verified on mount:", token);
     }
   }, [slug, restaurant.id, loadMenu]);
 
   const isLoading = localLoading || menuLoading;
   const hasRestaurant = restaurant && restaurant.id;
+
+  if (tableError) {
+    return (
+      <div className="pageLayout">
+        <header className="topBar">
+          <button className="iconBtn pressable" onClick={() => navigate(`${basePath}/cart`)}>
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="topBarTitle">Checkout</h1>
+          <div style={{ width: 40 }} />
+        </header>
+        <main className="emptyState" style={{ height: "calc(100vh - 60px)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="emptyIcon" style={{ color: "#ff6b6b" }}>
+            <AlertCircle size={50} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ marginTop: "20px" }}>Table Required</h2>
+          <p className="muted" style={{ maxWidth: "260px", margin: "12px auto" }}>
+            {tableError}
+          </p>
+          <button 
+            className="btn primary" 
+            style={{ marginTop: "20px" }}
+            onClick={() => navigate(`${basePath}`)}
+          >
+            Go to Menu
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   const handleCounterOrder = async () => {
     if (!cart || cart.length === 0) {

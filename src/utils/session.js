@@ -82,6 +82,10 @@ export function clearSession() {
   sessionStorage.removeItem(FLOW_KEY);
   sessionStorage.removeItem(PAYMENT_TOKEN_KEY);
   sessionStorage.removeItem("qr_table_param");
+  
+  // Also clear permanent table storage
+  localStorage.removeItem("table_token");
+  localStorage.removeItem("table_id");
 }
 
 export function setPaymentToken(token) {

@@ -30,7 +30,7 @@ export function MenuPage() {
   const { slug } = useParams();
   const { loadMenu } = useMenuStore();
 
-  const [restaurant, setRestaurant] = useState(null);
+  const [tableStatus, setTableStatus] = useState("validating"); // validating, missing, invalid, ok
 
   // ── 1. Fetch restaurant by slug ──────────────────────────────────────────
   useEffect(() => {
@@ -58,21 +58,30 @@ export function MenuPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
-  // ── 2. Init session + cache the ?table= param immediately ────────────────
-  //    The restaurant fetch is async; we must persist the URL param NOW before
-  //    SPA navigation (cart, checkout) strips it from window.location.search.
+  // ── 2. Init session + handle table_token extraction ────────────────────────
   useEffect(() => {
     if (slug && typeof slug === "string") {
       setStoredSlug(slug);
       loadMenu(slug);
       initSession();
     }
+    
     const params = new URLSearchParams(window.location.search);
-    const tableToken = params.get("table");
-    if (tableToken) {
-      sessionStorage.setItem("qr_table_param", tableToken);
-      // Do NOT store in localStorage yet - wait for verification
-      console.log("[MenuPage] tableParam detected from URL:", tableToken);
+    const tableParam = params.get("table");
+    
+    if (tableParam) {
+      console.log("[MenuPage] tableParam detected from URL:", tableParam);
+      localStorage.setItem("table_token", tableParam);
+      sessionStorage.setItem("qr_table_param", tableParam);
+    } else {
+      const storedToken = localStorage.getItem("table_token");
+      if (storedToken) {
+        console.log("[MenuPage] table_token recovered from localStorage:", storedToken);
+        sessionStorage.setItem("qr_table_param", storedToken);
+      } else {
+        console.warn("[MenuPage] No table_token found in URL or storage.");
+        setTableStatus("missing");
+      }
     }
   }, [slug, loadMenu]);
 
@@ -82,39 +91,45 @@ export function MenuPage() {
 
     const tableToken =
       new URLSearchParams(window.location.search).get("table") ||
-      sessionStorage.getItem("qr_table_param");
+      localStorage.getItem("table_token");
 
-    if (!tableToken) return;
+    if (!tableToken) {
+      setTableStatus("missing");
+      return;
+    }
 
     const doLookup = async () => {
       try {
-        // Query using table_token column (QR code contains table_token, NOT id)
+        setTableStatus("validating");
+        // Query using table_token column
         const { data: byToken, error: tokenErr } = await supabase
           .from("restaurant_tables")
           .select("*")
           .eq("table_token", tableToken)
           .maybeSingle();
 
-        if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
-          console.log("[MenuPage] Table query result:", byToken);
-          console.log("[MenuPage] FETCHED_TABLE_ID (real PK):", byToken?.id);
-          console.log("[MenuPage] Table found by table_token:", byToken.table_number);
-          
-          setTableData(byToken);
-          // Store the actual id (primary key) in localStorage as table_id for order insert
-          localStorage.setItem("table_id", byToken.id);
-          localStorage.setItem("table_token", byToken.table_token);
-          console.log("[MenuPage] FINAL Stored table_id in localStorage:", byToken.id);
+        if (tokenErr) {
+          console.error("[MenuPage] table_token lookup error:", tokenErr.message);
+          setTableStatus("invalid");
           return;
         }
 
-        if (tokenErr) {
-          console.error("[MenuPage] table_token lookup error:", tokenErr.message);
+        if (byToken && byToken.restaurant_id === restaurant.id) {
+          console.log("[MenuPage] Table verified successfully:", byToken.table_number);
+          console.log("[MenuPage] FETCHED_TABLE_ID (real PK):", byToken.id);
+          
+          setTableData(byToken);
+          localStorage.setItem("table_id", byToken.id);
+          localStorage.setItem("table_token", byToken.table_token);
+          console.log("[MenuPage] Table info persisted to localStorage");
+          setTableStatus("ok");
+        } else {
+          console.warn("[MenuPage] No matching table found for token:", tableToken);
+          setTableStatus("invalid");
         }
-
-        console.warn("[MenuPage] No matching table found for token:", tableToken);
       } catch (err) {
         console.error("[MenuPage] Table lookup exception:", err);
+        setTableStatus("invalid");
       }
     };
 
@@ -206,7 +221,52 @@ export function MenuPage() {
   // Do not render until restaurant data is loaded
   if (!restaurant) return null;
 
-  return (
+  // Handle blocking states
+  if (tableStatus === "missing") {
+    return (
+      <div className="menuLayout">
+        <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="emptyIcon" style={{ color: "#ffb020" }}>
+            <AlertCircle size={60} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ marginTop: "24px" }}>Table Required</h2>
+          <p className="muted" style={{ maxWidth: "280px", margin: "12px auto" }}>
+            Please scan the QR code located on your table to view the menu and place orders.
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (tableStatus === "invalid") {
+    return (
+      <div className="menuLayout">
+        <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="emptyIcon" style={{ color: "#ff6b6b" }}>
+            <AlertCircle size={60} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ marginTop: "24px" }}>Invalid Table</h2>
+          <p className="muted" style={{ maxWidth: "280px", margin: "12px auto" }}>
+            The QR code scanned is invalid or not recognized. Please scan the QR code from your table again.
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (tableStatus === "validating") {
+    return (
+      <div className="menuLayout">
+        <main className="loadingPage">
+          <div className="loadingSpinner" />
+          <p className="loadingText">Verifying table...</p>
+        </main>
+      </div>
+    );
+  }
+
+  // Only render menu if tableStatus === "ok"
+  if (tableStatus !== "ok") return null;
     <div className="menuLayout">
       <main id="menu-container" className="menuScroll hideScrollbar">
         <div className="topSection">
