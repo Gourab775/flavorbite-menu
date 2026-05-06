@@ -76,68 +76,39 @@ export function MenuPage() {
     }
   }, [slug, loadMenu]);
 
-  // ── 3. Look up the table row once the restaurant id is available ─────────
-  //    Uses two sequential queries (id first, then table_token) instead of
-  //    .or() so that a missing table_token column doesn't kill the whole call.
+  // ── 3. Look up the table row using table_token ──────────────────────
   useEffect(() => {
     if (!restaurant?.id) return;
 
-    const tableNum =
+    const tableToken =
       new URLSearchParams(window.location.search).get("table") ||
       sessionStorage.getItem("qr_table_param");
 
-    if (!tableNum) return;
+    if (!tableToken) return;
 
-    const isUUID =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        tableNum
-      );
-    
     const doLookup = async () => {
       try {
-        if (isUUID) {
-          // Try by primary key first (treat as table_id)
-          const { data: byId, error: idErr } = await supabase
-            .from("restaurant_tables")
-            .select("*")
-            .eq("id", tableNum)
-            .maybeSingle();
-          
-          if (!idErr && byId && byId.restaurant_id === restaurant.id) {
-            console.log("[MenuPage] Table found by id:", byId.table_number);
-            setTableData(byId);
-            return;
-          }
-          
-          // Also try by table_token if id lookup failed or wrong restaurant
-          const { data: byToken, error: tokenErr } = await supabase
-            .from("restaurant_tables")
-            .select("*")
-            .eq("table_token", tableNum)
-            .maybeSingle();
-          
-          if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
-            console.log("[MenuPage] Table found by token:", byToken.table_number);
-            setTableData(byToken);
-            return;
-          }
-        } else {
-          // Plain table_number string
-          const { data: byNum, error: numErr } = await supabase
-            .from("restaurant_tables")
-            .select("*")
-            .eq("restaurant_id", restaurant.id)
-            .eq("table_number", tableNum)
-            .maybeSingle();
+        // Query using table_token column (QR code contains table_token, not id)
+        const { data: byToken, error: tokenErr } = await supabase
+          .from("restaurant_tables")
+          .select("*")
+          .eq("table_token", tableToken)
+          .maybeSingle();
 
-          if (!numErr && byNum) {
-            console.log("[MenuPage] Table found by number:", byNum.table_number);
-            setTableData(byNum);
-            return;
-          }
+        if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
+          console.log("[MenuPage] Table found by table_token:", byToken.table_number);
+          setTableData(byToken);
+          // Store the actual id (primary key) in localStorage for order insert
+          localStorage.setItem("table_id", byToken.id);
+          console.log("[MenuPage] Stored table_id:", byToken.id);
+          return;
         }
 
-        console.warn("[MenuPage] No matching table found for param:", tableNum);
+        if (tokenErr) {
+          console.error("[MenuPage] table_token lookup error:", tokenErr.message);
+        }
+
+        console.warn("[MenuPage] No matching table found for token:", tableToken);
       } catch (err) {
         console.error("[MenuPage] Table lookup exception:", err);
       }

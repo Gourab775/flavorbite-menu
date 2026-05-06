@@ -66,19 +66,20 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table exists in restaurant_tables
+      // Validate table_token exists in restaurant_tables and get the id
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id, table_number")
-        .eq("id", tableId)
+        .eq("table_token", tableId)
         .single();
 
       if (tableError || !tableData) {
-        console.error("Invalid table ID:", tableId, tableError);
+        console.error("Invalid table_token:", tableId, tableError);
         throw new Error("Invalid table. Please rescan the QR code.");
       }
 
       console.log("Table validated:", tableData);
+      const validatedTableId = tableData.id;
 
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
@@ -95,7 +96,7 @@ export function CheckoutPage() {
         total_price: grandTotal,
         payment_mode: "counter",
         items: itemsPayload,
-        table_id: tableId,
+        table_id: validatedTableId,
       };
       
       if (orderNote) {
@@ -149,19 +150,20 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table exists in restaurant_tables
+      // Validate table_token exists in restaurant_tables and get the id
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id, table_number")
-        .eq("id", tableId)
+        .eq("table_token", tableId)
         .single();
 
       if (tableError || !tableData) {
-        console.error("Invalid table ID:", tableId, tableError);
+        console.error("Invalid table_token:", tableId, tableError);
         throw new Error("Invalid table. Please rescan the QR code.");
       }
 
       console.log("Table validated:", tableData);
+      const validatedTableId = tableData.id;
 
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
@@ -180,7 +182,7 @@ export function CheckoutPage() {
         order_code: generateOrderCode(),
         total_price: totalAmount,
         items: itemsPayload,
-        table_id: tableId,
+        table_id: validatedTableId,
       };
       
       if (orderNote) {
