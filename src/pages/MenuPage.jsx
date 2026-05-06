@@ -30,19 +30,18 @@ export function MenuPage() {
   const { slug } = useParams();
   const { loadMenu } = useMenuStore();
 
-  // Restaurant state initialization
   const [restaurant, setRestaurant] = useState(null);
 
-  // Fetch restaurant data based on slug
+  // ── 1. Fetch restaurant by slug ──────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     const fetchRestaurant = async () => {
       try {
         if (!slug || typeof slug !== "string") return;
         const { data, error } = await supabase
-          .from('restaurants')
-          .select('*')
-          .eq('slug', slug)
+          .from("restaurants")
+          .select("*")
+          .eq("slug", slug)
           .single();
         if (error) {
           console.error("Failed to fetch restaurant:", error);
@@ -59,31 +58,34 @@ export function MenuPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
+  // ── 2. Init session + cache the ?table= param immediately ────────────────
+  //    The restaurant fetch is async; we must persist the URL param NOW before
+  //    SPA navigation (cart, checkout) strips it from window.location.search.
   useEffect(() => {
     if (slug && typeof slug === "string") {
       setStoredSlug(slug);
       loadMenu(slug);
       initSession();
     }
-    // Immediately cache the ?table= param so it survives SPA navigation
-    // (the restaurant fetch is async – we must not lose the param before it resolves)
     const rawParam = new URLSearchParams(window.location.search).get("table");
     if (rawParam) {
       sessionStorage.setItem("qr_table_param", rawParam);
     }
   }, [slug, loadMenu]);
 
+  // ── 3. Look up the table row once the restaurant id is available ─────────
+  //    Uses two sequential queries (id first, then table_token) instead of
+  //    .or() so that a missing table_token column doesn't kill the whole call.
   useEffect(() => {
     if (!restaurant?.id) return;
 
-    // Use the live URL param first; fall back to the value cached on first load
     const tableNum =
       new URLSearchParams(window.location.search).get("table") ||
       sessionStorage.getItem("qr_table_param");
 
     if (!tableNum) return;
 
-    // Skip if we already have a valid table stored for this session
+    // Skip if we already resolved the table for this session
     if (getTableId()) return;
 
     const isUUID =
@@ -91,28 +93,65 @@ export function MenuPage() {
         tableNum
       );
 
-    let query = supabase
-      .from("restaurant_tables")
-      .select("*")
-      .eq("restaurant_id", restaurant.id);
+    const lookupTable = async () => {
+      try {
+        if (isUUID) {
+          // Try by primary key first — always safe
+          const { data: byId } = await supabase
+            .from("restaurant_tables")
+            .select("*")
+            .eq("restaurant_id", restaurant.id)
+            .eq("id", tableNum)
+            .maybeSingle();
 
-    if (isUUID) {
-      // token can be either the row id or the dedicated table_token column
-      query = query.or(`id.eq.${tableNum},table_token.eq.${tableNum}`);
-    } else {
-      query = query.eq("table_number", tableNum);
-    }
+          if (byId) {
+            console.log("[MenuPage] Table found by id:", byId.table_number);
+            setTableData(byId);
+            return;
+          }
 
-    query
-      .limit(1)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setTableData(data);
-        } else if (error) {
-          console.error("[MenuPage] Table lookup failed:", error.message);
+          // Fallback: try by table_token (column may be absent on older schemas)
+          const { data: byToken, error: tokenErr } = await supabase
+            .from("restaurant_tables")
+            .select("*")
+            .eq("restaurant_id", restaurant.id)
+            .eq("table_token", tableNum)
+            .maybeSingle();
+
+          if (!tokenErr && byToken) {
+            console.log("[MenuPage] Table found by token:", byToken.table_number);
+            setTableData(byToken);
+            return;
+          }
+          if (tokenErr) {
+            console.warn("[MenuPage] table_token lookup skipped:", tokenErr.message);
+          }
+        } else {
+          // Plain table_number string (e.g. "3" or "T3")
+          const { data: byNum, error: numErr } = await supabase
+            .from("restaurant_tables")
+            .select("*")
+            .eq("restaurant_id", restaurant.id)
+            .eq("table_number", tableNum)
+            .maybeSingle();
+
+          if (!numErr && byNum) {
+            console.log("[MenuPage] Table found by number:", byNum.table_number);
+            setTableData(byNum);
+            return;
+          }
+          if (numErr) {
+            console.error("[MenuPage] table_number lookup failed:", numErr.message);
+          }
         }
-      });
+
+        console.warn("[MenuPage] No matching table found for param:", tableNum);
+      } catch (err) {
+        console.error("[MenuPage] Table lookup exception:", err);
+      }
+    };
+
+    lookupTable();
   }, [restaurant?.id]);
 
   const { vegMode, searchQuery } = useCart();
@@ -153,13 +192,13 @@ export function MenuPage() {
   }, [categories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
   // ── Scroll sync: container scroll → update active category ──
-  useCategorySync('menu-container', setActiveCategory);
+  useCategorySync("menu-container", setActiveCategory);
 
   // ── Interruptible smooth scroll with precise offset ──
   const scrollRafRef = useRef(null);
   const scrollToSection = useCallback((id) => {
     const el = document.getElementById(id);
-    const container = document.getElementById('menu-container');
+    const container = document.getElementById("menu-container");
     if (!el || !container) return;
 
     if (scrollRafRef.current) {
@@ -167,16 +206,16 @@ export function MenuPage() {
     }
 
     const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
-    
+
     const doScroll = () => {
       const currentScrollTop = container.scrollTop;
       const diff = targetScroll - currentScrollTop;
-      
+
       if (Math.abs(diff) <= 1) return;
-      
+
       const nextScroll = currentScrollTop + diff * 0.35;
       container.scrollTop = nextScroll;
-      
+
       const remaining = Math.abs(targetScroll - container.scrollTop);
       if (remaining > 1) {
         scrollRafRef.current = requestAnimationFrame(doScroll);
@@ -188,11 +227,14 @@ export function MenuPage() {
   }, []);
 
   // ── Category click → scroll to section ──
-  const handleCategoryClick = useCallback((categoryName) => {
-    const slug = slugify(categoryName);
-    setActiveCategory(slug);
-    scrollToSection(slug);
-  }, [scrollToSection]);
+  const handleCategoryClick = useCallback(
+    (categoryName) => {
+      const id = slugify(categoryName);
+      setActiveCategory(id);
+      scrollToSection(id);
+    },
+    [scrollToSection]
+  );
 
   // Do not render until restaurant data is loaded
   if (!restaurant) return null;
