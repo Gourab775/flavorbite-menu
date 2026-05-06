@@ -6,7 +6,7 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
-import { getTableData } from "../utils/session";
+import { getTableData, getTableId } from "../utils/session";
 import { ArrowLeft, CreditCard, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -67,6 +67,13 @@ export function CheckoutPage() {
       }));
 
       const tableData = getTableData();
+      // Ensure table_id is available for the insert
+      const tableId = getTableId();
+      if (!tableId) {
+        setToastMsg("Table information is missing. Please scan the QR code again.");
+        setToastType("error");
+        return;
+      }
       console.log('[Checkout] tableData:', tableData, '→ table_id:', tableData?.id || null);
       const orderData = {
         restaurant_id: restaurant.id,
@@ -75,7 +82,7 @@ export function CheckoutPage() {
         total_price: grandTotal,
         payment_mode: "counter",
         items: itemsPayload,
-        table_id: tableData?.id || null,
+        table_id: tableId,
       };
       
       if (orderNote) {
@@ -131,6 +138,13 @@ export function CheckoutPage() {
       const totalAmount = Math.round(grandTotal * 100) / 100;
 
       const tableData = getTableData();
+      // Ensure table_id is present
+      const tableId = getTableId();
+      if (!tableId) {
+        setToastMsg("Table information is missing. Please scan the QR code again.");
+        setToastType("error");
+        return;
+      }
       const insertData = {
         restaurant_id: restaurant.id,
         status: "pending",
@@ -138,7 +152,7 @@ export function CheckoutPage() {
         order_code: generateOrderCode(),
         total_price: totalAmount,
         items: itemsPayload,
-        table_id: tableData?.id || null,
+        table_id: tableId,
       };
       
       if (orderNote) {
