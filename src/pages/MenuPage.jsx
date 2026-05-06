@@ -68,10 +68,11 @@ export function MenuPage() {
     }
     
     const params = new URLSearchParams(window.location.search);
-    const tableParam = params.get("table");
+    const rawParam = params.get("table");
+    const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
     
     if (tableParam) {
-      console.log("[MenuPage] tableParam detected from URL:", tableParam);
+      console.log("[MenuPage] tableParam detected from URL (decoded):", tableParam);
       localStorage.setItem("table_token", tableParam);
       sessionStorage.setItem("qr_table_param", tableParam);
     } else {
@@ -102,12 +103,28 @@ export function MenuPage() {
     const doLookup = async () => {
       try {
         setTableStatus("validating");
+        
+        // Decode and trim the token to avoid encoding or whitespace issues
+        const rawParam = new URLSearchParams(window.location.search).get("table") || localStorage.getItem("table_token");
+        const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
+        
+        console.log("[MenuPage] tableParam (raw):", rawParam);
+        console.log("[MenuPage] tableParam (decoded & trimmed):", tableParam);
+
+        if (!tableParam) {
+          console.warn("[MenuPage] No table token available after processing.");
+          setTableStatus("missing");
+          return;
+        }
+
         // Query using table_token column
         const { data: byToken, error: tokenErr } = await supabase
           .from("restaurant_tables")
           .select("*")
-          .eq("table_token", tableToken)
+          .eq("table_token", tableParam)
           .maybeSingle();
+
+        console.log("[MenuPage] DB lookup result:", { byToken, error: tokenErr });
 
         if (tokenErr) {
           console.error("[MenuPage] table_token lookup error:", tokenErr.message);

@@ -71,7 +71,13 @@ export function useTableValidation() {
       }
 
       // URL token mode: only validate if we have a token in URL and no stored session
-      const effectiveToken = urlToken || localStorage.getItem("table_token");
+      const rawUrlToken = urlToken;
+      const effectiveRawToken = rawUrlToken || localStorage.getItem("table_token");
+      const effectiveToken = effectiveRawToken ? decodeURIComponent(effectiveRawToken).trim() : null;
+
+      console.log("[useTableValidation] Effective token (raw):", effectiveRawToken);
+      console.log("[useTableValidation] Effective token (decoded & trimmed):", effectiveToken);
+
       if (effectiveToken) {
         const { data, error: fetchError } = await supabase
           .from("restaurant_tables")
@@ -79,7 +85,10 @@ export function useTableValidation() {
           .eq("table_token", effectiveToken)
           .maybeSingle();
 
+        console.log("[useTableValidation] DB lookup result:", { data, error: fetchError });
+
         if (fetchError || !data) {
+          console.error("[useTableValidation] Token lookup failed or no data.");
           throw new Error("Invalid QR code. Table not found.");
         }
 
