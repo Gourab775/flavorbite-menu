@@ -54,11 +54,15 @@ export function CheckoutPage() {
       return;
     }
 
-    // Get table_id from localStorage (was stored in MenuPage after validating table_token)
-    const tableId = localStorage.getItem("table_id") || null;
-    console.log("USING TABLE_ID:", tableId);
+    // Get table_token and table_id from localStorage
+    const tableToken = localStorage.getItem("table_token") || null;
+    const storedTableId = localStorage.getItem("table_id") || null;
+
+    console.log("[Checkout] Starting Counter Order validation...");
+    console.log("[Checkout] Using tableToken from storage:", tableToken);
+    console.log("[Checkout] Using storedTableId from storage:", storedTableId);
     
-    if (!tableId) {
+    if (!tableToken) {
       setToastMsg("Table not found. Please scan QR code again.");
       setToastType("error");
       return;
@@ -67,19 +71,31 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Strict validation: Confirm table_id exists in restaurant_tables
+      // Validate using table_token, NOT id - get the real id from the result
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id")
-        .eq("id", tableId)
-        .single();
+        .eq("table_token", tableToken)
+        .maybeSingle();
 
-      if (tableError || !tableData) {
-        console.error("Invalid table_id - not found in restaurant_tables:", tableId, tableError);
+      if (tableError) {
+        console.error("[Checkout] Table lookup error:", tableError);
+        throw new Error("Could not validate table. Please try again.");
+      }
+
+      if (!tableData) {
+        console.error("[Checkout] Invalid table_token - not found in DB:", tableToken);
         throw new Error("Invalid table. Please rescan the QR code from the beginning.");
       }
 
-      console.log("Table validated:", tableData);
+      console.log("[Checkout] Table query result:", tableData);
+      console.log("[Checkout] FETCHED_TABLE_ID (real PK):", tableData?.id);
+
+      const validTableId = tableData.id;
+      // Double check it matches our stored ID for consistency
+      if (storedTableId && storedTableId !== validTableId) {
+        console.warn("[Checkout] Stored table_id mismatch! Using verified ID:", validTableId);
+      }
 
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
@@ -96,7 +112,7 @@ export function CheckoutPage() {
         total_price: grandTotal,
         payment_mode: "counter",
         items: itemsPayload,
-        table_id: tableId,
+        table_id: validTableId, // Always use the verified database ID
       };
       
       if (orderNote) {
@@ -107,13 +123,13 @@ export function CheckoutPage() {
         .from("live_orders")
         .insert(orderData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error("Counter order error:", error);
+        console.error("[Checkout] Counter order error:", error);
         throw new Error(error.message || "Failed to create order");
       }
-      if (!data) throw new Error("Failed to create order");
+      if (!data) throw new Error("Failed to create order - no response data");
 
       navigate(`${basePath}/waiting/${data.id}`);
     } catch (err) {
@@ -138,11 +154,15 @@ export function CheckoutPage() {
       return;
     }
 
-    // Get table_id from localStorage (was stored in MenuPage after validating table_token)
-    const tableId = localStorage.getItem("table_id") || null;
-    console.log("USING TABLE_ID:", tableId);
+    // Get table_token and table_id from localStorage
+    const tableToken = localStorage.getItem("table_token") || null;
+    const storedTableId = localStorage.getItem("table_id") || null;
     
-    if (!tableId) {
+    console.log("[Checkout] Starting Online Order validation...");
+    console.log("[Checkout] Using tableToken from storage:", tableToken);
+    console.log("[Checkout] Using storedTableId from storage:", storedTableId);
+    
+    if (!tableToken) {
       setToastMsg("Table not found. Please scan QR code again.");
       setToastType("error");
       return;
@@ -151,19 +171,31 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Strict validation: Confirm table_id exists in restaurant_tables
+      // Validate using table_token, NOT id - get the real id from the result
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id")
-        .eq("id", tableId)
-        .single();
+        .eq("table_token", tableToken)
+        .maybeSingle();
 
-      if (tableError || !tableData) {
-        console.error("Invalid table_id - not found in restaurant_tables:", tableId, tableError);
+      if (tableError) {
+        console.error("[Checkout] Table lookup error:", tableError);
+        throw new Error("Could not validate table. Please try again.");
+      }
+
+      if (!tableData) {
+        console.error("[Checkout] Invalid table_token - not found in DB:", tableToken);
         throw new Error("Invalid table. Please rescan the QR code from the beginning.");
       }
 
-      console.log("Table validated:", tableData);
+      console.log("[Checkout] Table query result:", tableData);
+      console.log("[Checkout] FETCHED_TABLE_ID (real PK):", tableData?.id);
+      
+      const validTableId = tableData.id;
+      // Double check it matches our stored ID for consistency
+      if (storedTableId && storedTableId !== validTableId) {
+        console.warn("[Checkout] Stored table_id mismatch! Using verified ID:", validTableId);
+      }
 
       const itemsPayload = cart.map((item) => ({
         id: String(item.id ?? ""),
@@ -182,7 +214,7 @@ export function CheckoutPage() {
         order_code: generateOrderCode(),
         total_price: totalAmount,
         items: itemsPayload,
-        table_id: tableId,
+        table_id: validTableId, // Always use the verified database ID
       };
       
       if (orderNote) {
@@ -193,13 +225,13 @@ export function CheckoutPage() {
         .from("live_orders")
         .insert(insertData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (orderError) {
-        console.error("Order insert error:", orderError);
+        console.error("[Checkout] Order insert error:", orderError);
         throw new Error(orderError.message || "Failed to create order");
       }
-      if (!orderResponse) throw new Error("Failed to create order");
+      if (!orderResponse) throw new Error("Failed to create order - no response data");
 
       const tokenValue = `${orderResponse.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 

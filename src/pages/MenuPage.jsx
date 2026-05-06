@@ -72,7 +72,7 @@ export function MenuPage() {
     if (tableToken) {
       sessionStorage.setItem("qr_table_param", tableToken);
       // Do NOT store in localStorage yet - wait for verification
-      console.log("[MenuPage] Cached table_token:", tableToken);
+      console.log("[MenuPage] tableParam detected from URL:", tableToken);
     }
   }, [slug, loadMenu]);
 
@@ -96,14 +96,15 @@ export function MenuPage() {
           .maybeSingle();
 
         if (!tokenErr && byToken && byToken.restaurant_id === restaurant.id) {
-          console.log("FETCHED_TABLE_ID:", byToken?.id);
+          console.log("[MenuPage] Table query result:", byToken);
+          console.log("[MenuPage] FETCHED_TABLE_ID (real PK):", byToken?.id);
           console.log("[MenuPage] Table found by table_token:", byToken.table_number);
+          
           setTableData(byToken);
           // Store the actual id (primary key) in localStorage as table_id for order insert
           localStorage.setItem("table_id", byToken.id);
           localStorage.setItem("table_token", byToken.table_token);
-          console.log("[MenuPage] Stored table_id:", byToken.id);
-          console.log("[MenuPage] Stored table_token:", byToken.table_token);
+          console.log("[MenuPage] FINAL Stored table_id in localStorage:", byToken.id);
           return;
         }
 

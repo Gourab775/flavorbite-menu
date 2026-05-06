@@ -47,7 +47,7 @@ export function useTableValidation() {
           .from("restaurant_tables")
           .select("id, restaurant_id, table_number, table_token, capacity, is_active")
           .eq("table_number", `T${testTableNumber}`)
-          .single();
+          .maybeSingle();
 
         if (fetchError || !testTable) {
           throw new Error(`Test table T${testTableNumber} not found`);
@@ -76,7 +76,7 @@ export function useTableValidation() {
           .from("restaurant_tables")
           .select("id, restaurant_id, table_number, table_token, capacity, is_active")
           .eq("table_token", urlToken)
-          .single();
+          .maybeSingle();
 
         if (fetchError || !data) {
           throw new Error("Invalid QR code. Table not found.");
