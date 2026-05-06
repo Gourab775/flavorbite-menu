@@ -30,6 +30,7 @@ export function MenuPage() {
   const { slug } = useParams();
   const { loadMenu } = useMenuStore();
 
+  const [restaurant, setRestaurant] = useState(null);
   const [tableStatus, setTableStatus] = useState("validating"); // validating, missing, invalid, ok
 
   // ── 1. Fetch restaurant by slug ──────────────────────────────────────────
@@ -267,6 +268,8 @@ export function MenuPage() {
 
   // Only render menu if tableStatus === "ok"
   if (tableStatus !== "ok") return null;
+
+  return (
     <div className="menuLayout">
       <main id="menu-container" className="menuScroll hideScrollbar">
         <div className="topSection">
