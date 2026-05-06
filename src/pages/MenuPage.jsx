@@ -68,11 +68,11 @@ export function MenuPage() {
       initSession();
     }
     const params = new URLSearchParams(window.location.search);
-    const tableId = params.get("table");
-    if (tableId) {
-      sessionStorage.setItem("qr_table_param", tableId);
-      localStorage.setItem("table_id", tableId);
-      console.log("[MenuPage] Stored table_id:", tableId);
+    const tableToken = params.get("table");
+    if (tableToken) {
+      sessionStorage.setItem("qr_table_param", tableToken);
+      // Do NOT store in localStorage yet - wait for verification
+      console.log("[MenuPage] Cached table_token:", tableToken);
     }
   }, [slug, loadMenu]);
 

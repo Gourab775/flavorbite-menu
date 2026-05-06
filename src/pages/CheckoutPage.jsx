@@ -66,15 +66,15 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table_token exists in restaurant_tables and get the id
+      // Validate table id exists in restaurant_tables
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id, table_number")
-        .eq("table_token", tableId)
+        .eq("id", tableId)
         .single();
 
       if (tableError || !tableData) {
-        console.error("Invalid table_token:", tableId, tableError);
+        console.error("Invalid table id:", tableId, tableError);
         throw new Error("Invalid table. Please rescan the QR code.");
       }
 
@@ -150,15 +150,15 @@ export function CheckoutPage() {
     setLocalLoading(true);
 
     try {
-      // Validate table_token exists in restaurant_tables and get the id
+      // Validate table id exists in restaurant_tables
       const { data: tableData, error: tableError } = await supabase
         .from("restaurant_tables")
         .select("id, table_number")
-        .eq("table_token", tableId)
+        .eq("id", tableId)
         .single();
 
       if (tableError || !tableData) {
-        console.error("Invalid table_token:", tableId, tableError);
+        console.error("Invalid table id:", tableId, tableError);
         throw new Error("Invalid table. Please rescan the QR code.");
       }
 
