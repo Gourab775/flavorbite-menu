@@ -46,7 +46,7 @@ export async function placeOrder({ restaurantId, items, totalPrice, paymentMode,
     payment_mode: paymentMode,
     status: "pending",
     note: note || null,
-    table: tableId || null,
+    table_id: tableId || null,
     items: items.map((item) => ({
       id: String(item.id ?? ""),
       name: String(item.name ?? "Unknown Item"),

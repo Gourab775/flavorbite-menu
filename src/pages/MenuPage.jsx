@@ -12,7 +12,7 @@ import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
 import { setStoredSlug } from "../utils/constants";
-import { initSession, setTableData } from "../utils/session";
+import { initSession, setTableData, getTableId } from "../utils/session";
 import { supabase } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
 
@@ -65,31 +65,54 @@ export function MenuPage() {
       loadMenu(slug);
       initSession();
     }
+    // Immediately cache the ?table= param so it survives SPA navigation
+    // (the restaurant fetch is async – we must not lose the param before it resolves)
+    const rawParam = new URLSearchParams(window.location.search).get("table");
+    if (rawParam) {
+      sessionStorage.setItem("qr_table_param", rawParam);
+    }
   }, [slug, loadMenu]);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const tableNum = searchParams.get("table");
-    if (tableNum && restaurant?.id) {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tableNum);
-      let query = supabase
-        .from('restaurant_tables')
-        .select('*')
-        .eq('restaurant_id', restaurant.id);
-        
-      if (isUUID) {
-        query = query.eq('id', tableNum);
-      } else {
-        query = query.eq('table_number', tableNum);
-      }
-      
-      query.single()
-        .then(({ data, error }) => {
-          if (!error && data) {
-            setTableData(data);
-          }
-        });
+    if (!restaurant?.id) return;
+
+    // Use the live URL param first; fall back to the value cached on first load
+    const tableNum =
+      new URLSearchParams(window.location.search).get("table") ||
+      sessionStorage.getItem("qr_table_param");
+
+    if (!tableNum) return;
+
+    // Skip if we already have a valid table stored for this session
+    if (getTableId()) return;
+
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        tableNum
+      );
+
+    let query = supabase
+      .from("restaurant_tables")
+      .select("*")
+      .eq("restaurant_id", restaurant.id);
+
+    if (isUUID) {
+      // token can be either the row id or the dedicated table_token column
+      query = query.or(`id.eq.${tableNum},table_token.eq.${tableNum}`);
+    } else {
+      query = query.eq("table_number", tableNum);
     }
+
+    query
+      .limit(1)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setTableData(data);
+        } else if (error) {
+          console.error("[MenuPage] Table lookup failed:", error.message);
+        }
+      });
   }, [restaurant?.id]);
 
   const { vegMode, searchQuery } = useCart();
