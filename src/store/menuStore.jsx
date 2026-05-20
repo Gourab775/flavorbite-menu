@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { supabase, isSupabaseConfigured, supabaseUrl } from "../lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 
 const MenuContext = createContext(null);
 
@@ -50,7 +50,7 @@ const initialState = {
   categories: [],
   menuItems: [],
   featuredItems: [],
-  restaurant: { id: "", name: "", slug: "", logo: "", paymentId: "" },
+  restaurant: { id: "", name: "", slug: "", logo: "" },
   loading: false,
   error: null,
 };
@@ -103,7 +103,7 @@ export function MenuProvider({ children }) {
     try {
       const { data: restaurantData, error } = await supabase
         .from("restaurants")
-        .select("id, name, slug, logo, payment_id")
+        .select("id, name, slug, logo")
         .eq("slug", slug)
         .maybeSingle();
 
@@ -118,7 +118,7 @@ export function MenuProvider({ children }) {
       if (!restaurantData) {
         const { data: ilikeData, error: ilikeError } = await supabase
           .from("restaurants")
-          .select("id, name, slug, logo, payment_id")
+          .select("id, name, slug, logo")
           .ilike("slug", `%${slug}%`)
           .maybeSingle();
 
@@ -133,7 +133,7 @@ export function MenuProvider({ children }) {
         } else {
           const { data: firstData, error: firstError } = await supabase
             .from("restaurants")
-            .select("id, name, slug, logo, payment_id")
+            .select("id, name, slug, logo")
             .limit(1)
             .maybeSingle();
 
@@ -163,7 +163,6 @@ export function MenuProvider({ children }) {
         name: String(row.name ?? ""),
         slug: String(row.slug ?? ""),
         logo: String(row.logo ?? ""),
-        paymentId: String(row.payment_id ?? ""),
       };
 
       const [cats, items, feat] = await Promise.all([

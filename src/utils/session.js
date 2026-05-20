@@ -1,7 +1,6 @@
 const SESSION_KEY = "menu_session";
 const TABLE_KEY = "menu_table";
 const FLOW_KEY = "menu_flow";
-const PAYMENT_TOKEN_KEY = "payment_token";
 
 export function initSession() {
   if (typeof window === "undefined") return;
@@ -80,31 +79,9 @@ export function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(TABLE_KEY);
   sessionStorage.removeItem(FLOW_KEY);
-  sessionStorage.removeItem(PAYMENT_TOKEN_KEY);
   sessionStorage.removeItem("qr_table_param");
   
   // Also clear permanent table storage
   localStorage.removeItem("table_token");
   localStorage.removeItem("table_id");
-}
-
-export function setPaymentToken(token) {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(PAYMENT_TOKEN_KEY, token);
-}
-
-export function getPaymentToken() {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(PAYMENT_TOKEN_KEY);
-}
-
-export function clearPaymentToken() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(PAYMENT_TOKEN_KEY);
-}
-
-export function clearOrderData() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem("orderData");
-  sessionStorage.removeItem(FLOW_KEY);
 }

@@ -5,36 +5,24 @@ import { MenuProvider } from "./store/menuStore";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
-import { PaymentPage } from "./pages/PaymentPage";
 import { OrderSuccessPage } from "./pages/OrderSuccessPage";
-import { OrderStatusPage } from "./pages/OrderStatusPage";
-import { OrderConfirmedPage } from "./pages/OrderConfirmedPage";
-import { WaitingPage } from "./pages/WaitingPage";
-import { OnlineWaitingPage } from "./pages/OnlineWaitingPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { CartBar } from "./components/CartBar";
-import { GlobalOrderListener } from "./components/GlobalOrderListener";
-import { setStoredSlug, getStoredSlug } from "./utils/constants";
+import { setStoredSlug } from "./utils/constants";
 
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function AppRoutes() {
-  const [isMenuRoute, menuParams] = useRoute("/:slug");
-  const [isCartRoute, cartParams] = useRoute("/:slug/cart");
-  const [isCheckoutRoute] = useRoute("/:slug/checkout");
-  const [isPaymentRoute, paymentParams] = useRoute("/:slug/payment/:paymentToken");
-  const [isOrderSuccessRoute] = useRoute("/:slug/order-success");
-  const [isOrderStatusRoute] = useRoute("/:slug/order-status");
-  const [isOrderConfirmedRoute] = useRoute("/:slug/order-confirmed");
-  const [isWaitingRoute, waitingParams] = useRoute("/:slug/waiting/:orderId");
-  const [isOnlineWaitingRoute, onlineWaitingParams] = useRoute("/:slug/online-waiting/:orderId");
+  const [_menuMatch, menuParams] = useRoute("/:slug");
+  const [_cartMatch, cartParams] = useRoute("/:slug/cart");
+  const [_checkoutMatch] = useRoute("/:slug/checkout");
+  const [_orderSentMatch] = useRoute("/:slug/order-sent");
+  const [_orderSuccessMatch] = useRoute("/:slug/order-success");
 
   const [location, setLocation] = useLocation();
   const [isReady, setIsReady] = useState(false);
 
-  const slug = menuParams?.slug || cartParams?.slug || 
-             paymentParams?.slug || waitingParams?.slug || 
-             onlineWaitingParams?.slug;
+  const slug = menuParams?.slug || cartParams?.slug;
 
   useEffect(() => {
     if (slug) {
@@ -65,12 +53,8 @@ function AppRoutes() {
       <Switch>
         <Route path="/:slug/cart" component={CartPage} />
         <Route path="/:slug/checkout" component={CheckoutPage} />
-        <Route path="/:slug/payment/:paymentToken" component={PaymentPage} />
+        <Route path="/:slug/order-sent" component={OrderSuccessPage} />
         <Route path="/:slug/order-success" component={OrderSuccessPage} />
-        <Route path="/:slug/order-status" component={OrderStatusPage} />
-        <Route path="/:slug/order-confirmed" component={OrderConfirmedPage} />
-        <Route path="/:slug/waiting/:orderId" component={WaitingPage} />
-        <Route path="/:slug/online-waiting/:orderId" component={OnlineWaitingPage} />
         <Route path="/:slug" component={MenuPage} />
 
         <Route path="/:slug/*" component={NotFoundPage} />
@@ -100,7 +84,6 @@ export default function App() {
       <MenuProvider>
         <div className="appBackdrop">
           <div className="phoneFrame">
-            <GlobalOrderListener />
             <AppRoutes />
           </div>
         </div>
