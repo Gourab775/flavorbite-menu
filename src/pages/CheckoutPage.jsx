@@ -141,6 +141,14 @@ export function CheckoutPage() {
 
       sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
 
+      const { error: insertError } = await supabase
+        .from("live_orders")
+        .insert(pendingOrder);
+
+      if (insertError) {
+        throw new Error("Failed to place order. Please try again.");
+      }
+
       navigate(`${basePath}/order-sent`);
     } catch (err) {
       const message = err?.message ?? "Something went wrong. Please try again.";

@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
-import { supabase } from "../lib/supabaseClient";
 import { getStoredSlug } from "../utils/constants";
 
 export function OrderSuccessPage() {
@@ -12,7 +11,6 @@ export function OrderSuccessPage() {
 
   const [orderData, setOrderData] = useState(null);
   const [showAnim, setShowAnim] = useState(true);
-  const insertTimerRef = useRef(null);
 
   useEffect(() => {
     localStorage.removeItem("qr_menu_cart");
@@ -25,26 +23,11 @@ export function OrderSuccessPage() {
       try {
         const parsed = JSON.parse(pending);
         setOrderData(parsed);
-
-        insertTimerRef.current = setTimeout(async () => {
-          const { error } = await supabase
-            .from("live_orders")
-            .insert(parsed);
-
-          if (!error) {
-            sessionStorage.removeItem("pending_order");
-          }
-        }, 60000);
+        sessionStorage.removeItem("pending_order");
       } catch {
         // ignore parse error
       }
     }
-
-    return () => {
-      if (insertTimerRef.current) {
-        clearTimeout(insertTimerRef.current);
-      }
-    };
   }, []);
 
   useEffect(() => {
