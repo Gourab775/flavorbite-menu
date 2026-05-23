@@ -7,6 +7,11 @@ import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { Bell, CheckCircle } from "lucide-react";
 
+function isValidUUID(val) {
+  if (!val || typeof val !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+}
+
 const WAITER_COOLDOWN_MS = 30000;
 
 export function CallWaiterPage() {
@@ -50,6 +55,10 @@ export function CallWaiterPage() {
     setLoading(true);
 
     try {
+      if (!isSupabaseConfigured || !supabase) {
+        throw new Error("Service not configured. Please contact support.");
+      }
+
       const { data: existing, error: checkErr } = await supabase
         .from("waiter_calls")
         .select("id")
@@ -68,35 +77,45 @@ export function CallWaiterPage() {
         return;
       }
 
-      if (!isSupabaseConfigured || !supabase) {
-        throw new Error("Service not configured. Please contact support.");
+      if (!isValidUUID(restaurant.id)) {
+        throw new Error(`Invalid restaurant_id: ${restaurant.id}`);
+      }
+
+      if (!isValidUUID(tableData.id)) {
+        throw new Error(`Invalid table_id: ${tableData.id}`);
       }
 
       const session = getValidDeviceSession();
       const orderCode = getOrCreateDeviceOrderCode();
+      const sessionOrderId = session?.id ?? null;
 
       const payload = {
         restaurant_id: restaurant.id,
         table_id: tableData.id,
-        table_number: tableData.table_number || null,
         status: "pending",
+        order_code: orderCode ?? null,
+        session_order_id: sessionOrderId,
       };
 
-      if (orderCode) payload.order_code = orderCode;
-      if (session?.id) payload.session_id = session.id;
+      console.log("[WaiterCall] Inserting waiter call payload:", JSON.stringify(payload, null, 2));
 
       const { error: insertErr } = await supabase
         .from("waiter_calls")
         .insert(payload);
 
       if (insertErr) {
+        console.error("[WaiterCall] Insert error:", insertErr);
+        console.error("[WaiterCall] Failed payload:", JSON.stringify(payload, null, 2));
         throw new Error(`Failed to call waiter: ${insertErr.message}`);
       }
+
+      console.log("[WaiterCall] Successfully inserted waiter call for table:", payload.table_id);
 
       localStorage.setItem("waiter_last_call", String(Date.now()));
       setCalled(true);
       setToastMsg("");
     } catch (err) {
+      console.error("[WaiterCall] Error:", err);
       const msg = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(msg);
       setToastType("error");
