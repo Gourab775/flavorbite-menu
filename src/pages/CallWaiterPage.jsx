@@ -2,9 +2,12 @@ import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
-import { getTableData } from "../utils/session";
+import { getTableData, getOrCreateDeviceOrderCode, getValidDeviceSession } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { Toast } from "../components/Toast";
 import { Bell, CheckCircle } from "lucide-react";
+
+const WAITER_COOLDOWN_MS = 30000;
 
 export function CallWaiterPage() {
   const [, navigate] = useLocation();
@@ -14,25 +17,92 @@ export function CallWaiterPage() {
   const { restaurant } = useMenu();
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   const handleCallWaiter = async () => {
-    if (called || loading) return;
-    setLoading(true);
-    try {
-      if (isSupabaseConfigured && supabase && restaurant?.id) {
-        const tableData = getTableData();
-        await supabase.from("waiter_calls").insert({
-          restaurant_id: restaurant.id,
-          table_id: tableData?.id || null,
-          table_number: tableData?.table_number || null,
-          status: "pending",
-        });
+    if (loading || called) return;
+
+    const lastCall = localStorage.getItem("waiter_last_call");
+    if (lastCall) {
+      const elapsed = Date.now() - parseInt(lastCall, 10);
+      if (elapsed < WAITER_COOLDOWN_MS) {
+        const remaining = Math.ceil((WAITER_COOLDOWN_MS - elapsed) / 1000);
+        setToastMsg(`Please wait ${remaining}s before calling again`);
+        setToastType("info");
+        return;
       }
-    } catch {
-      // silently fallback
     }
-    setCalled(true);
-    setLoading(false);
+
+    if (!restaurant?.id) {
+      setToastMsg("Restaurant data not loaded. Please try again.");
+      setToastType("error");
+      return;
+    }
+
+    const tableData = getTableData();
+    if (!tableData?.id) {
+      setToastMsg("Table not found. Please scan QR code again.");
+      setToastType("error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data: existing, error: checkErr } = await supabase
+        .from("waiter_calls")
+        .select("id")
+        .eq("table_id", tableData.id)
+        .eq("status", "pending")
+        .limit(1);
+
+      if (checkErr) {
+        throw new Error("Could not verify request. Please try again.");
+      }
+
+      if (existing && existing.length > 0) {
+        setToastMsg("Waiter has already been called for your table.");
+        setToastType("info");
+        setLoading(false);
+        return;
+      }
+
+      if (!isSupabaseConfigured || !supabase) {
+        throw new Error("Service not configured. Please contact support.");
+      }
+
+      const session = getValidDeviceSession();
+      const orderCode = getOrCreateDeviceOrderCode();
+
+      const payload = {
+        restaurant_id: restaurant.id,
+        table_id: tableData.id,
+        table_number: tableData.table_number || null,
+        status: "pending",
+      };
+
+      if (orderCode) payload.order_code = orderCode;
+      if (session?.id) payload.session_id = session.id;
+
+      const { error: insertErr } = await supabase
+        .from("waiter_calls")
+        .insert(payload);
+
+      if (insertErr) {
+        throw new Error(`Failed to call waiter: ${insertErr.message}`);
+      }
+
+      localStorage.setItem("waiter_last_call", String(Date.now()));
+      setCalled(true);
+      setToastMsg("");
+    } catch (err) {
+      const msg = err?.message ?? "Something went wrong. Please try again.";
+      setToastMsg(msg);
+      setToastType("error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,6 +144,8 @@ export function CallWaiterPage() {
           </div>
         )}
       </main>
+
+      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
   );
 }
