@@ -12,8 +12,6 @@ function isValidUUID(val) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
 }
 
-const WAITER_COOLDOWN_MS = 30000;
-
 export function CallWaiterPage() {
   const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
@@ -26,19 +24,6 @@ export function CallWaiterPage() {
   const [toastType, setToastType] = useState("success");
 
   const handleCallWaiter = async () => {
-    if (loading || called) return;
-
-    const lastCall = localStorage.getItem("waiter_last_call");
-    if (lastCall) {
-      const elapsed = Date.now() - parseInt(lastCall, 10);
-      if (elapsed < WAITER_COOLDOWN_MS) {
-        const remaining = Math.ceil((WAITER_COOLDOWN_MS - elapsed) / 1000);
-        setToastMsg(`Please wait ${remaining}s before calling again`);
-        setToastType("info");
-        return;
-      }
-    }
-
     if (!restaurant?.id) {
       setToastMsg("Restaurant data not loaded. Please try again.");
       setToastType("error");
@@ -57,24 +42,6 @@ export function CallWaiterPage() {
     try {
       if (!isSupabaseConfigured || !supabase) {
         throw new Error("Service not configured. Please contact support.");
-      }
-
-      const { data: existing, error: checkErr } = await supabase
-        .from("waiter_calls")
-        .select("id")
-        .eq("table_id", tableData.id)
-        .eq("status", "pending")
-        .limit(1);
-
-      if (checkErr) {
-        throw new Error("Could not verify request. Please try again.");
-      }
-
-      if (existing && existing.length > 0) {
-        setToastMsg("Waiter has already been called for your table.");
-        setToastType("info");
-        setLoading(false);
-        return;
       }
 
       if (!isValidUUID(restaurant.id)) {
@@ -111,7 +78,6 @@ export function CallWaiterPage() {
 
       console.log("[WaiterCall] Successfully inserted waiter call for table:", payload.table_id);
 
-      localStorage.setItem("waiter_last_call", String(Date.now()));
       setCalled(true);
       setToastMsg("");
     } catch (err) {
