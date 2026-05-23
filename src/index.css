@@ -2483,7 +2483,7 @@ a:focus:not(:focus-visible) {
   gap: 5px;
   transition: all 150ms ease;
   flex-shrink: 0;
-  color: var(--text);
+  color: var(--accent);
 }
 
 .hamburgerBtn:hover {
@@ -2570,11 +2570,21 @@ a:focus:not(:focus-visible) {
 }
 
 .dropdownItem:hover {
-  background: var(--bg-tertiary);
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.dropdownItem:hover svg {
+  color: var(--accent);
 }
 
 .dropdownItem:active {
-  background: var(--border);
+  background: var(--accent);
+  color: #fff;
+}
+
+.dropdownItem:active svg {
+  color: #fff;
 }
 
 .dropdownItem--static {
@@ -2587,27 +2597,6 @@ a:focus:not(:focus-visible) {
   color: var(--muted);
 }
 
-.dropdownWaiter {
-  background: var(--accent-subtle);
-  color: var(--accent);
-  font-weight: 700;
-  margin: 4px 0;
-  border: 1px solid rgba(255, 107, 0, 0.15);
-}
-
-.dropdownWaiter svg {
-  color: var(--accent);
-}
-
-.dropdownWaiter:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-.dropdownWaiter:hover svg {
-  color: #fff;
-}
 
 .headerToast {
   position: fixed;
