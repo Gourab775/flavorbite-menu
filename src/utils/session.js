@@ -85,3 +85,103 @@ export function clearSession() {
   localStorage.removeItem("table_token");
   localStorage.removeItem("table_id");
 }
+
+// ========== Device Session System (localStorage-based, persists across browser close/open) ==========
+
+const DEVICE_SESSION_KEY = "device_session_v2";
+const DEVICE_SESSION_DURATION = 2 * 60 * 60 * 1000;
+
+export function initDeviceSession() {
+  if (typeof window === "undefined") return null;
+
+  const existing = getValidDeviceSession();
+  if (existing) return existing;
+
+  const now = Date.now();
+  const session = {
+    id: `dev_${now}_${Math.random().toString(36).substring(2, 11)}`,
+    createdAt: now,
+    expiresAt: now + DEVICE_SESSION_DURATION,
+  };
+
+  localStorage.setItem(DEVICE_SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
+export function getValidDeviceSession() {
+  if (typeof window === "undefined") return null;
+
+  const raw = localStorage.getItem(DEVICE_SESSION_KEY);
+  if (!raw) return null;
+
+  try {
+    const session = JSON.parse(raw);
+    if (Date.now() >= session.expiresAt) {
+      clearDeviceSessionData();
+      return null;
+    }
+    return session;
+  } catch {
+    clearDeviceSessionData();
+    return null;
+  }
+}
+
+function getDeviceOrdersKey() {
+  const raw = localStorage.getItem(DEVICE_SESSION_KEY);
+  if (!raw) return null;
+  try {
+    const session = JSON.parse(raw);
+    if (Date.now() >= session.expiresAt) {
+      clearDeviceSessionData();
+      return null;
+    }
+    return `device_session_orders_${session.id}`;
+  } catch {
+    clearDeviceSessionData();
+    return null;
+  }
+}
+
+export function addOrderToDeviceSession(order) {
+  if (typeof window === "undefined") return;
+  const key = getDeviceOrdersKey();
+  if (!key) return;
+
+  const raw = localStorage.getItem(key);
+  const orders = raw ? JSON.parse(raw) : [];
+  orders.push({ ...order, savedAt: Date.now() });
+  localStorage.setItem(key, JSON.stringify(orders));
+}
+
+export function getDeviceSessionOrders() {
+  if (typeof window === "undefined") return [];
+  const key = getDeviceOrdersKey();
+  if (!key) return [];
+
+  const raw = localStorage.getItem(key);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function clearDeviceSessionData() {
+  if (typeof window === "undefined") return;
+
+  const raw = localStorage.getItem(DEVICE_SESSION_KEY);
+  if (raw) {
+    try {
+      const session = JSON.parse(raw);
+      localStorage.removeItem(`device_session_orders_${session.id}`);
+    } catch { /* ignore */ }
+  }
+
+  localStorage.removeItem(DEVICE_SESSION_KEY);
+  localStorage.removeItem("qr_menu_cart");
+  sessionStorage.removeItem("pending_order");
+  sessionStorage.removeItem("cart_order_note");
+  sessionStorage.removeItem("tableId");
+}

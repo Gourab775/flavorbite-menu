@@ -6,6 +6,7 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
+import { addOrderToDeviceSession } from "../utils/session";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 
 function generateOrderCode() {
@@ -140,6 +141,7 @@ export function CheckoutPage() {
       }
 
       sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
+      addOrderToDeviceSession(pendingOrder);
 
       const { error: insertError } = await supabase
         .from("live_orders")

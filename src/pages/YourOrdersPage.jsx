@@ -1,6 +1,7 @@
 import { useLocation, useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
+import { getDeviceSessionOrders } from "../utils/session";
 
 export function YourOrdersPage() {
   const [, navigate] = useLocation();
@@ -9,14 +10,8 @@ export function YourOrdersPage() {
   const basePath = `/${slug}`;
   const { restaurant } = useMenu();
 
-  const pendingOrder = (() => {
-    try {
-      const raw = sessionStorage.getItem("pending_order");
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  })();
+  const orders = getDeviceSessionOrders();
+  const sortedOrders = orders.slice().reverse();
 
   return (
     <div className="pageLayout">
@@ -29,31 +24,33 @@ export function YourOrdersPage() {
       </header>
 
       <main className="yourOrdersBody hideScrollbar">
-        {pendingOrder ? (
+        {sortedOrders.length > 0 ? (
           <div className="ordersContainer">
-            <div className="orderCard">
-              <div className="orderCardHeader">
-                <div className="orderCardCode">{pendingOrder.order_code}</div>
-                <span className="orderCardStatus pending">Pending</span>
+            {sortedOrders.map((order, idx) => (
+              <div className="orderCard" key={idx}>
+                <div className="orderCardHeader">
+                  <div className="orderCardCode">{order.order_code}</div>
+                  <span className="orderCardStatus pending">Pending</span>
+                </div>
+                <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
+                <div className="orderCardItems">
+                  {order.items?.map((item, iidx) => (
+                    <div className="orderCardItem" key={iidx}>
+                      <span className="orderCardItemName">{item.name}</span>
+                      <span className="orderCardItemQty">×{item.quantity}</span>
+                      <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="orderCardTotal">
+                  <span>Total</span>
+                  <span>₹{Math.round(order.total_price || 0)}</span>
+                </div>
+                <div className="orderCardNote">
+                  {order.note && <p>Note: {order.note}</p>}
+                </div>
               </div>
-              <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
-              <div className="orderCardItems">
-                {pendingOrder.items?.map((item, idx) => (
-                  <div className="orderCardItem" key={idx}>
-                    <span className="orderCardItemName">{item.name}</span>
-                    <span className="orderCardItemQty">×{item.quantity}</span>
-                    <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="orderCardTotal">
-                <span>Total</span>
-                <span>₹{Math.round(pendingOrder.total_price || 0)}</span>
-              </div>
-              <div className="orderCardNote">
-                {pendingOrder.note && <p>Note: {pendingOrder.note}</p>}
-              </div>
-            </div>
+            ))}
             <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 16, width: "100%", padding: "14px 0" }}>
               Back to Menu
             </button>

@@ -16,6 +16,7 @@ import { FAQsPage } from "./pages/FAQsPage";
 import { TermsPrivacyPage } from "./pages/TermsPrivacyPage";
 import { CartBar } from "./components/CartBar";
 import { setStoredSlug } from "./utils/constants";
+import { initDeviceSession } from "./utils/session";
 
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
@@ -79,6 +80,10 @@ function AppRoutes() {
 }
 
 export default function App() {
+  useEffect(() => {
+    initDeviceSession();
+  }, []);
+
   useEffect(() => {
     let lastTouchEnd = 0;
     const handleTouchEnd = (event) => {
