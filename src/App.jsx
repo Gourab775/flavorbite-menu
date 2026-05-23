@@ -7,6 +7,13 @@ import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { OrderSuccessPage } from "./pages/OrderSuccessPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { YourOrdersPage } from "./pages/YourOrdersPage";
+import { CallWaiterPage } from "./pages/CallWaiterPage";
+import { HelpSupportPage } from "./pages/HelpSupportPage";
+import { FeedbackPage } from "./pages/FeedbackPage";
+import { RestaurantInfoPage } from "./pages/RestaurantInfoPage";
+import { FAQsPage } from "./pages/FAQsPage";
+import { TermsPrivacyPage } from "./pages/TermsPrivacyPage";
 import { CartBar } from "./components/CartBar";
 import { setStoredSlug } from "./utils/constants";
 
@@ -55,6 +62,13 @@ function AppRoutes() {
         <Route path="/:slug/checkout" component={CheckoutPage} />
         <Route path="/:slug/order-sent" component={OrderSuccessPage} />
         <Route path="/:slug/order-success" component={OrderSuccessPage} />
+        <Route path="/:slug/your-orders" component={YourOrdersPage} />
+        <Route path="/:slug/call-waiter" component={CallWaiterPage} />
+        <Route path="/:slug/help-support" component={HelpSupportPage} />
+        <Route path="/:slug/feedback" component={FeedbackPage} />
+        <Route path="/:slug/restaurant-info" component={RestaurantInfoPage} />
+        <Route path="/:slug/faqs" component={FAQsPage} />
+        <Route path="/:slug/terms-privacy" component={TermsPrivacyPage} />
         <Route path="/:slug" component={MenuPage} />
 
         <Route path="/:slug/*" component={NotFoundPage} />

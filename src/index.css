@@ -2638,3 +2638,501 @@ a:focus:not(:focus-visible) {
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+.dropdownDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 8px;
+}
+
+.yourOrdersBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.ordersContainer {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.orderCard {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.orderCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.orderCardCode {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+
+.orderCardStatus {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.orderCardStatus.pending {
+  background: rgba(255, 107, 0, 0.15);
+  color: var(--accent);
+}
+
+.orderCardRestaurant {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.orderCardItems {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderCardItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.orderCardItemName {
+  flex: 1;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.orderCardItemQty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.orderCardItemPrice {
+  font-weight: 700;
+  color: var(--text);
+  min-width: 50px;
+  text-align: right;
+}
+
+.orderCardTotal {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.orderCardNote {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.callWaiterBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.callWaiterPrompt, .callWaiterSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 300px;
+}
+
+.callWaiterIconWrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 20px;
+  border: 1.5px solid var(--border);
+}
+
+.callWaiterIconWrap.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.callWaiterTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.callWaiterSub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.callWaiterBtn {
+  width: 100%;
+  max-width: 240px;
+  padding: 16px 0;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 8px 24px var(--accent-glow);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  letter-spacing: 0.3px;
+}
+
+.callWaiterBtn:hover {
+  box-shadow: 0 12px 32px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.callWaiterBtn:active {
+  transform: scale(0.98);
+}
+
+.callWaiterBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.helpSupportBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.helpSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.helpCard {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  align-items: flex-start;
+}
+
+.helpCardIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
+.helpCardText h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.helpCardText p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.restaurantInfoBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.restaurantInfoCard {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 28px 20px;
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.restaurantInfoLogo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border);
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurantInfoLogoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.restaurantInfoLogoInitial {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.restaurantInfoName {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.restaurantInfoTable {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.restaurantInfoDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.restaurantInfoDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  text-align: left;
+}
+
+.restaurantInfoLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.restaurantInfoValue {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.faqsBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.faqsContainer {
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faqItem {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.faqQuestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+  user-select: none;
+}
+
+.faqQuestion::-webkit-details-marker {
+  display: none;
+}
+
+.faqChevron {
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.faqItem[open] .faqChevron {
+  transform: rotate(180deg);
+}
+
+.faqAnswer {
+  padding: 0 16px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.faqAnswer p {
+  margin: 0;
+}
+
+.termsBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.termsContainer {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.termsSection {
+  margin-bottom: 24px;
+}
+
+.termsSection h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.termsSection p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.termsSection p:last-child {
+  margin-bottom: 0;
+}
+
+.feedbackBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.feedbackPrompt, .feedbackSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 300px;
+}
+
+.feedbackPrompt h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.feedbackSub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+}
+
+.feedbackStars {
+  display: flex;
+  gap: 8px;
+}
+
+.feedbackStar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  transition: color 150ms ease, transform 100ms ease;
+  border-radius: 8px;
+}
+
+.feedbackStar.active {
+  color: var(--accent);
+}
+
+.feedbackStar:hover {
+  transform: scale(1.1);
+}
+
+.feedbackStar:active {
+  transform: scale(0.95);
+}
+
+.feedbackSuccessIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.feedbackSuccess h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.feedbackSuccess p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
