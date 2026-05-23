@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS live_orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   restaurant_id TEXT NOT NULL,
   total_price NUMERIC(10, 2) NOT NULL,
-  payment_mode TEXT NOT NULL CHECK (payment_mode IN ('counter', 'online')),
   status TEXT DEFAULT 'pending',
   items JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ DEFAULT NOW()

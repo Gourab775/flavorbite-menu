@@ -148,7 +148,6 @@ export function CheckoutPage() {
       const pendingOrder = {
         restaurant_id: restaurant.id,
         status: "pending",
-        payment_mode: "counter",
         order_code: orderCode,
         total_price: Number(grandTotal) || 0,
         items: itemsPayload,

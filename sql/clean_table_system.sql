@@ -49,7 +49,6 @@ CREATE TABLE live_orders (
   status VARCHAR(50) DEFAULT 'pending',
   order_code VARCHAR(50),
   total_price DECIMAL(10,2),
-  payment_mode VARCHAR(50),
   items JSONB DEFAULT '[]'::jsonb,
   note TEXT,
   customer_name VARCHAR(100),
