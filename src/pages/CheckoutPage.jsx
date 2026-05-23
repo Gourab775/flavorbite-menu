@@ -44,6 +44,23 @@ export function CheckoutPage() {
   const isLoading = localLoading || menuLoading;
   const hasRestaurant = restaurant && restaurant.id;
 
+  // Detect which table reference column exists in the live_orders table
+  async function detectTableColumn() {
+    try {
+      const [r1, r2] = await Promise.all([
+        supabase.from("live_orders").select("table_id").limit(0),
+        supabase.from("live_orders").select("table_ref").limit(0),
+      ]);
+      if (!r1.error) return "table_id";
+      if (!r2.error) return "table_ref";
+      console.warn("[Checkout] Cannot detect table column:", r1.error?.message, r2.error?.message);
+      return "table_ref";
+    } catch (e) {
+      console.warn("[Checkout] Schema detection error:", e);
+      return "table_ref";
+    }
+  }
+
   if (tableError) {
     return (
       <div className="pageLayout">
@@ -120,21 +137,38 @@ export function CheckoutPage() {
         is_veg: Boolean(item.isVeg),
       }));
 
-      const orderNote = sessionStorage.getItem("cart_order_note") || "";
+      // Detect which column the live_orders table uses for table reference
+      const tableColumn = await detectTableColumn();
+      console.log("[Checkout] Using table column:", tableColumn);
 
+      // Ensure order_code is never null/undefined
+      const orderCode = getOrCreateDeviceOrderCode() || `ORD-${Date.now()}`;
+
+      // Build order payload matching the actual DB schema
       const pendingOrder = {
         restaurant_id: restaurant.id,
         status: "pending",
         payment_mode: "counter",
-        order_code: getOrCreateDeviceOrderCode(),
-        total_price: grandTotal,
+        order_code: orderCode,
+        total_price: Number(grandTotal) || 0,
         items: itemsPayload,
-        table_id: tableData.id,
+        [tableColumn]: tableColumn === "table_id" ? tableData.id : String(tableData.id),
       };
 
+      const orderNote = sessionStorage.getItem("cart_order_note") || "";
       if (orderNote) {
         pendingOrder.note = orderNote;
       }
+
+      // Validate required fields before sending
+      const requiredFields = ["restaurant_id", "status", "order_code", "total_price", "items"];
+      for (const field of requiredFields) {
+        if (pendingOrder[field] === undefined || pendingOrder[field] === null) {
+          throw new Error(`Missing required field: ${field}`);
+        }
+      }
+
+      console.log("[Checkout] Sending order payload:", JSON.stringify(pendingOrder, null, 2));
 
       sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
       addOrderToDeviceSession(pendingOrder);
@@ -145,11 +179,18 @@ export function CheckoutPage() {
         .insert(pendingOrder);
 
       if (insertError) {
-        throw new Error("Failed to place order. Please try again.");
+        console.error("[Checkout] Supabase insert error:", {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+        });
+        throw new Error(`Failed to place order: ${insertError.message}`);
       }
 
       navigate(`${basePath}/order-sent`);
     } catch (err) {
+      console.error("[Checkout] Order failed:", err);
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);
       setToastType("error");

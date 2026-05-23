@@ -1,64 +1,43 @@
 -- =============================================
--- QUICK FIX - Run in Supabase SQL Editor
+-- NON-DESTRUCTIVE FIX - Run in Supabase SQL Editor
 -- =============================================
--- This will fix the 400 error
+-- This ensures live_orders has the correct columns
+-- Does NOT drop or delete any existing data
 
--- Step 1: Check current table structure first
--- (don't run if you already have a working table)
--- SELECT column_name, data_type, is_nullable
--- FROM information_schema.columns 
--- WHERE table_name = 'live_orders';
+-- Step 1: Show current table structure
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns 
+WHERE table_name = 'live_orders'
+ORDER BY ordinal_position;
 
--- =============================================
--- Run this to SETUP correctly:
--- =============================================
+-- Step 2: Add table_ref column if missing (safe to run even if exists)
+ALTER TABLE live_orders ADD COLUMN IF NOT EXISTS table_ref VARCHAR(100);
 
--- Enable RLS and create policies (MINIMUM needed)
+-- Step 3: Drop table_id column if it exists (the code now auto-detects but prefers table_ref)
+-- If you want to keep table_id AND add table_ref, comment the next line out
+-- ALTER TABLE live_orders DROP COLUMN IF EXISTS table_id;
+
+-- Step 4: Ensure RLS allows inserts
 ALTER TABLE live_orders ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow insert" ON live_orders;
 CREATE POLICY "Allow insert" ON live_orders FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow select" ON live_orders;
+CREATE POLICY "Allow select" ON live_orders FOR SELECT USING (true);
+
 GRANT ALL ON live_orders TO anon, authenticated;
 
--- Now create the table if needed (delete old one first)
-DROP TABLE IF EXISTS live_orders;
-
-CREATE TABLE live_orders (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  restaurant_id UUID NOT NULL,
-  status VARCHAR(50) DEFAULT 'pending',
-  order_code VARCHAR(50),
-  total_price DECIMAL(10,2),
-  payment_mode VARCHAR(50),
-  items JSONB DEFAULT '[]'::jsonb,
-  table_ref VARCHAR(100),
-  note TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+-- Step 5: Verify column was added
+SELECT 'table_ref column ready' AS result
+WHERE EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'live_orders'
+    AND column_name = 'table_ref'
 );
-
--- Re-enable after table creation
-ALTER TABLE live_orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all" ON live_orders FOR ALL USING (true);
-GRANT ALL ON live_orders TO anon, authenticated;
-
--- Create payment_tokens table
-DROP TABLE IF EXISTS payment_tokens;
-
-CREATE TABLE payment_tokens (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID,
-  token VARCHAR(255),
-  table_ref VARCHAR(100),
-  expires_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE payment_tokens ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all tokens" ON payment_tokens FOR ALL USING (true);
-GRANT ALL ON payment_tokens TO anon, authenticated;
 
 -- =============================================
--- After running this SQL, test by clicking Pay Online button
--- Check browser console for exact error if still failing
+-- After running, test Confirm Order in the app
+-- Check browser console for exact payload and errors
 -- =============================================
