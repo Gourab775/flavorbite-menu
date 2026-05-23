@@ -6,13 +6,8 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
-import { addOrderToDeviceSession } from "../utils/session";
+import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread } from "../utils/session";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-
-function generateOrderCode() {
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return "ORD-" + num;
-}
 
 export function CheckoutPage() {
   const [, navigate] = useLocation();
@@ -130,7 +125,7 @@ export function CheckoutPage() {
       const pendingOrder = {
         restaurant_id: restaurant.id,
         status: "pending",
-        order_code: generateOrderCode(),
+        order_code: getOrCreateDeviceOrderCode(),
         total_price: grandTotal,
         items: itemsPayload,
         table_id: tableData.id,
@@ -142,6 +137,7 @@ export function CheckoutPage() {
 
       sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
       addOrderToDeviceSession(pendingOrder);
+      markDeviceSessionOrdersUnread();
 
       const { error: insertError } = await supabase
         .from("live_orders")

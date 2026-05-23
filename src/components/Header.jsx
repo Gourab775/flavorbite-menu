@@ -2,6 +2,7 @@ import { useLocation, useParams } from "wouter";
 import { useMenu } from "../hooks/useMenu";
 import { getStoredSlug } from "../utils/constants";
 import { useState, useEffect, useRef } from "react";
+import { hasDeviceSessionUnreadOrders, markDeviceSessionOrdersRead } from "../utils/session";
 
 export function Header() {
   const [, navigate] = useLocation();
@@ -16,6 +17,8 @@ export function Header() {
   const displayName = restaurant.name || (restaurantLoading ? "" : "Restaurant");
   const basePath = `/${slug}`;
 
+  const hasUnread = hasDeviceSessionUnreadOrders();
+
   useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -28,9 +31,17 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
 
+  const toggleMenu = () => {
+    if (!menuOpen) markDeviceSessionOrdersRead();
+    setMenuOpen((prev) => !prev);
+  };
+
   const handleNav = (path) => {
     setMenuOpen(false);
-    if (path) navigate(path);
+    if (path) {
+      markDeviceSessionOrdersRead();
+      navigate(path);
+    }
   };
 
   return (
@@ -77,13 +88,14 @@ export function Header() {
       <div className="hamburgerWrap" ref={menuRef}>
         <button
           className={`hamburgerBtn pressable ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen((prev) => !prev)}
+          onClick={toggleMenu}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
           <span className="hamburgerLine" />
           <span className="hamburgerLine" />
           <span className="hamburgerLine" />
+          {hasUnread && <span className="hamburgerBadge" />}
         </button>
 
         {menuOpen && (

@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
-import { getDeviceSessionOrders } from "../utils/session";
+import { getDeviceSessionOrders, markDeviceSessionOrdersRead } from "../utils/session";
 
 export function YourOrdersPage() {
   const [, navigate] = useLocation();
@@ -10,8 +11,42 @@ export function YourOrdersPage() {
   const basePath = `/${slug}`;
   const { restaurant } = useMenu();
 
+  useEffect(() => {
+    markDeviceSessionOrdersRead();
+  }, []);
+
   const orders = getDeviceSessionOrders();
   const sortedOrders = orders.slice().reverse();
+
+  const grouped = {};
+  sortedOrders.forEach((order) => {
+    const code = order.order_code || "unknown";
+    if (!grouped[code]) {
+      grouped[code] = {
+        order_code: code,
+        items: [],
+        total: 0,
+        savedAt: order.savedAt,
+      };
+    }
+    grouped[code].items.push(...(order.items || []));
+    grouped[code].total += Math.round(order.total_price || 0);
+  });
+
+  const groups = Object.values(grouped).map((group) => {
+    const merged = {};
+    group.items.forEach((item) => {
+      const key = item.name;
+      if (merged[key]) {
+        merged[key].quantity += item.quantity;
+      } else {
+        merged[key] = { ...item };
+      }
+    });
+    return { ...group, items: Object.values(merged) };
+  });
+
+  groups.sort((a, b) => b.savedAt - a.savedAt);
 
   return (
     <div className="pageLayout">
@@ -24,17 +59,16 @@ export function YourOrdersPage() {
       </header>
 
       <main className="yourOrdersBody hideScrollbar">
-        {sortedOrders.length > 0 ? (
+        {groups.length > 0 ? (
           <div className="ordersContainer">
-            {sortedOrders.map((order, idx) => (
+            {groups.map((group, idx) => (
               <div className="orderCard" key={idx}>
                 <div className="orderCardHeader">
-                  <div className="orderCardCode">{order.order_code}</div>
-                  <span className="orderCardStatus pending">Pending</span>
+                  <div className="orderCardCode">{group.order_code}</div>
                 </div>
                 <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
                 <div className="orderCardItems">
-                  {order.items?.map((item, iidx) => (
+                  {group.items.map((item, iidx) => (
                     <div className="orderCardItem" key={iidx}>
                       <span className="orderCardItemName">{item.name}</span>
                       <span className="orderCardItemQty">×{item.quantity}</span>
@@ -44,14 +78,15 @@ export function YourOrdersPage() {
                 </div>
                 <div className="orderCardTotal">
                   <span>Total</span>
-                  <span>₹{Math.round(order.total_price || 0)}</span>
-                </div>
-                <div className="orderCardNote">
-                  {order.note && <p>Note: {order.note}</p>}
+                  <span>₹{group.total}</span>
                 </div>
               </div>
             ))}
-            <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 16, width: "100%", padding: "14px 0" }}>
+            <button
+              className="btn primary pressable"
+              onClick={() => navigate(basePath)}
+              style={{ marginTop: 16, width: "100%", padding: "14px 0", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
               Back to Menu
             </button>
           </div>
