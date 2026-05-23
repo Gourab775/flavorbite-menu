@@ -13,7 +13,7 @@ import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
 import { setStoredSlug } from "../utils/constants";
 import { initSession, setTableData } from "../utils/session";
-import { supabase } from "../lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
 
 function slugify(text) {
@@ -28,138 +28,14 @@ const SCROLL_HEADER_OFFSET = 180;
 
 export function MenuPage() {
   const { slug } = useParams();
-  const { loadMenu } = useMenuStore();
-
-  const [restaurant, setRestaurant] = useState(null);
-  const [tableStatus, setTableStatus] = useState("validating"); // validating, missing, invalid, ok
-
-  // ── 1. Fetch restaurant by slug ──────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    const fetchRestaurant = async () => {
-      try {
-        if (!slug || typeof slug !== "string") return;
-        const { data, error } = await supabase
-          .from("restaurants")
-          .select("*")
-          .eq("slug", slug)
-          .single();
-        if (error) {
-          console.error("Failed to fetch restaurant:", error);
-          if (!cancelled) setRestaurant(null);
-          return;
-        }
-        if (!cancelled) setRestaurant(data);
-      } catch (e) {
-        console.error("Unexpected error fetching restaurant:", e);
-        if (!cancelled) setRestaurant(null);
-      }
-    };
-    fetchRestaurant();
-    return () => { cancelled = true; };
-  }, [slug]);
-
-  // ── 2. Init session + handle table_token extraction ────────────────────────
-  useEffect(() => {
-    if (slug && typeof slug === "string") {
-      setStoredSlug(slug);
-      loadMenu(slug);
-      initSession();
-    }
-    
-    const params = new URLSearchParams(window.location.search);
-    const rawParam = params.get("table");
-    const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
-    
-    if (tableParam) {
-      console.log("[MenuPage] tableParam detected from URL (decoded):", tableParam);
-      localStorage.setItem("table_token", tableParam);
-      sessionStorage.setItem("qr_table_param", tableParam);
-    } else {
-      const storedToken = localStorage.getItem("table_token");
-      if (storedToken) {
-        console.log("[MenuPage] table_token recovered from localStorage:", storedToken);
-        sessionStorage.setItem("qr_table_param", storedToken);
-      } else {
-        console.warn("[MenuPage] No table_token found in URL or storage.");
-        setTableStatus("missing");
-      }
-    }
-  }, [slug, loadMenu]);
-
-  // ── 3. Look up the table row using table_token ──────────────────────
-  useEffect(() => {
-    if (!restaurant?.id) return;
-
-    const tableToken =
-      new URLSearchParams(window.location.search).get("table") ||
-      localStorage.getItem("table_token");
-
-    if (!tableToken) {
-      setTableStatus("missing");
-      return;
-    }
-
-    const doLookup = async () => {
-      try {
-        setTableStatus("validating");
-        
-        // Decode and trim the token to avoid encoding or whitespace issues
-        const rawParam = new URLSearchParams(window.location.search).get("table") || localStorage.getItem("table_token");
-        const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
-        
-        console.log("[MenuPage] tableParam (raw):", rawParam);
-        console.log("[MenuPage] tableParam (decoded & trimmed):", tableParam);
-
-        if (!tableParam) {
-          console.warn("[MenuPage] No table token available after processing.");
-          setTableStatus("missing");
-          return;
-        }
-
-        // Query using table_token column
-        const { data: byToken, error: tokenErr } = await supabase
-          .from("restaurant_tables")
-          .select("*")
-          .eq("table_token", tableParam)
-          .maybeSingle();
-
-        console.log("[MenuPage] DB lookup result:", { byToken, error: tokenErr });
-
-        if (tokenErr) {
-          console.error("[MenuPage] table_token lookup error:", tokenErr.message);
-          setTableStatus("invalid");
-          return;
-        }
-
-        if (byToken && byToken.restaurant_id === restaurant.id) {
-          console.log("[MenuPage] Table verified successfully:", byToken.table_number);
-          console.log("[MenuPage] FETCHED_TABLE_ID (real PK):", byToken.id);
-          
-          setTableData(byToken);
-          localStorage.setItem("table_id", byToken.id);
-          localStorage.setItem("table_token", byToken.table_token);
-          console.log("[MenuPage] Table info persisted to localStorage");
-          setTableStatus("ok");
-        } else {
-          console.warn("[MenuPage] No matching table found for token:", tableToken);
-          setTableStatus("invalid");
-        }
-      } catch (err) {
-        console.error("[MenuPage] Table lookup exception:", err);
-        setTableStatus("invalid");
-      }
-    };
-
-    doLookup();
-  }, [restaurant?.id]);
-
+  const { loadMenu, restaurant: storeRestaurant, loading: storeLoading, error: storeError } = useMenuStore();
   const { vegMode, searchQuery } = useCart();
   const { categories, menuItems, loading, error, refetch } = useMenu();
   const { results: searchResults, searching } = useMenuSearch(searchQuery);
-
   const isSearching = searchQuery.trim() !== "";
 
+  const [tableStatus, setTableStatus] = useState("validating");
+  const tableLookupDone = useRef(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -236,8 +112,136 @@ export function MenuPage() {
     [scrollToSection]
   );
 
-  // Do not render until restaurant data is loaded
-  if (!restaurant) return null;
+  // ── Init session + handle table_token extraction ────────────────────────
+  useEffect(() => {
+    if (slug && typeof slug === "string") {
+      setStoredSlug(slug);
+      loadMenu(slug);
+      initSession();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const rawParam = params.get("table");
+    const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
+
+    if (tableParam) {
+      localStorage.setItem("table_token", tableParam);
+      sessionStorage.setItem("qr_table_param", tableParam);
+    } else {
+      const storedToken = localStorage.getItem("table_token");
+      if (storedToken) {
+        sessionStorage.setItem("qr_table_param", storedToken);
+      }
+    }
+  }, [slug, loadMenu]);
+
+  // ── Look up the table row using table_token ──────────────────────
+  useEffect(() => {
+    if (!storeRestaurant?.id) return;
+    if (tableLookupDone.current) return;
+
+    const tableToken =
+      new URLSearchParams(window.location.search).get("table") ||
+      localStorage.getItem("table_token");
+
+    if (!tableToken) {
+      setTableStatus("missing");
+      tableLookupDone.current = true;
+      return;
+    }
+
+    let cancelled = false;
+
+    const doLookup = async () => {
+      try {
+        setTableStatus("validating");
+
+        const rawParam = new URLSearchParams(window.location.search).get("table") || localStorage.getItem("table_token");
+        const tableParam = rawParam ? decodeURIComponent(rawParam).trim() : null;
+
+        if (!tableParam) {
+          if (!cancelled) setTableStatus("missing");
+          tableLookupDone.current = true;
+          return;
+        }
+
+        if (!isSupabaseConfigured || !supabase) {
+          if (!cancelled) setTableStatus("invalid");
+          tableLookupDone.current = true;
+          return;
+        }
+
+        const { data: byToken, error: tokenErr } = await supabase
+          .from("restaurant_tables")
+          .select("*")
+          .eq("table_token", tableParam)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (tokenErr) {
+          console.error("[MenuPage] table_token lookup error:", tokenErr.message);
+          setTableStatus("invalid");
+          tableLookupDone.current = true;
+          return;
+        }
+
+        if (byToken && byToken.restaurant_id === storeRestaurant.id) {
+          setTableData(byToken);
+          localStorage.setItem("table_id", byToken.id);
+          localStorage.setItem("table_token", byToken.table_token);
+          setTableStatus("ok");
+        } else {
+          console.warn("[MenuPage] No matching table found for token:", tableToken);
+          setTableStatus("invalid");
+        }
+        tableLookupDone.current = true;
+      } catch (err) {
+        if (!cancelled) {
+          console.error("[MenuPage] Table lookup exception:", err);
+          setTableStatus("invalid");
+          tableLookupDone.current = true;
+        }
+      }
+    };
+
+    doLookup();
+    return () => { cancelled = true; };
+  }, [storeRestaurant?.id]);
+
+  // Handle restaurant loading state
+  if (storeLoading && !storeRestaurant?.id && tableStatus !== "missing") {
+    return (
+      <div className="menuLayout">
+        <main className="loadingPage">
+          <div className="loadingSpinner" />
+          <p className="loadingText">Loading restaurant...</p>
+        </main>
+      </div>
+    );
+  }
+
+  // Handle restaurant fetch failure
+  if (storeError && !storeRestaurant?.id) {
+    return (
+      <div className="menuLayout">
+        <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
+            <AlertCircle size={60} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ marginTop: "24px" }}>Unable to load restaurant</h2>
+          <p className="muted" style={{ maxWidth: "280px", margin: "12px auto" }}>
+            {storeError}
+          </p>
+          <div style={{ marginTop: "16px", display: "flex", gap: "8px", justifyContent: "center" }}>
+            <button className="btn primary" onClick={() => loadMenu(slug)}>
+              Try again
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Handle blocking states
   if (tableStatus === "missing") {

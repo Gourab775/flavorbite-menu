@@ -100,90 +100,116 @@ export function MenuProvider({ children }) {
     fetchKey.current = slug;
     dispatch({ type: "START_LOADING" });
 
-    try {
-      const { data: restaurantData, error } = await supabase
-        .from("restaurants")
-        .select("id, name, slug, logo")
-        .eq("slug", slug)
-        .maybeSingle();
+    const MAX_ATTEMPTS = 3;
 
-      if (error) {
-        fetchKey.current = null;
-        dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
-        return;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      if (fetchKey.current !== slug) return;
+
+      if (attempt > 1) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt - 1)));
+        if (fetchKey.current !== slug) return;
       }
 
-      let restaurantRow = restaurantData;
-
-      if (!restaurantData) {
-        const { data: ilikeData, error: ilikeError } = await supabase
+      try {
+        const { data: restaurantData, error } = await supabase
           .from("restaurants")
           .select("id, name, slug, logo")
-          .ilike("slug", `%${slug}%`)
+          .eq("slug", slug)
           .maybeSingle();
 
-        if (ilikeError) {
-          fetchKey.current = null;
-          dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
-          return;
+        if (error) {
+          if (attempt === MAX_ATTEMPTS) {
+            fetchKey.current = null;
+            dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
+            return;
+          }
+          continue;
         }
 
-        if (ilikeData) {
-          restaurantRow = ilikeData;
-        } else {
-          const { data: firstData, error: firstError } = await supabase
+        let restaurantRow = restaurantData;
+
+        if (!restaurantData) {
+          const { data: ilikeData, error: ilikeError } = await supabase
             .from("restaurants")
             .select("id, name, slug, logo")
-            .limit(1)
+            .ilike("slug", `%${slug}%`)
             .maybeSingle();
 
-          if (firstError) {
-            fetchKey.current = null;
-            dispatch({ type: "SET_ERROR", payload: `Database error: ${firstError.message}` });
-            return;
+          if (ilikeError) {
+            if (attempt === MAX_ATTEMPTS) {
+              fetchKey.current = null;
+              dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
+              return;
+            }
+            continue;
           }
 
-          if (firstData) {
-            restaurantRow = firstData;
+          if (ilikeData) {
+            restaurantRow = ilikeData;
           } else {
-            fetchKey.current = null;
-            dispatch({ 
-              type: "SET_ERROR", 
-              payload: "No restaurant found. Please create a restaurant in the database first." 
-            });
-            return;
+            const { data: firstData, error: firstError } = await supabase
+              .from("restaurants")
+              .select("id, name, slug, logo")
+              .limit(1)
+              .maybeSingle();
+
+            if (firstError) {
+              if (attempt === MAX_ATTEMPTS) {
+                fetchKey.current = null;
+                dispatch({ type: "SET_ERROR", payload: `Database error: ${firstError.message}` });
+                return;
+              }
+              continue;
+            }
+
+            if (firstData) {
+              restaurantRow = firstData;
+            } else {
+              fetchKey.current = null;
+              dispatch({ 
+                type: "SET_ERROR", 
+                payload: "No restaurant found. Please create a restaurant in the database first." 
+              });
+              return;
+            }
           }
         }
+
+        const row = restaurantRow;
+        const restaurantId = String(row.id);
+        const restaurant = {
+          id: restaurantId,
+          name: String(row.name ?? ""),
+          slug: String(row.slug ?? ""),
+          logo: String(row.logo ?? ""),
+        };
+
+        const [cats, items, feat] = await Promise.all([
+          supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
+          supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
+          supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
+        ]);
+
+        if (fetchKey.current !== slug) return;
+
+        const data = {
+          restaurant,
+          categories: normalizeCategories(cats.data),
+          menuItems: normalizeMenuItems(items.data),
+          featuredItems: normalizeFeaturedItems(feat.data),
+        };
+
+        menuCache.set(slug, data);
+        fetchKey.current = null;
+        dispatch({ type: "SET_DATA", payload: data });
+        return;
+      } catch (err) {
+        if (attempt === MAX_ATTEMPTS) {
+          fetchKey.current = null;
+          dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });
+          return;
+        }
       }
-
-      const row = restaurantRow;
-      const restaurantId = String(row.id);
-      const restaurant = {
-        id: restaurantId,
-        name: String(row.name ?? ""),
-        slug: String(row.slug ?? ""),
-        logo: String(row.logo ?? ""),
-      };
-
-      const [cats, items, feat] = await Promise.all([
-        supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
-        supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-        supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
-      ]);
-
-      const data = {
-        restaurant,
-        categories: normalizeCategories(cats.data),
-        menuItems: normalizeMenuItems(items.data),
-        featuredItems: normalizeFeaturedItems(feat.data),
-      };
-
-      menuCache.set(slug, data);
-      fetchKey.current = null;
-      dispatch({ type: "SET_DATA", payload: data });
-    } catch (err) {
-      fetchKey.current = null;
-      dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });
     }
   }, []);
 
