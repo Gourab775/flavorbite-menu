@@ -44,20 +44,19 @@ export function CheckoutPage() {
   const isLoading = localLoading || menuLoading;
   const hasRestaurant = restaurant && restaurant.id;
 
-  // Detect which table reference column exists in the live_orders table
-  async function detectTableColumn() {
+  // Allowed columns in live_orders — only these keys go into the payload
+  const ALLOWED_COLUMNS = new Set([
+    "restaurant_id", "table_id", "status", "order_code",
+    "total_price", "items", "note", "customer_name",
+  ]);
+
+  // Check that table_id column actually exists in live_orders
+  async function tableIdColumnExists() {
     try {
-      const [r1, r2] = await Promise.all([
-        supabase.from("live_orders").select("table_id").limit(0),
-        supabase.from("live_orders").select("table_ref").limit(0),
-      ]);
-      if (!r1.error) return "table_id";
-      if (!r2.error) return "table_ref";
-      console.warn("[Checkout] Cannot detect table column:", r1.error?.message, r2.error?.message);
-      return "table_ref";
-    } catch (e) {
-      console.warn("[Checkout] Schema detection error:", e);
-      return "table_ref";
+      const { error } = await supabase.from("live_orders").select("table_id").limit(0);
+      return !error;
+    } catch {
+      return false;
     }
   }
 
@@ -137,29 +136,34 @@ export function CheckoutPage() {
         is_veg: Boolean(item.isVeg),
       }));
 
-      // Detect which column the live_orders table uses for table reference
-      const tableColumn = await detectTableColumn();
-      console.log("[Checkout] Using table column:", tableColumn);
-
-      // Ensure order_code is never null/undefined
       const orderCode = getOrCreateDeviceOrderCode() || `ORD-${Date.now()}`;
+      console.log("[Checkout] Order code:", orderCode);
 
-      // Build order payload matching the actual DB schema
-      const pendingOrder = {
+      const hasTableId = await tableIdColumnExists();
+      console.log("[Checkout] table_id column exists:", hasTableId);
+
+      // Build payload with only the allowed columns
+      const pendingOrderRaw = {
         restaurant_id: restaurant.id,
         status: "pending",
         order_code: orderCode,
         total_price: Number(grandTotal) || 0,
         items: itemsPayload,
-        [tableColumn]: tableColumn === "table_id" ? tableData.id : String(tableData.id),
+        note: sessionStorage.getItem("cart_order_note") || undefined,
       };
 
-      const orderNote = sessionStorage.getItem("cart_order_note") || "";
-      if (orderNote) {
-        pendingOrder.note = orderNote;
+      if (hasTableId) {
+        pendingOrderRaw.table_id = tableData.id;
       }
 
-      // Validate required fields before sending
+      // Strip any keys not in the allowed set
+      const pendingOrder = Object.fromEntries(
+        Object.entries(pendingOrderRaw).filter(
+          ([key, val]) => ALLOWED_COLUMNS.has(key) && val !== undefined && val !== null
+        )
+      );
+
+      // Validate required fields exist in final payload
       const requiredFields = ["restaurant_id", "status", "order_code", "total_price", "items"];
       for (const field of requiredFields) {
         if (pendingOrder[field] === undefined || pendingOrder[field] === null) {
@@ -167,11 +171,7 @@ export function CheckoutPage() {
         }
       }
 
-      console.log("[Checkout] Sending order payload:", JSON.stringify(pendingOrder, null, 2));
-
-      sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
-      addOrderToDeviceSession(pendingOrder);
-      markDeviceSessionOrdersUnread();
+      console.log("[Checkout] Final order payload:", JSON.stringify(pendingOrder, null, 2));
 
       const { error: insertError } = await supabase
         .from("live_orders")
@@ -183,9 +183,20 @@ export function CheckoutPage() {
           message: insertError.message,
           details: insertError.details,
           hint: insertError.hint,
+          payload: JSON.stringify(pendingOrder),
         });
         throw new Error(`Failed to place order: ${insertError.message}`);
       }
+
+      console.log("[Checkout] Order inserted successfully:", {
+        order_code: orderCode,
+        status: "pending",
+      });
+
+      // Only save locally AFTER successful DB insert
+      sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
+      addOrderToDeviceSession(pendingOrder);
+      markDeviceSessionOrdersUnread();
 
       navigate(`${basePath}/order-sent`);
     } catch (err) {
