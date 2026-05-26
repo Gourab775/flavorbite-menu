@@ -7,7 +7,8 @@ import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
 import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread } from "../utils/session";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, AlertCircle, ArrowRight, Clock, X } from "lucide-react";
 
 export function CheckoutPage() {
   const [, navigate] = useLocation();
@@ -26,7 +27,7 @@ export function CheckoutPage() {
   const basePath = `/${slug}`;
 
   const [tableError, setTableError] = useState(null);
-  const [countdownActive, setCountdownActive] = useState(false);
+  const [orderState, setOrderState] = useState("idle");
   const [countdownVal, setCountdownVal] = useState(10);
   const executeOrderRef = useRef(null);
 
@@ -45,15 +46,15 @@ export function CheckoutPage() {
   }, [slug, restaurant.id, loadMenu]);
 
   useEffect(() => {
-    if (!countdownActive) return;
+    if (orderState !== "countdown") return;
     if (countdownVal <= 0) {
-      setCountdownActive(false);
+      setOrderState("submitting");
       executeOrderRef.current?.();
       return;
     }
     const timer = setTimeout(() => setCountdownVal((v) => v - 1), 1000);
     return () => clearTimeout(timer);
-  }, [countdownActive, countdownVal]);
+  }, [orderState, countdownVal]);
 
   const isLoading = localLoading || menuLoading;
   const hasRestaurant = restaurant && restaurant.id;
@@ -218,6 +219,7 @@ export function CheckoutPage() {
       const message = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(message);
       setToastType("error");
+      setOrderState("idle");
     } finally {
       setLocalLoading(false);
     }
@@ -242,16 +244,16 @@ export function CheckoutPage() {
       setToastType("error");
       return;
     }
-    setCountdownActive(true);
+    setOrderState("countdown");
     setCountdownVal(10);
   };
 
   const handleCancelOrder = () => {
-    setCountdownActive(false);
+    setOrderState("idle");
     setCountdownVal(10);
   };
 
-  const progress = (countdownVal / 10) * 100;
+  const progress = orderState === "countdown" ? (countdownVal / 10) * 100 : 0;
 
   return (
     <div className="pageLayout">
@@ -310,33 +312,73 @@ export function CheckoutPage() {
         </section>
 
         <section className="checkoutSection" style={{ paddingBottom: 100, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {countdownActive ? (
-            <div className="countdownContainer">
-              <div className="countdownBar">
-                <div className="countdownBarFill" style={{ width: `${progress}%` }} />
-              </div>
-              <div className="countdownInfo">
-                <span className="countdownTimer">{countdownVal}s</span>
-                <span className="countdownLabel">Confirming your order...</span>
-              </div>
-              <button
-                className="countdownCancelBtn"
-                onClick={handleCancelOrder}
+          <AnimatePresence mode="wait">
+            {orderState === "idle" && (
+              <motion.button
+                key="confirm-btn"
+                className="confirmOrderBtn"
+                onClick={handleInitiateOrder}
                 disabled={isLoading}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
               >
-                Cancel Order
-              </button>
-            </div>
-          ) : (
-            <button
-              className="btn primary"
-              onClick={handleInitiateOrder}
-              disabled={isLoading}
-              style={{ padding: "16px 48px", fontSize: "16px", fontWeight: 600 }}
-            >
-              {isLoading ? "Processing..." : "Confirm Order"}
-            </button>
-          )}
+                {isLoading ? "Processing..." : "Confirm Order"}
+                {!isLoading && <ArrowRight size={20} />}
+              </motion.button>
+            )}
+            {orderState === "countdown" && (
+              <motion.div
+                key="countdown-ui"
+                className="countdownContainer"
+                initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <div className="countdownHeader">
+                  <span className="countdownLabel">
+                    <Clock size={16} />
+                    Confirming order...
+                  </span>
+                  <span className="countdownTimer">{countdownVal}s</span>
+                </div>
+                <div className="countdownTrack">
+                  <div className="countdownFill" style={{ width: `${progress}%` }} />
+                  <div className="countdownDot" style={{ left: `${progress}%` }} />
+                </div>
+                <p className="countdownSubtext">
+                  Your order will be confirmed automatically unless you cancel
+                </p>
+                <button
+                  className="countdownCancelBtn"
+                  onClick={handleCancelOrder}
+                  disabled={isLoading}
+                >
+                  <X size={18} />
+                  Cancel Order
+                </button>
+              </motion.div>
+            )}
+            {orderState === "submitting" && (
+              <motion.div
+                key="submitting-ui"
+                className="submittingContainer"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="submittingSpinner" />
+                <p className="countdownLabel" style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>
+                  Placing your order...
+                </p>
+                <p className="countdownSubtext">
+                  Please wait while we confirm with the restaurant
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
       </main>
 
