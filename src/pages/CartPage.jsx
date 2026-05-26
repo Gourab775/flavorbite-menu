@@ -3,6 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
+import { ShoppingBag } from "lucide-react";
 
 const CART_NOTE_KEY = "cart_order_note";
 
@@ -72,7 +73,7 @@ export function CartPage() {
 
         <main className="emptyWrap">
           <div className="emptyIllo" aria-hidden="true">
-            🛒
+            <ShoppingBag size={64} strokeWidth={1} opacity={0.3} />
           </div>
           <h2 className="emptyTitle">Your cart is empty</h2>
           <p className="emptySub">Add items from the menu to get started.</p>

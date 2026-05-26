@@ -1045,10 +1045,7 @@ a:focus:not(:focus-visible) {
   font-size: 28px;
 }
 
-.menuImgPlaceholder::after {
-  content: '🍽';
-  opacity: 0.5;
-}
+
 
 .menuBody {
   flex: 1;
@@ -1837,6 +1834,79 @@ a:focus:not(:focus-visible) {
   text-align: right;
   flex-shrink: 0;
   color: var(--text);
+}
+
+/* ── Countdown confirmation ── */
+.countdownContainer {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.countdownBar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.countdownBarFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+
+.countdownInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.countdownTimer {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdownLabel {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.countdownCancelBtn {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 150ms ease;
+}
+
+.countdownCancelBtn:hover {
+  background: var(--bg-secondary);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.countdownCancelBtn:active {
+  transform: scale(0.98);
 }
 
 /* Order success */

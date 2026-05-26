@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { Smartphone } from "lucide-react";
 
 export function TableRequiredPage() {
   const [, setLocation] = useLocation();
@@ -16,7 +17,7 @@ export function TableRequiredPage() {
     <div className="pageLayout">
       <main className="emptyWrap">
         <div className="emptyIllo" aria-hidden="true">
-          📱
+          <Smartphone size={64} strokeWidth={1} opacity={0.3} />
         </div>
         <h2 className="emptyTitle">Scan QR Code</h2>
         <p className="emptySub">Please scan the QR code from your table to view the menu.</p>

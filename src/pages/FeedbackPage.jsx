@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
-import { Star, Send } from "lucide-react";
+import { Star, Send, CheckCircle } from "lucide-react";
 
 export function FeedbackPage() {
   const [, navigate] = useLocation();
@@ -28,7 +28,7 @@ export function FeedbackPage() {
         </header>
         <main className="feedbackBody">
           <div className="feedbackSuccess">
-            <div className="feedbackSuccessIcon">🎉</div>
+            <div className="feedbackSuccessIcon"><CheckCircle size={48} strokeWidth={1.5} /></div>
             <h2>Thank You!</h2>
             <p>Your feedback helps us improve the experience.</p>
             <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 24, padding: "14px 0", width: "100%", maxWidth: 240 }}>

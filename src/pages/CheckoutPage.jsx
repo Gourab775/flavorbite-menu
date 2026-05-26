@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
@@ -26,6 +26,9 @@ export function CheckoutPage() {
   const basePath = `/${slug}`;
 
   const [tableError, setTableError] = useState(null);
+  const [countdownActive, setCountdownActive] = useState(false);
+  const [countdownVal, setCountdownVal] = useState(10);
+  const executeOrderRef = useRef(null);
 
   useEffect(() => {
     if (slug && !restaurant.id) {
@@ -40,6 +43,17 @@ export function CheckoutPage() {
       console.log("[Checkout] table_token verified on mount:", token);
     }
   }, [slug, restaurant.id, loadMenu]);
+
+  useEffect(() => {
+    if (!countdownActive) return;
+    if (countdownVal <= 0) {
+      setCountdownActive(false);
+      executeOrderRef.current?.();
+      return;
+    }
+    const timer = setTimeout(() => setCountdownVal((v) => v - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdownActive, countdownVal]);
 
   const isLoading = localLoading || menuLoading;
   const hasRestaurant = restaurant && restaurant.id;
@@ -209,6 +223,36 @@ export function CheckoutPage() {
     }
   };
 
+  executeOrderRef.current = handleConfirmOrder;
+
+  const handleInitiateOrder = () => {
+    if (!cart || cart.length === 0) {
+      setToastMsg("Your cart is empty.");
+      setToastType("error");
+      return;
+    }
+    if (!hasRestaurant) {
+      setToastMsg("Restaurant data not loaded. Please go back and try again.");
+      setToastType("error");
+      return;
+    }
+    const tableToken = localStorage.getItem("table_token") || null;
+    if (!tableToken) {
+      setToastMsg("Table not found. Please scan QR code again.");
+      setToastType("error");
+      return;
+    }
+    setCountdownActive(true);
+    setCountdownVal(10);
+  };
+
+  const handleCancelOrder = () => {
+    setCountdownActive(false);
+    setCountdownVal(10);
+  };
+
+  const progress = (countdownVal / 10) * 100;
+
   return (
     <div className="pageLayout">
       <header className="topBar">
@@ -265,15 +309,34 @@ export function CheckoutPage() {
           </div>
         </section>
 
-        <section className="checkoutSection" style={{ paddingBottom: 100 }}>
-          <button
-            className="btn primary"
-            onClick={handleConfirmOrder}
-            disabled={isLoading}
-            style={{ width: "100%", padding: "16px", fontSize: "16px", fontWeight: 600 }}
-          >
-            {isLoading ? "Processing..." : "Confirm Order"}
-          </button>
+        <section className="checkoutSection" style={{ paddingBottom: 100, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {countdownActive ? (
+            <div className="countdownContainer">
+              <div className="countdownBar">
+                <div className="countdownBarFill" style={{ width: `${progress}%` }} />
+              </div>
+              <div className="countdownInfo">
+                <span className="countdownTimer">{countdownVal}s</span>
+                <span className="countdownLabel">Confirming your order...</span>
+              </div>
+              <button
+                className="countdownCancelBtn"
+                onClick={handleCancelOrder}
+                disabled={isLoading}
+              >
+                Cancel Order
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn primary"
+              onClick={handleInitiateOrder}
+              disabled={isLoading}
+              style={{ padding: "16px 48px", fontSize: "16px", fontWeight: 600 }}
+            >
+              {isLoading ? "Processing..." : "Confirm Order"}
+            </button>
+          )}
         </section>
       </main>
 

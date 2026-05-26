@@ -3,6 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
 import { getDeviceSessionOrders, markDeviceSessionOrdersRead } from "../utils/session";
+import { ClipboardList } from "lucide-react";
 
 export function YourOrdersPage() {
   const [, navigate] = useLocation();
@@ -92,7 +93,7 @@ export function YourOrdersPage() {
           </div>
         ) : (
           <div className="emptyWrap">
-            <div className="emptyIllo" aria-hidden="true" style={{ fontSize: 48 }}>📋</div>
+            <div className="emptyIllo" aria-hidden="true"><ClipboardList size={48} strokeWidth={1} opacity={0.3} /></div>
             <h2 className="emptyTitle">No orders yet</h2>
             <p className="emptySub">Your recent orders will appear here once you place them.</p>
             <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 16 }}>

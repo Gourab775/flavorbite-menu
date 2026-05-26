@@ -41,7 +41,7 @@ export function HelpSupportPage() {
             </div>
           </div>
           <div className="helpCard">
-            <div className="helpCardIcon" style={{ fontSize: 24, lineHeight: 1 }}>💬</div>
+            <div className="helpCardIcon"><MessageCircle size={24} /></div>
             <div className="helpCardText">
               <h3>Using the App</h3>
               <p>Browse the menu, add items to your cart, and place your order. Use the hamburger menu to access all features including calling a waiter and viewing your orders.</p>
