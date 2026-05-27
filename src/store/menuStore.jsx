@@ -14,6 +14,7 @@ function normalizeCategories(data) {
     name: String(c.name ?? ""),
     imageUrl: String(c.image ?? c.image_url ?? c.imageUrl ?? ""),
     sortOrder: Number(c.sort_order ?? c.sortOrder ?? 0),
+    mainCategoryId: String(c.main_category_id ?? c.mainCategoryId ?? ""),
   })).filter((c) => c.id && c.name).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 

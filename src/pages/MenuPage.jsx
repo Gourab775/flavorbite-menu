@@ -39,6 +39,13 @@ export function MenuPage() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const mainCategoryId = new URLSearchParams(window.location.search).get("main_category_id") || "";
+
+  const filteredCategories = useMemo(() => {
+    if (!mainCategoryId) return categories;
+    return categories.filter((c) => c.mainCategoryId === mainCategoryId);
+  }, [categories, mainCategoryId]);
+
   const handleScroll = useCallback(() => {
     const scrollY = window.scrollY || document.documentElement.scrollTop;
     setIsScrolled(scrollY > 10);
@@ -58,14 +65,14 @@ export function MenuPage() {
       return [{ category: { id: "__search", name: `Results for "${searchQuery}"` }, items }];
     }
 
-    return categories
+    return filteredCategories
       .map((c) => {
         let items = menuItems.filter((i) => i.categoryId === c.id);
         if (vegMode) items = items.filter((i) => i.isVeg);
         return { category: c, items };
       })
       .filter((g) => g.items.length > 0);
-  }, [categories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
+  }, [filteredCategories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
   // ── Scroll sync: container scroll → update active category ──
   useCategorySync("menu-container", setActiveCategory);
@@ -304,7 +311,7 @@ export function MenuPage() {
           {!isSearching && (
             <div className={`categoryWrapper ${isScrolled ? "scrolled" : ""}`}>
               <CategorySlider
-                categories={categories}
+                categories={filteredCategories}
                 activeCategory={activeCategory}
                 onCategoryClick={handleCategoryClick}
               />

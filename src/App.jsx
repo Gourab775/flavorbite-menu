@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider } from "./store/menuStore";
+import { LandingPage } from "./pages/LandingPage";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
@@ -21,7 +22,8 @@ import { initDeviceSession } from "./utils/session";
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function AppRoutes() {
-  const [_menuMatch, menuParams] = useRoute("/:slug");
+  const [_landingMatch, landingParams] = useRoute("/:slug");
+  const [_menuMatch, menuParams] = useRoute("/:slug/menu");
   const [_cartMatch, cartParams] = useRoute("/:slug/cart");
   const [_checkoutMatch] = useRoute("/:slug/checkout");
   const [_orderSentMatch] = useRoute("/:slug/order-sent");
@@ -30,7 +32,7 @@ function AppRoutes() {
   const [location, setLocation] = useLocation();
   const [isReady, setIsReady] = useState(false);
 
-  const slug = menuParams?.slug || cartParams?.slug;
+  const slug = landingParams?.slug || menuParams?.slug || cartParams?.slug;
 
   useEffect(() => {
     if (slug) {
@@ -59,6 +61,7 @@ function AppRoutes() {
   return (
     <>
       <Switch>
+        <Route path="/:slug/menu" component={MenuPage} />
         <Route path="/:slug/cart" component={CartPage} />
         <Route path="/:slug/checkout" component={CheckoutPage} />
         <Route path="/:slug/order-sent" component={OrderSuccessPage} />
@@ -70,7 +73,7 @@ function AppRoutes() {
         <Route path="/:slug/restaurant-info" component={RestaurantInfoPage} />
         <Route path="/:slug/faqs" component={FAQsPage} />
         <Route path="/:slug/terms-privacy" component={TermsPrivacyPage} />
-        <Route path="/:slug" component={MenuPage} />
+        <Route path="/:slug" component={LandingPage} />
 
         <Route path="/:slug/*" component={NotFoundPage} />
       </Switch>

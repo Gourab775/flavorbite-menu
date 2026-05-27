@@ -5,18 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, ChevronRight } from "lucide-react";
 
 export function CartBar() {
-  const [isMenuRoute, params] = useRoute("/:slug");
+  const [isMenuRoute] = useRoute("/:slug/menu");
   const [location] = useLocation();
   const { totalItems, grandTotal } = useCart();
 
-  const slug = params?.slug || getStoredSlug();
+  const slug = getStoredSlug();
 
   if (!slug) return null;
   if (totalItems === 0) return null;
   if (!isMenuRoute) return null;
 
   const cleanPath = location?.replace(/\/+$/, "") || "";
-  if (cleanPath !== `/${slug}`) return null;
+  if (cleanPath !== `/${slug}/menu`) return null;
 
   const basePath = `/${slug}`;
 
