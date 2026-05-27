@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "./Toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChefHat } from "lucide-react";
+import { ChefHatIcon } from "../components/ChefHatIcon";
 
 export const MenuItemCard = memo(function MenuItemCard({ item }) {
   const { qtyById, addToCart, decreaseQty } = useCart();
@@ -44,7 +44,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
             />
           ) : (
             <div className="menuImg menuImgPlaceholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ChefHat size={32} color="var(--border)" strokeWidth={1} />
+              <ChefHatIcon size={32} color="var(--border)" strokeWidth={1} />
             </div>
           )}
           {!item.isAvailable && <div className="soldOutTag" aria-label="Sold out" />}

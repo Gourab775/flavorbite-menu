@@ -4,7 +4,8 @@ import { useMenuStore } from "../store/menuStore";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { setStoredSlug } from "../utils/constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { AlertCircle, ChefHat } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { ChefHatIcon } from "../components/ChefHatIcon";
 
 export function LandingPage() {
   const { slug } = useParams();
@@ -145,7 +146,7 @@ export function LandingPage() {
         <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
           <div className="landingCtaGlow" />
           <button className="landingCtaBtn" onClick={navigateToMenu}>
-            <ChefHat size={22} strokeWidth={2} />
+            <ChefHatIcon size={22} strokeWidth={2} />
             <span>View Menu</span>
           </button>
         </div>
