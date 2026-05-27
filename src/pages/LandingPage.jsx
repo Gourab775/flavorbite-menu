@@ -15,6 +15,7 @@ export function LandingPage() {
   const [mainCategories, setMainCategories] = useState([]);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState(null);
+  const [videoError, setVideoError] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
 
@@ -58,6 +59,7 @@ export function LandingPage() {
 
         if (!cancelled && lps?.background_video_url) {
           setBackgroundVideo(lps.background_video_url);
+          setVideoError(false);
         }
 
         const { data: catData, error: catErr } = await supabase
@@ -148,23 +150,21 @@ export function LandingPage() {
   return (
     <div className="landingPage">
       <div className="landingVideoWrap">
-        <video
-          className="landingVideo"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-        >
-          {backgroundVideo ? (
+        {backgroundVideo && !videoError ? (
+          <video
+            className="landingVideo"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
+            onError={() => setVideoError(true)}
+          >
             <source src={backgroundVideo} type="video/mp4" />
-          ) : (
-            <source
-              src="https://videos.pexels.com/video-files/3191290/3191290-uhd_2560_1440_30fps.mp4"
-              type="video/mp4"
-            />
-          )}
-        </video>
+          </video>
+        ) : (
+          <div className="landingVideoFallback" />
+        )}
         <div className="landingOverlay" />
       </div>
 
