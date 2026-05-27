@@ -15,6 +15,7 @@ export function LandingPage() {
   const [backgroundVideo, setBackgroundVideo] = useState("");
   const [videoError, setVideoError] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
   const displayName = restaurant?.name || "";
 
@@ -51,9 +52,11 @@ export function LandingPage() {
         if (!cancelled && lps?.background_video_url) {
           setBackgroundVideo(lps.background_video_url);
           setVideoError(false);
+        } else if (!cancelled) {
+          setVideoReady(true);
         }
       } catch {
-        if (!cancelled) setVideoError(true);
+        if (!cancelled) { setVideoError(true); setVideoReady(true); }
       }
     };
 
@@ -124,7 +127,8 @@ export function LandingPage() {
             loop
             playsInline
             poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-            onError={() => setVideoError(true)}
+            onCanPlay={() => setVideoReady(true)}
+            onError={() => { setVideoError(true); setVideoReady(true); }}
           >
             <source src={backgroundVideo} type="video/mp4" />
           </video>
@@ -134,6 +138,7 @@ export function LandingPage() {
         <div className="landingOverlay" />
       </div>
 
+      <div className={`landingVideoLoader ${videoReady ? "ready" : ""}`} />
       <header className={`landingHeader ${pageLoaded ? "visible" : ""}`}>
         <div className="landingBrand">
           <span className="landingBrandName">{displayName || "Restaurant"}</span>

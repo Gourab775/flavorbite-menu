@@ -62,7 +62,7 @@ export function CartPage() {
         <header className="topBar">
           <button
             className="iconBtn pressable"
-            onClick={() => navigate(basePath)}
+            onClick={() => navigate(`/${slug}/menu`)}
             aria-label="Back to menu"
           >
             ←
@@ -79,7 +79,7 @@ export function CartPage() {
           <p className="emptySub">Add items from the menu to get started.</p>
           <button
             className="btn primary pressable"
-            onClick={() => navigate(basePath)}
+            onClick={() => navigate(`/${slug}/menu`)}
           >
             Browse Menu
           </button>
@@ -95,7 +95,7 @@ export function CartPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => navigate(basePath)}
+          onClick={() => navigate(`/${slug}/menu`)}
           aria-label="Back to menu"
         >
           ←

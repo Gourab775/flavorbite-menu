@@ -3373,6 +3373,21 @@ a:focus:not(:focus-visible) {
   );
 }
 
+.landingVideoLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: #000;
+  opacity: 1;
+  transition: opacity 800ms ease;
+  pointer-events: auto;
+}
+
+.landingVideoLoader.ready {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .landingOverlay {
   position: absolute;
   inset: 0;

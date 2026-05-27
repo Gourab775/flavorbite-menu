@@ -312,30 +312,15 @@ export function CheckoutPage() {
         </section>
 
         <section className="checkoutSection" style={{ paddingBottom: 100, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <AnimatePresence mode="wait">
-            {orderState === "idle" && (
-              <motion.button
-                key="confirm-btn"
-                className="confirmOrderBtn"
-                onClick={handleInitiateOrder}
-                disabled={isLoading}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12, scale: 0.95 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                {isLoading ? "Processing..." : "Confirm Order"}
-                {!isLoading && <ArrowRight size={20} />}
-              </motion.button>
-            )}
+          <AnimatePresence>
             {orderState === "countdown" && (
               <motion.div
                 key="countdown-ui"
                 className="countdownContainer"
-                initial={{ opacity: 0, y: 12, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
               >
                 <div className="countdownHeader">
                   <span className="countdownLabel">
@@ -361,7 +346,23 @@ export function CheckoutPage() {
                 </button>
               </motion.div>
             )}
-            {orderState === "submitting" && (
+          </AnimatePresence>
+          <AnimatePresence mode="wait">
+            {orderState !== "submitting" ? (
+              <motion.button
+                key="confirm-btn"
+                className="confirmOrderBtn"
+                onClick={orderState === "idle" ? handleInitiateOrder : undefined}
+                disabled={isLoading || orderState === "countdown"}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                {isLoading ? "Processing..." : orderState === "countdown" ? `Confirming (${countdownVal}s)` : "Confirm Order"}
+                {!isLoading && orderState === "idle" && <ArrowRight size={20} />}
+              </motion.button>
+            ) : (
               <motion.div
                 key="submitting-ui"
                 className="submittingContainer"
