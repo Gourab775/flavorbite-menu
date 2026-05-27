@@ -4,16 +4,19 @@ import { useMenuStore } from "../store/menuStore";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { setStoredSlug } from "../utils/constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChefHat, X, UtensilsCrossed } from "lucide-react";
 
 export function LandingPage() {
   const { slug } = useParams();
   const [, navigate] = useLocation();
   const { loadMenu, restaurant, loading: storeLoading, error: storeError } = useMenuStore();
 
+  const [backgroundVideo, setBackgroundVideo] = useState("");
   const [mainCategories, setMainCategories] = useState([]);
-  const [mainCatLoading, setMainCatLoading] = useState(true);
-  const [mainCatError, setMainCatError] = useState(null);
+  const [catLoading, setCatLoading] = useState(true);
+  const [catError, setCatError] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
 
   const displayName = restaurant?.name || "";
 
@@ -30,21 +33,34 @@ export function LandingPage() {
   }, [slug, loadMenu]);
 
   useEffect(() => {
-    if (!slug || !restaurant?.id) return;
+    requestAnimationFrame(() => setPageLoaded(true));
+  }, []);
 
+  useEffect(() => {
+    if (!slug || !restaurant?.id) return;
     let cancelled = false;
-    const fetchMainCategories = async () => {
-      setMainCatLoading(true);
-      setMainCatError(null);
+
+    const fetchData = async () => {
+      setCatLoading(true);
+      setCatError(null);
 
       if (!isSupabaseConfigured || !supabase) {
-        setMainCatError("Supabase not configured");
-        setMainCatLoading(false);
+        setCatLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        const { data: lps } = await supabase
+          .from("landing_page_settings")
+          .select("background_video_url")
+          .eq("restaurant_id", restaurant.id)
+          .maybeSingle();
+
+        if (!cancelled && lps?.background_video_url) {
+          setBackgroundVideo(lps.background_video_url);
+        }
+
+        const { data: catData, error: catErr } = await supabase
           .from("main_categories")
           .select("*")
           .eq("restaurant_id", restaurant.id)
@@ -52,11 +68,11 @@ export function LandingPage() {
 
         if (cancelled) return;
 
-        if (error) {
-          setMainCatError(error.message);
+        if (catErr) {
+          setCatError(catErr.message);
         } else {
           setMainCategories(
-            (data || []).map((mc) => ({
+            (catData || []).map((mc) => ({
               id: String(mc.id),
               name: String(mc.name),
               imageUrl: String(mc.image_url || mc.imageUrl || ""),
@@ -65,19 +81,18 @@ export function LandingPage() {
           );
         }
       } catch (err) {
-        if (!cancelled) {
-          setMainCatError(err?.message || "Failed to load");
-        }
+        if (!cancelled) setCatError(err?.message || "Failed to load");
       } finally {
-        if (!cancelled) setMainCatLoading(false);
+        if (!cancelled) setCatLoading(false);
       }
     };
 
-    fetchMainCategories();
+    fetchData();
     return () => { cancelled = true; };
   }, [slug, restaurant?.id]);
 
-  const handleMainCategoryClick = (mainCategoryId) => {
+  const navigateToMenu = (mainCategoryId) => {
+    setShowPicker(false);
     const params = new URLSearchParams();
     if (mainCategoryId) params.set("main_category_id", mainCategoryId);
     if (tableToken) params.set("table", tableToken);
@@ -102,21 +117,33 @@ export function LandingPage() {
   if (showError) {
     return (
       <div className="landingPage">
-        <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+        <main
+          className="emptyState"
+          style={{
+            height: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "24px",
+          }}
+        >
           <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
             <AlertCircle size={60} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "24px" }}>Unable to load restaurant</h2>
-          <p className="muted" style={{ maxWidth: "280px", margin: "12px auto" }}>{storeError}</p>
+          <p className="muted" style={{ maxWidth: "280px", margin: "12px auto" }}>
+            {storeError}
+          </p>
           <div style={{ marginTop: "16px" }}>
-            <button className="btn primary" onClick={() => loadMenu(slug)}>Try again</button>
+            <button className="btn primary" onClick={() => loadMenu(slug)}>
+              Try again
+            </button>
           </div>
         </main>
       </div>
     );
   }
-
-  const showDefaultCard = mainCategories.length === 0 && !mainCatLoading && !mainCatError;
 
   return (
     <div className="landingPage">
@@ -129,12 +156,19 @@ export function LandingPage() {
           playsInline
           poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
         >
-          <source src="https://videos.pexels.com/video-files/3191290/3191290-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+          {backgroundVideo ? (
+            <source src={backgroundVideo} type="video/mp4" />
+          ) : (
+            <source
+              src="https://videos.pexels.com/video-files/3191290/3191290-uhd_2560_1440_30fps.mp4"
+              type="video/mp4"
+            />
+          )}
         </video>
         <div className="landingOverlay" />
       </div>
 
-      <header className="landingHeader">
+      <header className={`landingHeader ${pageLoaded ? "visible" : ""}`}>
         <div className="landingBrand">
           <span className="landingBrandName">{displayName || "Restaurant"}</span>
           <span className="landingBrandSubtitle">Premium Dining</span>
@@ -143,64 +177,86 @@ export function LandingPage() {
       </header>
 
       <main className="landingContent">
-        <div className="landingTagline">
-          <span className="landingTaglineMain">Discover Our Menu</span>
-          <span className="landingTaglineSub">Choose a category to begin</span>
-        </div>
-
-        <div className="landingCards">
-          {mainCatLoading && (
-            <div className="landingCardsLoading">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="landingCardSkeleton" />
-              ))}
-            </div>
-          )}
-
-          {!mainCatLoading && mainCatError && (
-            <div className="landingCardsError">
-              <p>Could not load categories</p>
-              <button className="btn primary" onClick={() => window.location.reload()}>Retry</button>
-            </div>
-          )}
-
-          {!mainCatLoading && !mainCatError && (
-            <div className="landingCardsGrid">
-              {mainCategories.map((mc) => (
-                <button
-                  key={mc.id}
-                  className="landingCardBtn"
-                  onClick={() => handleMainCategoryClick(mc.id)}
-                >
-                  {mc.imageUrl && (
-                    <div className="landingCardImgWrap">
-                      <img
-                        src={mc.imageUrl}
-                        alt={mc.name}
-                        className="landingCardImg"
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      />
-                    </div>
-                  )}
-                  <span className="landingCardLabel">{mc.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {showDefaultCard && (
-            <div className="landingCardsGrid">
-              <button
-                className="landingCardBtn landingCardBtnPrimary"
-                onClick={() => handleMainCategoryClick("")}
-              >
-                <span className="landingCardLabel">View Full Menu</span>
-              </button>
-            </div>
-          )}
+        <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
+          <div className="landingCtaGlow" />
+          <button className="landingCtaBtn" onClick={() => setShowPicker(true)}>
+            <ChefHat size={22} strokeWidth={2} />
+            <span>View Menu</span>
+          </button>
         </div>
       </main>
+
+      {showPicker && (
+        <div className="landingPickerOverlay" onClick={() => setShowPicker(false)}>
+          <div className="landingPicker" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="landingPickerClose"
+              onClick={() => setShowPicker(false)}
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="landingPickerHeader">
+              <UtensilsCrossed size={22} strokeWidth={1.8} />
+              <h3>What are you in the mood for?</h3>
+            </div>
+
+            {catLoading && (
+              <div className="landingPickerLoad">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="landingPickerSkeleton" />
+                ))}
+              </div>
+            )}
+
+            {catError && (
+              <div className="landingPickerError">
+                <p>Could not load categories</p>
+                <button className="btn primary" onClick={() => window.location.reload()}>
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {!catLoading && !catError && (
+              <>
+                <div className="landingPickerGrid">
+                  {mainCategories.map((mc) => (
+                    <button
+                      key={mc.id}
+                      className="landingPickerItem"
+                      onClick={() => navigateToMenu(mc.id)}
+                    >
+                      {mc.imageUrl && (
+                        <div className="landingPickerItemImgWrap">
+                          <img
+                            src={mc.imageUrl}
+                            alt={mc.name}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+                      <span>{mc.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="landingPickerFooter">
+                  <button
+                    className="landingPickerAllBtn"
+                    onClick={() => navigateToMenu("")}
+                  >
+                    View Full Menu
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
