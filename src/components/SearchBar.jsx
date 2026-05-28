@@ -8,6 +8,14 @@ export function SearchBar() {
     setSearchQuery("");
   }, [setSearchQuery]);
 
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Enter" || e.key === "Search") {
+      if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+        e.target.blur();
+      }
+    }
+  }, []);
+
   return (
     <div className="searchWrap">
       <label className="searchField">
@@ -20,6 +28,7 @@ export function SearchBar() {
         <input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Search for dishes…"
           aria-label="Search dishes"
         />

@@ -37,6 +37,14 @@ export function CartPage() {
     sessionStorage.setItem(CART_NOTE_KEY, value);
   }, []);
 
+  const handleNoteKeyDown = useCallback((e) => {
+    if (e.key === "Enter" || e.key === "Search") {
+      if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+        e.target.blur();
+      }
+    }
+  }, []);
+
   const showToast = useCallback((msg, type = "success") => {
     setToastMsg(msg);
     setToastType(type);
@@ -135,6 +143,7 @@ export function CartPage() {
             placeholder="Add note for your order..."
             value={orderNote}
             onChange={handleNoteChange}
+            onKeyDown={handleNoteKeyDown}
             enterKeyHint="done"
             aria-label="Order note"
           />

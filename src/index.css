@@ -1365,7 +1365,7 @@ a:focus:not(:focus-visible) {
   color: var(--accent);
   font-weight: 700;
   font-size: 12px;
-  padding: 7px 18px;
+  padding: 8px 20px;
   cursor: pointer;
   font-family: inherit;
   letter-spacing: 0.3px;
