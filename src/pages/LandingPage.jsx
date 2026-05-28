@@ -17,6 +17,17 @@ export function LandingPage() {
   const [pageLoaded, setPageLoaded] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
+  /* ── Dynamic viewport height — guarantees fullscreen on all devices ── */
+  useEffect(() => {
+    const updateVH = () => {
+      document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
+    };
+    updateVH();
+    const evts = ["resize", "orientationchange"];
+    evts.forEach((e) => window.addEventListener(e, updateVH));
+    return () => evts.forEach((e) => window.removeEventListener(e, updateVH));
+  }, []);
+
   const displayName = restaurant?.name || "";
 
   const tableToken = useMemo(() => {
