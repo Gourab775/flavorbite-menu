@@ -602,12 +602,13 @@ a:focus:not(:focus-visible) {
 .catScroll {
   display: flex;
   gap: 12px;
-  padding: 10px 16px 12px 24px;
+  padding: 10px 16px 12px 32px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-snap-type: x proximity;
+  scroll-padding-left: 16px;
 }
 
 .catScroll::-webkit-scrollbar {
