@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
+import { AnimatePresence, motion } from "framer-motion";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider } from "./store/menuStore";
 import { LandingPage } from "./pages/LandingPage";
@@ -61,23 +62,34 @@ function AppRoutes() {
 
   return (
     <>
-      <Switch>
-        <Route path="/:slug/menu" component={MenuPage} />
-        <Route path="/:slug/cart" component={CartPage} />
-        <Route path="/:slug/checkout" component={CheckoutPage} />
-        <Route path="/:slug/order-sent" component={OrderSuccessPage} />
-        <Route path="/:slug/order-success" component={OrderSuccessPage} />
-        <Route path="/:slug/your-orders" component={YourOrdersPage} />
-        <Route path="/:slug/call-waiter" component={CallWaiterPage} />
-        <Route path="/:slug/help-support" component={HelpSupportPage} />
-        <Route path="/:slug/feedback" component={FeedbackPage} />
-        <Route path="/:slug/restaurant-info" component={RestaurantInfoPage} />
-        <Route path="/:slug/faqs" component={FAQsPage} />
-        <Route path="/:slug/terms-privacy" component={TermsPrivacyPage} />
-        <Route path="/:slug" component={LandingPage} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+          style={{ willChange: "transform, opacity" }}
+        >
+          <Switch>
+            <Route path="/:slug/menu" component={MenuPage} />
+            <Route path="/:slug/cart" component={CartPage} />
+            <Route path="/:slug/checkout" component={CheckoutPage} />
+            <Route path="/:slug/order-sent" component={OrderSuccessPage} />
+            <Route path="/:slug/order-success" component={OrderSuccessPage} />
+            <Route path="/:slug/your-orders" component={YourOrdersPage} />
+            <Route path="/:slug/call-waiter" component={CallWaiterPage} />
+            <Route path="/:slug/help-support" component={HelpSupportPage} />
+            <Route path="/:slug/feedback" component={FeedbackPage} />
+            <Route path="/:slug/restaurant-info" component={RestaurantInfoPage} />
+            <Route path="/:slug/faqs" component={FAQsPage} />
+            <Route path="/:slug/terms-privacy" component={TermsPrivacyPage} />
+            <Route path="/:slug" component={LandingPage} />
 
-        <Route path="/:slug/*" component={NotFoundPage} />
-      </Switch>
+            <Route path="/:slug/*" component={NotFoundPage} />
+          </Switch>
+        </motion.div>
+      </AnimatePresence>
       <CartBar />
     </>
   );

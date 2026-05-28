@@ -12,12 +12,20 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
 
   const qty = useMemo(() => qtyById?.[item.id] ?? 0, [qtyById, item.id]);
 
+  const triggerHaptic = () => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
   const handleAdd = useCallback(() => {
+    triggerHaptic();
     addToCart(item);
     setToastMsg(`"${item.name}" added to cart`);
   }, [addToCart, item]);
 
   const handleIncrease = useCallback(() => {
+    triggerHaptic();
     addToCart(item);
   }, [addToCart, item]);
 
