@@ -601,12 +601,13 @@ a:focus:not(:focus-visible) {
 /* Category strip */
 .catScroll {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   padding: 10px 16px 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
 }
 
 .catScroll::-webkit-scrollbar {
@@ -627,6 +628,7 @@ a:focus:not(:focus-visible) {
   touch-action: pan-x;
   transition: transform 180ms ease;
   min-width: 68px;
+  scroll-snap-align: start;
 }
 
 .catPill:active {
@@ -642,6 +644,7 @@ a:focus:not(:focus-visible) {
   border: 2.5px solid transparent;
   overflow: hidden;
   transition: all 230ms cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .catPillImg img {
@@ -671,6 +674,9 @@ a:focus:not(:focus-visible) {
   transition: all 180ms ease;
   white-space: nowrap;
   letter-spacing: 0.1px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .catPill--active .catPillName {
@@ -907,10 +913,10 @@ a:focus:not(:focus-visible) {
   height: 100vh;
   height: 100dvh;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   padding-bottom: 120px;
-  will-change: scroll-position;
+  overflow-anchor: auto;
+  scroll-behavior: smooth;
 }
 
 .container {

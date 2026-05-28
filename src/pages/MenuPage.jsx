@@ -77,36 +77,15 @@ export function MenuPage() {
   // ── Scroll sync: container scroll → update active category ──
   useCategorySync("menu-container", setActiveCategory);
 
-  // ── Interruptible smooth scroll with precise offset ──
-  const scrollRafRef = useRef(null);
+  // ── Smooth scroll to category section ──
   const scrollToSection = useCallback((id) => {
     const el = document.getElementById(id);
     const container = document.getElementById("menu-container");
     if (!el || !container) return;
 
-    if (scrollRafRef.current) {
-      cancelAnimationFrame(scrollRafRef.current);
-    }
-
     const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
 
-    const doScroll = () => {
-      const currentScrollTop = container.scrollTop;
-      const diff = targetScroll - currentScrollTop;
-
-      if (Math.abs(diff) <= 1) return;
-
-      const nextScroll = currentScrollTop + diff * 0.35;
-      container.scrollTop = nextScroll;
-
-      const remaining = Math.abs(targetScroll - container.scrollTop);
-      if (remaining > 1) {
-        scrollRafRef.current = requestAnimationFrame(doScroll);
-      }
-    };
-
-    container.scrollTop = targetScroll;
-    requestAnimationFrame(doScroll);
+    container.scrollTo({ top: targetScroll, behavior: "smooth" });
   }, []);
 
   // ── Category click → scroll to section ──
