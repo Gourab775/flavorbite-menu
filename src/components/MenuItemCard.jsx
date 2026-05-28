@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "./Toast";
+import { toTitleCase } from "../utils/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHatIcon } from "../components/ChefHatIcon";
 
@@ -57,7 +58,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
               title={isVeg ? "Veg" : "Non-veg"}
               aria-label={isVeg ? "Veg item" : "Non-veg item"}
             />
-            <h3 className="menuName">{item.name}</h3>
+            <h3 className="menuName">{toTitleCase(item.name)}</h3>
           </div>
           <div className="menuPrice">₹{item.price}</div>
           <p className="menuDesc">{item.description}</p>
