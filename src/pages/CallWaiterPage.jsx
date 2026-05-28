@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
 import { getTableData, getOrCreateDeviceOrderCode, getValidDeviceSession } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
+import { useGoBack } from "../context/NavigationContext";
 import { Bell, CheckCircle } from "lucide-react";
 
 function isValidUUID(val) {
@@ -13,11 +14,12 @@ function isValidUUID(val) {
 }
 
 export function CallWaiterPage() {
-  const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
   const { restaurant } = useMenu();
+  const goBack = useGoBack(`${basePath}/menu`);
+  const goBackToMenu = useGoBack(basePath);
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -93,7 +95,7 @@ export function CallWaiterPage() {
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
+        <button className="iconBtn pressable" onClick={goBack} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Call Waiter</h1>
@@ -108,7 +110,7 @@ export function CallWaiterPage() {
             </div>
             <h2 className="callWaiterTitle">Waiter Called!</h2>
             <p className="callWaiterSub">A staff member will be with you shortly.</p>
-            <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 24, width: "100%", maxWidth: 240, padding: "14px 0" }}>
+            <button className="btn primary pressable" onClick={goBackToMenu} style={{ marginTop: 24, width: "100%", maxWidth: 240, padding: "14px 0" }}>
               Back to Menu
             </button>
           </div>

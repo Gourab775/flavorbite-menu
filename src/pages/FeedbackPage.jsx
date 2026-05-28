@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
+import { useGoBack } from "../context/NavigationContext";
 import { Star, Send, CheckCircle } from "lucide-react";
 
 export function FeedbackPage() {
-  const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const goBack = useGoBack(`${basePath}/menu`);
+  const goBackToMenu = useGoBack(basePath);
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -20,7 +22,7 @@ export function FeedbackPage() {
     return (
       <div className="pageLayout">
         <header className="topBar">
-          <button className="iconBtn pressable" onClick={() => navigate(basePath)} aria-label="Back">
+          <button className="iconBtn pressable" onClick={goBackToMenu} aria-label="Back">
             ←
           </button>
           <h1 className="topBarTitle">Feedback</h1>
@@ -31,7 +33,7 @@ export function FeedbackPage() {
             <div className="feedbackSuccessIcon"><CheckCircle size={48} strokeWidth={1.5} /></div>
             <h2>Thank You!</h2>
             <p>Your feedback helps us improve the experience.</p>
-            <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 24, padding: "14px 0", width: "100%", maxWidth: 240 }}>
+            <button className="btn primary pressable" onClick={goBackToMenu} style={{ marginTop: 24, padding: "14px 0", width: "100%", maxWidth: 240 }}>
               Back to Menu
             </button>
           </div>
@@ -43,7 +45,7 @@ export function FeedbackPage() {
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
+        <button className="iconBtn pressable" onClick={goBack} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Rate Experience</h1>

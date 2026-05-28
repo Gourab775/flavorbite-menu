@@ -1,16 +1,17 @@
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
+import { useGoBack } from "../context/NavigationContext";
 
 export function TermsPrivacyPage() {
-  const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
+  const goBack = useGoBack(`${basePath}/menu`);
 
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
+        <button className="iconBtn pressable" onClick={goBack} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Terms & Privacy</h1>
@@ -32,7 +33,7 @@ export function TermsPrivacyPage() {
             <p>By using this service, you consent to the collection and use of information as described in this policy.</p>
           </section>
         </div>
-        <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ width: "100%", padding: "14px 0", marginTop: 16 }}>
+        <button className="btn primary pressable" onClick={goBack} style={{ width: "100%", padding: "14px 0", marginTop: 16 }}>
           Back to Menu
         </button>
         <div style={{ height: 40 }} />

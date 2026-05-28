@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
-import { useLocation } from "wouter";
 import lottie from "lottie-web";
 import errorAnimation from "../assets/animations/Error 404.json";
 import { getStoredSlug } from "../utils/constants";
+import { useGoBack } from "../context/NavigationContext";
 
 export function NotFoundPage() {
-  const [, navigate] = useLocation();
   const animationRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -27,17 +26,8 @@ export function NotFoundPage() {
     };
   }, []);
 
-  const goHome = () => {
-    const storedTableId = typeof window !== "undefined" ? localStorage.getItem("tableId") : null;
-    const storedSlug = getStoredSlug();
-    if (storedSlug && storedTableId) {
-      navigate(`/${storedSlug}/t/${storedTableId}`);
-    } else if (storedSlug) {
-      navigate(`/${storedSlug}`);
-    } else {
-      navigate("/");
-    }
-  };
+  const storedSlug = getStoredSlug();
+  const goHome = useGoBack(`/${storedSlug || ""}`);
 
   return (
     <div className="pageLayout">

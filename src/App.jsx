@@ -16,6 +16,7 @@ import { RestaurantInfoPage } from "./pages/RestaurantInfoPage";
 import { FAQsPage } from "./pages/FAQsPage";
 import { TermsPrivacyPage } from "./pages/TermsPrivacyPage";
 import { CartBar } from "./components/CartBar";
+import { NavigationProvider } from "./context/NavigationContext";
 import { setStoredSlug } from "./utils/constants";
 import { initDeviceSession } from "./utils/session";
 
@@ -106,7 +107,9 @@ export default function App() {
       <MenuProvider>
         <div className="appBackdrop">
           <div className="phoneFrame">
-            <AppRoutes />
+            <NavigationProvider>
+              <AppRoutes />
+            </NavigationProvider>
           </div>
         </div>
       </MenuProvider>

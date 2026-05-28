@@ -3,6 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
+import { useGoBack } from "../context/NavigationContext";
 import { ShoppingBag } from "lucide-react";
 
 const CART_NOTE_KEY = "cart_order_note";
@@ -56,13 +57,15 @@ export function CartPage() {
     showToast("Cart cleared");
   }, [clearCart, showToast]);
 
+  const goBack = useGoBack(`/${slug}/menu`);
+
   if (cart.length === 0) {
     return (
       <div className="pageLayout">
         <header className="topBar">
           <button
             className="iconBtn pressable"
-            onClick={() => window.history.back()}
+            onClick={goBack}
             aria-label="Back"
           >
             ←
@@ -95,7 +98,7 @@ export function CartPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => navigate(`/${slug}/menu`)}
+          onClick={goBack}
           aria-label="Back to menu"
         >
           ←

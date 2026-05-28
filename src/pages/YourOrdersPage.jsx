@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
+import { useGoBack } from "../context/NavigationContext";
 import { useMenu } from "../hooks/useMenu";
 import { getDeviceSessionOrders, markDeviceSessionOrdersRead } from "../utils/session";
 import { ClipboardList } from "lucide-react";
 
 export function YourOrdersPage() {
-  const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
@@ -15,6 +15,9 @@ export function YourOrdersPage() {
   useEffect(() => {
     markDeviceSessionOrdersRead();
   }, []);
+
+  const goBack = useGoBack(`${basePath}/menu`);
+  const goBackToMenu = useGoBack(basePath);
 
   const orders = getDeviceSessionOrders();
   const sortedOrders = orders.slice().reverse();
@@ -52,7 +55,7 @@ export function YourOrdersPage() {
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
+        <button className="iconBtn pressable" onClick={goBack} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Your Orders</h1>
@@ -85,7 +88,7 @@ export function YourOrdersPage() {
             ))}
             <button
               className="btn primary pressable"
-              onClick={() => navigate(basePath)}
+              onClick={goBackToMenu}
               style={{ marginTop: 16, width: "100%", padding: "14px 0", display: "flex", alignItems: "center", justifyContent: "center" }}
             >
               Back to Menu
@@ -96,7 +99,7 @@ export function YourOrdersPage() {
             <div className="emptyIllo" aria-hidden="true"><ClipboardList size={48} strokeWidth={1} opacity={0.3} /></div>
             <h2 className="emptyTitle">No orders yet</h2>
             <p className="emptySub">Your recent orders will appear here once you place them.</p>
-            <button className="btn primary pressable" onClick={() => navigate(basePath)} style={{ marginTop: 16 }}>
+            <button className="btn primary pressable" onClick={goBackToMenu} style={{ marginTop: 16 }}>
               Browse Menu
             </button>
           </div>

@@ -5,6 +5,7 @@ import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
+import { useGoBack } from "../context/NavigationContext";
 import { getStoredSlug } from "../utils/constants";
 import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread, dispatchDeviceOrderUpdate } from "../utils/session";
 import { AnimatePresence, motion } from "framer-motion";
@@ -25,6 +26,7 @@ export function CheckoutPage() {
   const [toastType, setToastType] = useState("success");
 
   const basePath = `/${slug}`;
+  const goBack = useGoBack(`${basePath}/cart`);
 
   const [tableError, setTableError] = useState(null);
   const [orderState, setOrderState] = useState("idle");
@@ -84,7 +86,7 @@ export function CheckoutPage() {
     return (
       <div className="pageLayout">
         <header className="topBar">
-          <button className="iconBtn pressable" onClick={() => window.history.back()}>
+          <button className="iconBtn pressable" onClick={goBack}>
             <ArrowLeft size={20} />
           </button>
           <h1 className="topBarTitle">Checkout</h1>
@@ -268,7 +270,7 @@ export function CheckoutPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => window.history.back()}
+          onClick={goBack}
           aria-label="Back to cart"
         >
           <ArrowLeft size={20} />
