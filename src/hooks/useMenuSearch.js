@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { useMenuStore } from "../store/menuStore";
+import { FALLBACK_IMG } from "../utils/constants";
 
 const DEBOUNCE_MS = 300;
 
@@ -13,7 +14,7 @@ function normalizeItem(i) {
     isVeg: Boolean(i.is_veg ?? false),
     isAvailable: Boolean(i.is_available ?? true),
     categoryId: String(i.category_id ?? ""),
-    imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
+    imageUrl: String(i.image_url ?? i.imageUrl ?? "") || FALLBACK_IMG,
   };
 }
 

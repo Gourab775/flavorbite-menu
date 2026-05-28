@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { FALLBACK_IMG } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
@@ -27,7 +28,7 @@ function normalizeMenuItems(data) {
     isVeg: Boolean(i.is_veg ?? false),
     isAvailable: Boolean(i.is_available ?? true),
     categoryId: String(i.category_id ?? ""),
-    imageUrl: String(i.image_url ?? i.imageUrl ?? ""),
+    imageUrl: String(i.image_url ?? i.imageUrl ?? "") || FALLBACK_IMG,
     description: String(i.description ?? ""),
   })).filter((i) => i.id && i.name && i.categoryId);
 }

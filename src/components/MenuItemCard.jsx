@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "./Toast";
-import { toTitleCase } from "../utils/constants";
+import { toTitleCase, FALLBACK_IMG } from "../utils/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHatIcon } from "../components/ChefHatIcon";
 
@@ -40,7 +40,10 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
               loading="lazy"
               onLoad={() => setImgLoaded(true)}
               onError={(e) => {
-                e.currentTarget.style.display = "none";
+                if (!e.currentTarget.dataset.fallback) {
+                  e.currentTarget.dataset.fallback = "true";
+                  e.currentTarget.src = FALLBACK_IMG;
+                }
               }}
             />
           ) : (

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMenu } from "../hooks/useMenu";
+import { FALLBACK_IMG } from "../utils/constants";
 
 const HOLD_DURATION = 3500;
 const SWIPE_THRESHOLD = 50;
@@ -174,6 +175,12 @@ export function HeroBanner() {
                   className="featuredImg"
                   loading={i === 0 ? "eager" : "lazy"}
                   draggable={false}
+                  onError={(e) => {
+                    if (!e.currentTarget.dataset.fallback) {
+                      e.currentTarget.dataset.fallback = "true";
+                      e.currentTarget.src = FALLBACK_IMG;
+                    }
+                  }}
                 />
               ) : (
                 <div className="featuredImg placeholder" />

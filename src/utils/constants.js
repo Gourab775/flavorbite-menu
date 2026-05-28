@@ -1,5 +1,6 @@
 export const TABLE_KEY = "tableId";
 export const SLUG_KEY = "restaurantSlug";
+export const FALLBACK_IMG = "https://t3.ftcdn.net/jpg/05/53/00/78/360_F_553007886_vpgBDlwAyAaCTABowvIaPMPg437haVKR.jpg";
 
 export function getStoredTableId() {
   if (typeof window === "undefined") return null;

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { FALLBACK_IMG } from "../utils/constants";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "qr_menu_cart";
@@ -27,7 +28,7 @@ function loadCart() {
     return parsed.items.map((i) => ({
       ...i,
       isVeg: Boolean(i.isVeg ?? false),
-      imageUrl: i.imageUrl ?? i.image_url ?? i.imageUrl,
+      imageUrl: (i.imageUrl ?? i.image_url ?? "") || FALLBACK_IMG,
       table: i.table ?? tableId ?? null,
     }));
   }
@@ -38,7 +39,7 @@ function loadCart() {
     return legacy.map((i) => ({
       ...i,
       isVeg: Boolean(i.isVeg ?? false),
-      imageUrl: i.imageUrl ?? i.image_url ?? i.imageUrl,
+      imageUrl: (i.imageUrl ?? i.image_url ?? "") || FALLBACK_IMG,
       table: tableId ?? null,
     }));
   }

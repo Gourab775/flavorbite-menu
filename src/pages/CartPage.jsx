@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
-import { getStoredSlug } from "../utils/constants";
+import { getStoredSlug, FALLBACK_IMG } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
 import { ShoppingBag } from "lucide-react";
 
@@ -199,7 +199,10 @@ function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
             loading="lazy"
             onLoad={() => setImgLoaded(true)}
             onError={(e) => {
-              e.currentTarget.style.display = "none";
+              if (!e.currentTarget.dataset.fallback) {
+                e.currentTarget.dataset.fallback = "true";
+                e.currentTarget.src = FALLBACK_IMG;
+              }
             }}
           />
         ) : (
