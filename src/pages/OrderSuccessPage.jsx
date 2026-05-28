@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { getStoredSlug } from "../utils/constants";
-import { useGoBack } from "../context/NavigationContext";
 
 export function OrderSuccessPage() {
   const { slug: urlSlug } = useParams();
@@ -37,7 +36,8 @@ export function OrderSuccessPage() {
     }
   }, [showAnim]);
 
-  const goToMenu = useGoBack(`${basePath}/menu`);
+  const [, navigate] = useLocation();
+  const goToMenu = () => navigate(`${basePath}/menu`);
 
   return (
     <div className="pageLayout">
