@@ -473,8 +473,9 @@ a:focus:not(:focus-visible) {
   position: sticky;
   top: 0;
   z-index: 90;
-  background: #000000;
+  background: linear-gradient(180deg, #000000 0%, #060606 100%);
   border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02);
   transition: box-shadow 200ms ease;
 }
 
@@ -746,9 +747,10 @@ a:focus:not(:focus-visible) {
   padding: 0;
   width: calc(100% - 32px);
   position: relative;
-  background: transparent;
+  background: radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0,0,0,0.7) 0%, transparent 80%);
   border-radius: 20px;
   overflow: visible;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
 .featuredCarousel {
@@ -1090,6 +1092,7 @@ a:focus:not(:focus-visible) {
 
 .container {
   padding: 0 16px 16px;
+  background: radial-gradient(ellipse 90% 40% at 50% 0%, rgba(0,0,0,0.35) 0%, transparent 100%);
 }
 
 .muted { color: var(--muted); font-size: 12px; }
