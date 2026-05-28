@@ -32,11 +32,6 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
       <article className={`menuCard${!item.isAvailable ? " menuCard--soldOut" : ""}`}>
         <div className="menuImgWrap">
           {!imgLoaded && <div className="imgSkeleton" aria-hidden="true" />}
-          <span
-            className={`menuVegBadge ${isVeg ? "veg" : "nonveg"}`}
-            title={isVeg ? "Veg" : "Non-veg"}
-            aria-label={isVeg ? "Veg item" : "Non-veg item"}
-          />
           {item.imageUrl && item.imageUrl.trim() !== "" ? (
             <img
               className={`menuImg imgFade ${imgLoaded ? "loaded" : ""}`}
@@ -60,7 +55,14 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
         </div>
 
         <div className="menuBody">
-          <h3 className="menuName">{toTitleCase(item.name)}</h3>
+          <div className="menuTop">
+            <span
+              className={`menuVegBadge ${isVeg ? "veg" : "nonveg"}`}
+              title={isVeg ? "Veg" : "Non-veg"}
+              aria-label={isVeg ? "Veg item" : "Non-veg item"}
+            />
+            <h3 className="menuName">{toTitleCase(item.name)}</h3>
+          </div>
           <p className="menuDesc">{item.description}</p>
           <div className="menuPriceRow">
             <div className="menuPrice">₹{item.price}</div>

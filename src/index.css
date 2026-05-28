@@ -472,9 +472,7 @@ a:focus:not(:focus-visible) {
   position: sticky;
   top: 0;
   z-index: 90;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #000000;
   border-bottom: 1px solid var(--glass-border);
   transition: box-shadow 200ms ease;
 }
@@ -489,7 +487,7 @@ a:focus:not(:focus-visible) {
 }
 
 .categoryWrapper {
-  background: transparent;
+  background: #000000;
   border-top: 1px solid var(--glass-border);
 }
 
@@ -1274,22 +1272,15 @@ a:focus:not(:focus-visible) {
   margin-bottom: 2px;
 }
 
-/* ── Veg / Non-veg badge on image ── */
+/* ── Veg / Non-veg badge inline with name ── */
 .menuVegBadge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 3;
+  flex-shrink: 0;
   width: 18px;
   height: 18px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 .menuVegBadge::after {
