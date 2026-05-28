@@ -10,6 +10,20 @@ html {
   overscroll-behavior: none;
 }
 
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
 :root {
   /* ── Core palette — Dark Theme ── */
   --bg: #0a0a0a;
@@ -3607,6 +3621,8 @@ a:focus:not(:focus-visible) {
   position: relative;
   background: var(--bg);
   overflow: hidden;
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
 }
 
 /* Video background */
