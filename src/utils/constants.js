@@ -23,6 +23,11 @@ export function setStoredSlug(slug) {
   }
 }
 
+export function toTitleCase(str) {
+  if (!str) return "";
+  return str.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
+}
+
 export function clearStoredData() {
   if (typeof window !== "undefined") {
     localStorage.removeItem(TABLE_KEY);

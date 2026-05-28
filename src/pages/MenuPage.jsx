@@ -11,7 +11,7 @@ import { useMenuStore } from "../store/menuStore";
 import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
-import { setStoredSlug } from "../utils/constants";
+import { setStoredSlug, toTitleCase } from "../utils/constants";
 import { initSession, setTableData } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
@@ -356,7 +356,7 @@ export function MenuPage() {
                     className="menuSection"
                   >
                     <div className="sectionHeader">
-                      <h2>{category?.name ?? ""}</h2>
+                      <h2>{toTitleCase(category?.name) ?? ""}</h2>
                       <span className="sectionItemCount">
                         {`${items.length} item${items.length === 1 ? "" : "s"}`}
                       </span>

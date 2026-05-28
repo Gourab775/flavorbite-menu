@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { toTitleCase } from "../utils/constants";
 
 function slugify(text) {
   return String(text ?? "")
@@ -136,7 +137,7 @@ export function CategorySlider({ categories, activeCategory, onCategoryClick }) 
                   <div className="catPillImgPlaceholder" />
                 )}
               </div>
-              <span className="catPillName">{c.name}</span>
+              <span className="catPillName">{toTitleCase(c.name)}</span>
             </button>
           );
         })}
