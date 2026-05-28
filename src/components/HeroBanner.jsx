@@ -185,6 +185,12 @@ export function HeroBanner() {
               ) : (
                 <div className="featuredImg placeholder" />
               )}
+              <div className="featuredOverlay" />
+              <div className="featuredPromo">
+                <span className="featuredPromoBadge">Featured</span>
+                <span className="featuredPromoTitle">Discover Our Specials</span>
+                <span className="featuredPromoSub">Handpicked just for you</span>
+              </div>
             </div>
           );
         })}

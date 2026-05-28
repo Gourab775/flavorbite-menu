@@ -32,6 +32,11 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
       <article className={`menuCard${!item.isAvailable ? " menuCard--soldOut" : ""}`}>
         <div className="menuImgWrap">
           {!imgLoaded && <div className="imgSkeleton" aria-hidden="true" />}
+          <span
+            className={`menuVegBadge ${isVeg ? "veg" : "nonveg"}`}
+            title={isVeg ? "Veg" : "Non-veg"}
+            aria-label={isVeg ? "Veg item" : "Non-veg item"}
+          />
           {item.imageUrl && item.imageUrl.trim() !== "" ? (
             <img
               className={`menuImg imgFade ${imgLoaded ? "loaded" : ""}`}
@@ -55,71 +60,65 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
         </div>
 
         <div className="menuBody">
-          <div className="menuTop">
-            <span
-              className={`vegDot ${isVeg ? "" : "nonveg"}`}
-              title={isVeg ? "Veg" : "Non-veg"}
-              aria-label={isVeg ? "Veg item" : "Non-veg item"}
-            />
-            <h3 className="menuName">{toTitleCase(item.name)}</h3>
-          </div>
-          <div className="menuPrice">₹{item.price}</div>
+          <h3 className="menuName">{toTitleCase(item.name)}</h3>
           <p className="menuDesc">{item.description}</p>
-
-          <div className="menuActions">
-            <AnimatePresence mode="wait">
-              {qty > 0 ? (
-                <motion.div 
-                  key="stepper"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.15 }}
-                  className="qtyStepper"
-                >
-                  <button
-                    className="stepBtn"
-                    onClick={handleDecrease}
-                    aria-label={`Decrease quantity of ${item.name}`}
-                    disabled={qty === 0}
+          <div className="menuPriceRow">
+            <div className="menuPrice">₹{item.price}</div>
+            <div className="menuActions">
+              <AnimatePresence mode="wait">
+                {qty > 0 ? (
+                  <motion.div 
+                    key="stepper"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.15 }}
+                    className="qtyStepper"
                   >
-                    −
-                  </button>
-                  <motion.span 
-                    key={qty}
-                    initial={{ y: -10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="qty" 
-                    aria-live="polite"
-                  >
-                    {qty}
-                  </motion.span>
-                  <button
-                    className="stepBtn primary"
-                    onClick={handleIncrease}
-                    aria-label={`Increase quantity of ${item.name}`}
+                    <button
+                      className="stepBtn"
+                      onClick={handleDecrease}
+                      aria-label={`Decrease quantity of ${item.name}`}
+                      disabled={qty === 0}
+                    >
+                      −
+                    </button>
+                    <motion.span 
+                      key={qty}
+                      initial={{ y: -10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="qty" 
+                      aria-live="polite"
+                    >
+                      {qty}
+                    </motion.span>
+                    <button
+                      className="stepBtn primary"
+                      onClick={handleIncrease}
+                      aria-label={`Increase quantity of ${item.name}`}
+                      disabled={!item.isAvailable}
+                    >
+                      +
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="addBtn"
+                    whileTap={{ scale: 0.92 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.15 }}
+                    className="addBtn"
+                    onClick={handleAdd}
                     disabled={!item.isAvailable}
+                    aria-label={`Add ${item.name} to cart`}
                   >
-                    +
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="addBtn"
-                  whileTap={{ scale: 0.92 }}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.15 }}
-                  className="addBtn"
-                  onClick={handleAdd}
-                  disabled={!item.isAvailable}
-                  aria-label={`Add ${item.name} to cart`}
-                >
-                  + Add
-                </motion.button>
-              )}
-            </AnimatePresence>
+                    + Add
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </article>
