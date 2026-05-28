@@ -34,6 +34,9 @@ html {
   --nonveg: #ef4444;
   --nonveg-bg: rgba(239, 68, 68, 0.15);
   --nonveg-border: rgba(239, 68, 68, 0.35);
+  --warn: #ffb020;
+  --warn-bg: rgba(255, 176, 32, 0.12);
+  --warn-border: rgba(255, 176, 32, 0.3);
 
   /* ── Surfaces ── */
   --border: #2a2a2a;
@@ -161,6 +164,15 @@ a:focus:not(:focus-visible) {
   flex-direction: column;
   background: var(--bg);
   position: relative;
+}
+
+.pageLayout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: var(--glow-orange), var(--glow-warm);
 }
 
 /* ── Top bar - Basic ── */
@@ -1592,6 +1604,32 @@ a:focus:not(:focus-visible) {
   background: var(--accent-dark);
 }
 
+/* ── Dark input field ── */
+.inputField {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: all 200ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.inputField::placeholder {
+  color: var(--muted);
+}
+
+.inputField:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
 /* Cart bar */
 .cartBarOuter {
   position: fixed;
@@ -2530,7 +2568,7 @@ a:focus:not(:focus-visible) {
   margin-bottom: 16px;
 }
 
-/* Empty cart */
+/* ── Empty cart ── */
 .emptyWrap {
   display: flex;
   flex-direction: column;
@@ -2542,33 +2580,17 @@ a:focus:not(:focus-visible) {
 }
 
 .emptyIllo {
-  font-size: 64px;
-  margin-bottom: 16px;
-  filter: grayscale(0.3);
-}
-
-.emptyTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 8px;
-}
-
-.emptySub {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 24px;
-}
-
-.emptyIllo {
   font-size: 52px;
   line-height: 1;
+  margin-bottom: 16px;
+  filter: grayscale(0.3);
 }
 
 .emptyTitle {
   margin: 0;
   font-size: 18px;
   font-weight: 900;
+  color: var(--text);
 }
 
 .emptySub {

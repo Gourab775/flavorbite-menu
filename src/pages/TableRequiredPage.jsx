@@ -27,14 +27,8 @@ export function TableRequiredPage() {
             name="tableId"
             placeholder="Enter table number"
             required
-            style={{
-              padding: '12px 16px',
-              borderRadius: '12px',
-              border: '1px solid rgba(17,24,39,0.1)',
-              fontSize: '14px',
-              outline: 'none',
-              textAlign: 'center',
-            }}
+            className="inputField"
+            style={{ textAlign: 'center' }}
           />
           <button type="submit" className="btn primary pressable">
             Continue

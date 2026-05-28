@@ -93,7 +93,7 @@ export function CheckoutPage() {
           <div style={{ width: 40 }} />
         </header>
         <main className="emptyState" style={{ height: "calc(100vh - 60px)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="emptyIcon" style={{ color: "#ff6b6b" }}>
+          <div className="emptyIcon" style={{ color: "var(--nonveg)" }}>
             <AlertCircle size={50} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "20px" }}>Table Required</h2>

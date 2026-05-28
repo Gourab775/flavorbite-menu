@@ -99,7 +99,7 @@ export function LandingPage() {
             padding: "24px",
           }}
         >
-          <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
+          <div className="emptyIcon" aria-label="Error icon" style={{ color: "var(--nonveg)" }}>
             <AlertCircle size={60} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "24px" }}>Unable to load restaurant</h2>

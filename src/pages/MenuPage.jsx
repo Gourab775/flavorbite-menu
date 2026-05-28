@@ -240,7 +240,7 @@ export function MenuPage() {
     return (
       <div className="menuLayout">
         <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
+          <div className="emptyIcon" aria-label="Error icon" style={{ color: "var(--nonveg)" }}>
             <AlertCircle size={60} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "24px" }}>Unable to load restaurant</h2>
@@ -262,7 +262,7 @@ export function MenuPage() {
     return (
       <div className="menuLayout">
         <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="emptyIcon" style={{ color: "#ffb020" }}>
+          <div className="emptyIcon" style={{ color: "var(--warn)" }}>
             <AlertCircle size={60} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "24px" }}>Table Required</h2>
@@ -278,7 +278,7 @@ export function MenuPage() {
     return (
       <div className="menuLayout">
         <main className="emptyState" style={{ height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="emptyIcon" style={{ color: "#ff6b6b" }}>
+          <div className="emptyIcon" style={{ color: "var(--nonveg)" }}>
             <AlertCircle size={60} strokeWidth={1.5} />
           </div>
           <h2 style={{ marginTop: "24px" }}>Invalid Table</h2>
@@ -339,7 +339,7 @@ export function MenuPage() {
 
           {!loading && !searching && error && (
             <div className="emptyState">
-              <div className="emptyIcon" aria-label="Error icon" style={{ color: "#ff6b6b" }}>
+              <div className="emptyIcon" aria-label="Error icon" style={{ color: "var(--nonveg)" }}>
                 <AlertCircle size={40} strokeWidth={1.5} />
               </div>
               <h2>Unable to load menu</h2>

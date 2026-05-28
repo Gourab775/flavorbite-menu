@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component {
           padding: 16,
           display: "grid",
           placeItems: "center",
-          background: "rgba(245,245,245,1)",
+          background: "var(--bg)",
         }}
       >
         <div
@@ -34,15 +34,15 @@ export class ErrorBoundary extends React.Component {
             width: "100%",
             maxWidth: 360,
             borderRadius: 18,
-            border: "1px solid rgba(17, 24, 39, 0.08)",
-            background: "#fff",
+            border: "1px solid var(--border)",
+            background: "var(--card)",
             padding: 16,
-            boxShadow: "0 10px 22px rgba(17,24,39,0.08)",
+            boxShadow: "var(--shadow-lg)",
             textAlign: "center",
           }}
         >
-          <div style={{ fontWeight: 900, fontSize: 16 }}>Something went wrong</div>
-          <div style={{ marginTop: 8, color: "rgba(17,24,39,0.62)", fontSize: 12 }}>
+          <div style={{ fontWeight: 900, fontSize: 16, color: "var(--text)" }}>Something went wrong</div>
+          <div style={{ marginTop: 8, color: "var(--text-secondary)", fontSize: 12 }}>
             Please refresh the page. Your cart is saved.
           </div>
           <button
@@ -51,8 +51,9 @@ export class ErrorBoundary extends React.Component {
               width: "100%",
               height: 44,
               borderRadius: 16,
-              border: "1px solid rgba(17, 24, 39, 0.08)",
-              background: "#fff",
+              border: "1px solid var(--accent)",
+              background: "var(--accent)",
+              color: "#fff",
               fontWeight: 900,
               cursor: "pointer",
             }}
