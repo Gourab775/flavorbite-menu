@@ -231,3 +231,8 @@ export function hasDeviceSessionUnreadOrders() {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(DEVICE_UNREAD_KEY) === "true";
 }
+
+export function dispatchDeviceOrderUpdate() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("device-order-update"));
+}

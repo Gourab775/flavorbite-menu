@@ -62,8 +62,8 @@ export function CartPage() {
         <header className="topBar">
           <button
             className="iconBtn pressable"
-            onClick={() => navigate(`/${slug}/menu`)}
-            aria-label="Back to menu"
+            onClick={() => window.history.back()}
+            aria-label="Back"
           >
             ←
           </button>

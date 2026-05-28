@@ -1,13 +1,27 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { hasDeviceSessionUnreadOrders, markDeviceSessionOrdersRead } from "../utils/session";
 
 export function HamburgerMenu({ slug }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(() => hasDeviceSessionUnreadOrders());
   const menuRef = useRef(null);
   const basePath = `/${slug}`;
-  const hasUnread = hasDeviceSessionUnreadOrders();
+
+  const checkUnread = useCallback(() => {
+    setHasUnread(hasDeviceSessionUnreadOrders());
+  }, []);
+
+  useEffect(() => {
+    checkUnread();
+    window.addEventListener("device-order-update", checkUnread);
+    window.addEventListener("storage", checkUnread);
+    return () => {
+      window.removeEventListener("device-order-update", checkUnread);
+      window.removeEventListener("storage", checkUnread);
+    };
+  }, [checkUnread]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -58,6 +72,7 @@ export function HamburgerMenu({ slug }) {
                 <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
               </svg>
               Your Orders
+              {hasUnread && <span className="dropdownBadge" />}
             </button>
 
             <button className="dropdownItem" role="menuitem" onClick={() => handleNav(`${basePath}/call-waiter`)}>

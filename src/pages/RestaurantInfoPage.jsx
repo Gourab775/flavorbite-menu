@@ -14,7 +14,7 @@ export function RestaurantInfoPage() {
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => navigate(basePath)} aria-label="Back">
+        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Restaurant Info</h1>

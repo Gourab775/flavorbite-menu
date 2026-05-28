@@ -6,7 +6,7 @@ import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
 import { getStoredSlug } from "../utils/constants";
-import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread } from "../utils/session";
+import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread, dispatchDeviceOrderUpdate } from "../utils/session";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, AlertCircle, ArrowRight, Clock, X } from "lucide-react";
 
@@ -30,6 +30,7 @@ export function CheckoutPage() {
   const [orderState, setOrderState] = useState("idle");
   const [countdownVal, setCountdownVal] = useState(10);
   const executeOrderRef = useRef(null);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (slug && !restaurant.id) {
@@ -48,8 +49,12 @@ export function CheckoutPage() {
   useEffect(() => {
     if (orderState !== "countdown") return;
     if (countdownVal <= 0) {
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setOrderState("submitting");
-      executeOrderRef.current?.();
+      if (executeOrderRef.current) {
+        executeOrderRef.current();
+      }
       return;
     }
     const timer = setTimeout(() => setCountdownVal((v) => v - 1), 1000);
@@ -79,7 +84,7 @@ export function CheckoutPage() {
     return (
       <div className="pageLayout">
         <header className="topBar">
-          <button className="iconBtn pressable" onClick={() => navigate(`${basePath}/cart`)}>
+          <button className="iconBtn pressable" onClick={() => window.history.back()}>
             <ArrowLeft size={20} />
           </button>
           <h1 className="topBarTitle">Checkout</h1>
@@ -212,6 +217,7 @@ export function CheckoutPage() {
       sessionStorage.setItem("pending_order", JSON.stringify(pendingOrder));
       addOrderToDeviceSession(pendingOrder);
       markDeviceSessionOrdersUnread();
+      dispatchDeviceOrderUpdate();
 
       navigate(`${basePath}/order-sent`);
     } catch (err) {
@@ -220,6 +226,7 @@ export function CheckoutPage() {
       setToastMsg(message);
       setToastType("error");
       setOrderState("idle");
+      submittingRef.current = false;
     } finally {
       setLocalLoading(false);
     }
@@ -251,6 +258,7 @@ export function CheckoutPage() {
   const handleCancelOrder = () => {
     setOrderState("idle");
     setCountdownVal(10);
+    submittingRef.current = false;
   };
 
   const progress = orderState === "countdown" ? (countdownVal / 10) * 100 : 0;
@@ -260,7 +268,7 @@ export function CheckoutPage() {
       <header className="topBar">
         <button
           className="iconBtn pressable"
-          onClick={() => navigate(`${basePath}/cart`)}
+          onClick={() => window.history.back()}
           aria-label="Back to cart"
         >
           <ArrowLeft size={20} />

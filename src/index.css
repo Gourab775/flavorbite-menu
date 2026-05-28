@@ -2810,6 +2810,15 @@ a:focus:not(:focus-visible) {
   color: var(--muted);
 }
 
+.dropdownBadge {
+  width: 8px;
+  height: 8px;
+  background: #ff3b30;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+  animation: badgePulse 0.4s ease;
+}
 
 .headerToast {
   position: fixed;

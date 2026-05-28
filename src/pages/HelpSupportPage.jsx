@@ -1,19 +1,17 @@
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
 import { MessageCircle, Phone } from "lucide-react";
 
 export function HelpSupportPage() {
-  const [, navigate] = useLocation();
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
-  const basePath = `/${slug}`;
   const { restaurant } = useMenu();
 
   return (
     <div className="pageLayout">
       <header className="topBar">
-        <button className="iconBtn pressable" onClick={() => navigate(basePath)} aria-label="Back">
+        <button className="iconBtn pressable" onClick={() => window.history.back()} aria-label="Back">
           ←
         </button>
         <h1 className="topBarTitle">Help & Support</h1>
