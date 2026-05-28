@@ -602,7 +602,7 @@ a:focus:not(:focus-visible) {
 .catScroll {
   display: flex;
   gap: 12px;
-  padding: 10px 16px 12px;
+  padding: 10px 16px 12px 24px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -917,6 +917,7 @@ a:focus:not(:focus-visible) {
   padding-bottom: 120px;
   overflow-anchor: auto;
   scroll-behavior: smooth;
+  position: relative;
 }
 
 .container {

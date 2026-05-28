@@ -38,6 +38,8 @@ export function MenuPage() {
   const tableLookupDone = useRef(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const scrollLockRef = useRef(false);
+  const scrollTimeoutRef = useRef(null);
 
   const mainCategoryId = new URLSearchParams(window.location.search).get("main_category_id") || "";
 
@@ -82,7 +84,7 @@ export function MenuPage() {
   }, [activeCategory, filteredCategories]);
 
   // ── Scroll sync: container scroll → update active category ──
-  useCategorySync("menu-container", setActiveCategory);
+  useCategorySync("menu-container", setActiveCategory, scrollLockRef);
 
   // ── Smooth scroll to category section ──
   const scrollToSection = useCallback((id) => {
@@ -99,8 +101,14 @@ export function MenuPage() {
   const handleCategoryClick = useCallback(
     (categoryName) => {
       const id = slugify(categoryName);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollLockRef.current = true;
       setActiveCategory(id);
       scrollToSection(id);
+      scrollTimeoutRef.current = setTimeout(() => {
+        scrollLockRef.current = false;
+        scrollTimeoutRef.current = null;
+      }, 500);
     },
     [scrollToSection]
   );
@@ -127,6 +135,13 @@ export function MenuPage() {
       }
     }
   }, [slug, loadMenu]);
+
+  // Cleanup scroll lock timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
 
   // ── Look up the table row using table_token ──────────────────────
   useEffect(() => {

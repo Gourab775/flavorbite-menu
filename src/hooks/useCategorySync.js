@@ -1,8 +1,8 @@
-import { useEffect, useRef, useCallback, useMemo } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 const HEADER_OFFSET = 180;
 
-export function useCategorySync(containerId, setActiveCategory) {
+export function useCategorySync(containerId, setActiveCategory, skipRef) {
   const rafRef = useRef(null);
   const lastActiveRef = useRef(null);
   const sectionsCacheRef = useRef([]);
@@ -26,6 +26,11 @@ export function useCategorySync(containerId, setActiveCategory) {
     if (!container) return;
 
     const updateCategory = () => {
+      if (skipRef?.current) {
+        rafRef.current = null;
+        return;
+      }
+
       const sections = getSectionsWithOffset();
       if (sections.length === 0) return;
 
@@ -78,6 +83,8 @@ export function useCategorySync(containerId, setActiveCategory) {
         cancelAnimationFrame(rafRef.current);
       }
     };
+  // skipRef is a stable ref object, excluded intentionally
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerId, setActiveCategory, getSectionsWithOffset]);
 
   return {};
