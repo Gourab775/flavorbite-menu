@@ -31,7 +31,7 @@ export function Header() {
         </svg>
         <div className="headerBrandText">
           <span className="headerRestaurantName">{name || "Restaurant"}</span>
-          <span className="headerTagline">Good food, great taste!</span>
+          <span className="headerTagline">Premium Dining</span>
         </div>
       </div>
 
