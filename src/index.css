@@ -627,7 +627,7 @@ a:focus:not(:focus-visible) {
   outline: none;
   touch-action: pan-x;
   transition: transform 180ms ease;
-  min-width: 68px;
+  width: 72px;
   scroll-snap-align: start;
 }
 
@@ -674,7 +674,7 @@ a:focus:not(:focus-visible) {
   transition: all 180ms ease;
   white-space: nowrap;
   letter-spacing: 0.1px;
-  max-width: 80px;
+  max-width: 72px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

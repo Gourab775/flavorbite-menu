@@ -74,6 +74,13 @@ export function MenuPage() {
       .filter((g) => g.items.length > 0);
   }, [filteredCategories, menuItems, searchResults, vegMode, searchQuery, isSearching]);
 
+  // ── Default to first category when none is active ──
+  const activeCategoryOrDefault = useMemo(() => {
+    if (activeCategory !== null) return activeCategory;
+    if (filteredCategories.length > 0) return slugify(filteredCategories[0].name);
+    return null;
+  }, [activeCategory, filteredCategories]);
+
   // ── Scroll sync: container scroll → update active category ──
   useCategorySync("menu-container", setActiveCategory);
 
@@ -291,7 +298,7 @@ export function MenuPage() {
             <div className={`categoryWrapper ${isScrolled ? "scrolled" : ""}`}>
               <CategorySlider
                 categories={filteredCategories}
-                activeCategory={activeCategory}
+                activeCategory={activeCategoryOrDefault}
                 onCategoryClick={handleCategoryClick}
               />
             </div>
