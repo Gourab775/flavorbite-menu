@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { FALLBACK_IMG } from "../utils/constants";
 
@@ -79,6 +79,28 @@ function useReducer(reducer, init) {
 export function MenuProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchKey = useRef(null);
+  const slugRef = useRef("");
+
+  const fetchFreshFeatured = useCallback(async (restaurantId, slug) => {
+    if (!restaurantId || !slug) return;
+    try {
+      const { data: featData } = await supabase
+        .from("featured_items").select("*")
+        .eq("restaurant_id", restaurantId)
+        .order("display_order", { ascending: true });
+      if (featData && fetchKey.current === slug) {
+        const activeFeat = featData.filter((f) => f.is_active !== false);
+        const featuredItems = normalizeFeaturedItems(activeFeat);
+        if (menuCache.has(slug)) {
+          const cached = menuCache.get(slug);
+          menuCache.set(slug, { ...cached, featuredItems });
+        }
+        dispatch({ type: "SET_DATA", payload: { featuredItems } });
+      }
+    } catch {
+      // Silently fall back to cached/provided featured data
+    }
+  }, []);
 
   const loadMenu = useCallback(async (rawInput) => {
     const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
@@ -89,17 +111,20 @@ export function MenuProvider({ children }) {
       return;
     }
 
-    if (menuCache.has(slug)) {
-      dispatch({ type: "SET_DATA", payload: menuCache.get(slug) });
-      return;
-    }
-
     if (!isSupabaseConfigured || !supabase) {
       dispatch({ type: "SET_ERROR", payload: "Supabase is not configured. Please check your environment variables." });
       return;
     }
 
     fetchKey.current = slug;
+
+    if (menuCache.has(slug)) {
+      const cached = menuCache.get(slug);
+      dispatch({ type: "SET_DATA", payload: cached });
+      fetchFreshFeatured(cached.restaurant.id, slug);
+      return;
+    }
+
     dispatch({ type: "START_LOADING" });
 
     const MAX_ATTEMPTS = 3;
@@ -186,19 +211,37 @@ export function MenuProvider({ children }) {
           logo: String(row.logo ?? ""),
         };
 
-        const [cats, items, feat] = await Promise.all([
+        const [cats, items] = await Promise.all([
           supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
           supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-          supabase.from("featured_items").select("*").eq("restaurant_id", restaurantId),
         ]);
 
         if (fetchKey.current !== slug) return;
 
+        const categories = normalizeCategories(cats.data);
+        const menuItems = normalizeMenuItems(items.data);
+
+        // Fetch featured items separately so a column mismatch never blocks menu load
+        let featuredItems = [];
+        try {
+          const { data: featData } = await supabase
+            .from("featured_items").select("*")
+            .eq("restaurant_id", restaurantId)
+            .order("display_order", { ascending: true });
+          if (featData) {
+            // Filter by active status server-side if column exists, otherwise use all
+            const withActive = featData.filter((f) => f.is_active !== false);
+            featuredItems = normalizeFeaturedItems(withActive);
+          }
+        } catch {
+          // Featured items are non-critical; menu still loads without them
+        }
+
         const data = {
           restaurant,
-          categories: normalizeCategories(cats.data),
-          menuItems: normalizeMenuItems(items.data),
-          featuredItems: normalizeFeaturedItems(feat.data),
+          categories,
+          menuItems,
+          featuredItems,
         };
 
         menuCache.set(slug, data);
@@ -221,6 +264,24 @@ export function MenuProvider({ children }) {
     fetchKey.current = null;
     loadMenu(slug);
   }, [loadMenu]);
+
+  // Real-time subscription for featured_items changes
+  useEffect(() => {
+    const restaurantId = state.restaurant?.id;
+    const slug = state.restaurant?.slug;
+    if (!restaurantId || !slug || !supabase) return;
+    slugRef.current = slug;
+
+    const channel = supabase
+      .channel(`featured-${restaurantId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "featured_items", filter: `restaurant_id=eq.${restaurantId}` },
+        () => { fetchFreshFeatured(restaurantId, slugRef.current); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshFeatured]);
 
   const value = useMemo(() => ({ ...state, loadMenu, refetch }), [state, loadMenu, refetch]);
 
