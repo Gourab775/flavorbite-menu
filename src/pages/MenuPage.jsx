@@ -92,15 +92,8 @@ export function MenuPage() {
     const container = document.getElementById("menu-container");
     if (!el || !container) return;
 
-    // Use scrollIntoView — respects scroll-margin-top on .menuSection (180px)
-    // so the sticky header never blocks the section heading
-    try {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch {
-      // Fallback for browsers that don't support scrollIntoView options
-      const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
-      container.scrollTo({ top: targetScroll });
-    }
+    const targetScroll = el.offsetTop - SCROLL_HEADER_OFFSET;
+    container.scrollTo({ top: targetScroll, behavior: "smooth" });
   }, []);
 
   // ── Category click → scroll to section ──
