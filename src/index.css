@@ -1350,6 +1350,9 @@ a:focus:not(:focus-visible) {
   overflow: hidden;
   margin-top: 2px;
   flex: 1;
+  max-height: 3em;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .menuPriceRow {
