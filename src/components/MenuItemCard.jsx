@@ -35,6 +35,10 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
 
   const isVeg = Boolean(item.isVeg);
 
+  const nameLen = (item.name || "").length;
+  const nameFontSize =
+    nameLen <= 20 ? 15 : nameLen <= 28 ? 13 : nameLen <= 38 ? 12 : 11;
+
   return (
     <>
       <article className={`menuCard${!item.isAvailable ? " menuCard--soldOut" : ""}`}>
@@ -69,7 +73,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
               title={isVeg ? "Veg" : "Non-veg"}
               aria-label={isVeg ? "Veg item" : "Non-veg item"}
             />
-            <h3 className="menuName">{toTitleCase(item.name)}</h3>
+            <h3 className="menuName" style={{ fontSize: `${nameFontSize}px` }}>{toTitleCase(item.name)}</h3>
           </div>
           <p className="menuDesc">{item.description}</p>
           <div className="menuPriceRow">
