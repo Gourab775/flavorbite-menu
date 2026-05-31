@@ -4,18 +4,19 @@ import { useMenuStore } from "../store/menuStore";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { setStoredSlug } from "../utils/constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, X, LayoutGrid } from "lucide-react";
 
 
 export function LandingPage() {
   const { slug } = useParams();
   const [, navigate] = useLocation();
-  const { loadMenu, restaurant, loading: storeLoading, error: storeError } = useMenuStore();
+  const { loadMenu, restaurant, mainCategories, loading: storeLoading, error: storeError } = useMenuStore();
 
   const [backgroundVideo, setBackgroundVideo] = useState("");
   const [videoError, setVideoError] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   /* ── Dynamic viewport height — guarantees fullscreen on all devices ── */
   useEffect(() => {
@@ -75,11 +76,30 @@ export function LandingPage() {
     return () => { cancelled = true; };
   }, [slug, restaurant?.id]);
 
-  const navigateToMenu = () => {
+  const buildMenuUrl = (mainCategoryId) => {
     const params = new URLSearchParams();
     if (tableToken) params.set("table", tableToken);
+    if (mainCategoryId) params.set("main_category_id", mainCategoryId);
     const qs = params.toString();
-    navigate(`/${slug}/menu${qs ? `?${qs}` : ""}`);
+    return `/${slug}/menu${qs ? `?${qs}` : ""}`;
+  };
+
+  const navigateToMenu = () => {
+    if (mainCategories.length > 0) {
+      setShowPicker(true);
+    } else {
+      navigate(buildMenuUrl());
+    }
+  };
+
+  const navigateToMenuWithCategory = (mainCategoryId) => {
+    setShowPicker(false);
+    navigate(buildMenuUrl(mainCategoryId));
+  };
+
+  const navigateToFullMenu = () => {
+    setShowPicker(false);
+    navigate(buildMenuUrl());
   };
 
   const showLoading = storeLoading && !restaurant?.id;
@@ -166,6 +186,49 @@ export function LandingPage() {
           </button>
         </div>
       </main>
+
+      {showPicker && (
+        <div className="landingPickerOverlay" onClick={() => setShowPicker(false)}>
+          <div className="landingPicker" onClick={(e) => e.stopPropagation()}>
+            <button className="landingPickerClose" onClick={() => setShowPicker(false)}>
+              <X size={18} />
+            </button>
+            <div className="landingPickerHeader">
+              <LayoutGrid size={22} />
+              <h3>Browse Menu</h3>
+            </div>
+            {mainCategories.length > 0 ? (
+              <>
+                <div className="landingPickerGrid">
+                  {mainCategories.map((mc) => (
+                    <button
+                      key={mc.id}
+                      className="landingPickerItem"
+                      onClick={() => navigateToMenuWithCategory(mc.id)}
+                    >
+                      {mc.imageUrl && (
+                        <div className="landingPickerItemImgWrap">
+                          <img src={mc.imageUrl} alt={mc.name} />
+                        </div>
+                      )}
+                      <span>{mc.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="landingPickerFooter">
+                  <button className="landingPickerAllBtn" onClick={navigateToFullMenu}>
+                    View Full Menu
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="landingPickerError">
+                <p>No menu categories available</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

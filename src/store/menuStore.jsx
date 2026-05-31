@@ -43,6 +43,16 @@ function normalizeFeaturedItems(data) {
   })).filter((i) => i.imageUrl);
 }
 
+function normalizeMainCategories(data) {
+  if (!Array.isArray(data)) return [];
+  return data.map((mc) => ({
+    id: String(mc.id ?? ""),
+    name: String(mc.name ?? ""),
+    imageUrl: String(mc.image ?? mc.image_url ?? mc.imageUrl ?? ""),
+    sortOrder: Number(mc.sort_order ?? mc.sortOrder ?? 0),
+  })).filter((mc) => mc.id && mc.name).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
 function cleanSlug(raw) {
   if (!raw || typeof raw !== "string") return DEFAULT_SLUG;
   return raw.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -52,6 +62,7 @@ const initialState = {
   categories: [],
   menuItems: [],
   featuredItems: [],
+  mainCategories: [],
   restaurant: { id: "", name: "", slug: "", logo: "" },
   loading: false,
   error: null,
@@ -237,11 +248,22 @@ export function MenuProvider({ children }) {
           // Featured items are non-critical; menu still loads without them
         }
 
+        let mainCategories = [];
+        try {
+          const { data: mcData } = await supabase
+            .from("main_categories").select("*")
+            .eq("restaurant_id", restaurantId);
+          if (mcData) mainCategories = normalizeMainCategories(mcData);
+        } catch {
+          // main categories are non-critical
+        }
+
         const data = {
           restaurant,
           categories,
           menuItems,
           featuredItems,
+          mainCategories,
         };
 
         menuCache.set(slug, data);
