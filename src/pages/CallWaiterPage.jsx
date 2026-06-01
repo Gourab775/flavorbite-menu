@@ -58,6 +58,10 @@ export function CallWaiterPage() {
       const orderCode = getOrCreateDeviceOrderCode();
       const sessionOrderId = session?.id ?? null;
 
+      if (!restaurant.id || !tableData.id) {
+        throw new Error("Missing restaurant or table identifier. Cannot place waiter call.");
+      }
+
       const payload = {
         restaurant_id: restaurant.id,
         table_id: tableData.id,
