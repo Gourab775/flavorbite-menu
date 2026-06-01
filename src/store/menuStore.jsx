@@ -294,15 +294,29 @@ export function MenuProvider({ children }) {
     if (!restaurantId || !slug || !supabase) return;
     slugRef.current = slug;
 
-    const channel = supabase
-      .channel(`featured-${restaurantId}`)
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "featured_items", filter: `restaurant_id=eq.${restaurantId}` },
-        () => { fetchFreshFeatured(restaurantId, slugRef.current); }
-      )
-      .subscribe();
+    console.log('[Realtime] Channel Created: featured', `featured-${restaurantId}`);
+    console.log('[Realtime] Restaurant ID:', restaurantId);
 
-    return () => { supabase.removeChannel(channel); };
+    let channel = null;
+    try {
+      channel = supabase
+        .channel(`featured-${restaurantId}`)
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "featured_items", filter: `restaurant_id=eq.${restaurantId}` },
+          () => { fetchFreshFeatured(restaurantId, slugRef.current); }
+        )
+        .subscribe();
+      console.log('[Realtime] Featured channel subscribed');
+    } catch (err) {
+      console.error('[Realtime] Featured subscription failed:', err);
+    }
+
+    return () => {
+      if (channel) {
+        console.log('[Realtime] Channel Removed: featured');
+        supabase.removeChannel(channel);
+      }
+    };
   }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshFeatured]);
 
   const value = useMemo(() => ({ ...state, loadMenu, refetch }), [state, loadMenu, refetch]);
