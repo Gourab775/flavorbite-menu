@@ -24,7 +24,7 @@ function slugify(text) {
     .replace(/^-+|-+$/g, "");
 }
 
-const SCROLL_HEADER_OFFSET = 180;
+const SCROLL_HEADER_OFFSET = 240;
 
 export function MenuPage() {
   const { slug } = useParams();
