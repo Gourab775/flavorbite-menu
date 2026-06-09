@@ -3778,7 +3778,7 @@ a:focus:not(:focus-visible) {
   height: 46px;
   border-radius: 8px;
   object-fit: cover;
-  margin-right: 8px;
+  margin-right: 3px;
   flex-shrink: 0;
 }
 
