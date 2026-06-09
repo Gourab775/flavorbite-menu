@@ -221,7 +221,11 @@ export function MenuPage() {
     return (
       <div className="menuLayout">
         <main className="loadingPage">
-          <div className="loadingSpinner" />
+          <div className="loaderDots">
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+          </div>
           <p className="loadingText">Loading restaurant...</p>
         </main>
       </div>
@@ -287,7 +291,11 @@ export function MenuPage() {
     return (
       <div className="menuLayout">
         <main className="loadingPage">
-          <div className="loadingSpinner" />
+          <div className="loaderDots">
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+          </div>
           <p className="loadingText">Verifying table...</p>
         </main>
       </div>

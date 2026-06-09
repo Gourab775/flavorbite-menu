@@ -109,7 +109,11 @@ export function LandingPage() {
     return (
       <div className="landingPage">
         <main className="loadingPage">
-          <div className="loadingSpinner" />
+          <div className="loaderDots">
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+          </div>
           <p className="loadingText">Loading restaurant...</p>
         </main>
       </div>

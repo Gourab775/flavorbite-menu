@@ -53,7 +53,11 @@ function AppRoutes() {
     return (
       <div className="pageLayout">
         <main className="loadingPage">
-          <div className="loadingSpinner" />
+          <div className="loaderDots">
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+            <span className="loaderDot" />
+          </div>
           <p className="loadingText">Loading...</p>
         </main>
       </div>

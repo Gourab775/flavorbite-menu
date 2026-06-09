@@ -380,7 +380,11 @@ export function CheckoutPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="submittingSpinner" />
+                <div className="submittingSpinner">
+                  <span className="submittingDot" />
+                  <span className="submittingDot" />
+                  <span className="submittingDot" />
+                </div>
                 <p className="countdownLabel" style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>
                   Placing your order...
                 </p>
