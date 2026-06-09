@@ -3753,7 +3753,7 @@ a:focus:not(:focus-visible) {
 .landingBrandGroup {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 10px;
 }
 
 .landingBrand {
