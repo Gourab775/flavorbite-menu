@@ -3750,6 +3750,12 @@ a:focus:not(:focus-visible) {
   transform: translateY(0);
 }
 
+.landingBrandGroup {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .landingBrand {
   display: flex;
   flex-direction: column;
@@ -3778,7 +3784,6 @@ a:focus:not(:focus-visible) {
   height: 46px;
   border-radius: 8px;
   object-fit: cover;
-  margin-right: 3px;
   flex-shrink: 0;
 }
 
