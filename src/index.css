@@ -3773,6 +3773,15 @@ a:focus:not(:focus-visible) {
   text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 
+.landingLogo {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
 /* Center CTA — fades in + scales */
 .landingContent {
   position: relative;

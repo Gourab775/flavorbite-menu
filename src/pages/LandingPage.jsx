@@ -175,6 +175,9 @@ export function LandingPage() {
 
       <div className={`landingVideoLoader ${videoReady ? "ready" : ""}`} />
       <header className={`landingHeader ${pageLoaded ? "visible" : ""}`}>
+        {restaurant?.logo && (
+          <img src={restaurant.logo} alt={displayName || "Restaurant"} className="landingLogo" />
+        )}
         <div className="landingBrand">
           <span className="landingBrandName">{displayName || "Restaurant"}</span>
           <span className="landingBrandSubtitle">Premium Dining</span>
