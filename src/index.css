@@ -3719,21 +3719,6 @@ a:focus:not(:focus-visible) {
   pointer-events: none;
 }
 
-.landingCenterLogo {
-  position: relative;
-  z-index: 5;
-  display: flex;
-  justify-content: center;
-  padding: 20px 0 8px;
-}
-
-.landingCenterLogo img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 /* Header — fades in */
 .landingHeader {
   position: relative;

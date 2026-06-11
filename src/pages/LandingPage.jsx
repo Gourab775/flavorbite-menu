@@ -172,12 +172,6 @@ export function LandingPage() {
         <HamburgerMenu slug={slug} />
       </header>
 
-      {restaurant?.logo && (
-        <div className="landingCenterLogo">
-          <img src={restaurant.logo} alt={displayName || "Restaurant"} />
-        </div>
-      )}
-
       <main className="landingContent">
         <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
           <div className="landingCtaGlow" />
