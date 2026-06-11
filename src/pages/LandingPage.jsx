@@ -174,9 +174,9 @@ export function LandingPage() {
 
       <main className="landingContent">
         <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
-          <button className="landingCtaBtn" onClick={navigateToMenu}>
+          {/* <button className="landingCtaBtn" onClick={navigateToMenu}>
             <span>{mainCategories.length > 0 ? mainCategories[0].name : "View Menu"}</span>
-          </button>
+          </button> */}
         </div>
       </main>
 
