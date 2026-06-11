@@ -2188,6 +2188,19 @@ a:focus:not(:focus-visible) {
 }
 
 /* ── Countdown confirmation (Swiggy/Zomato-style) ── */
+
+.countdownModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  padding: 24px;
+}
+
 .countdownContainer {
   width: 100%;
   max-width: 420px;

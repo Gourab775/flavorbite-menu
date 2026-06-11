@@ -323,41 +323,6 @@ export function CheckoutPage() {
         </section>
 
         <section className="checkoutSection" style={{ paddingBottom: 100, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <AnimatePresence>
-            {orderState === "countdown" && (
-              <motion.div
-                key="countdown-ui"
-                className="countdownContainer"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="countdownHeader">
-                  <span className="countdownLabel">
-                    <Clock size={16} />
-                    Confirming order...
-                  </span>
-                  <span className="countdownTimer">{countdownVal}s</span>
-                </div>
-                <div className="countdownTrack">
-                  <div className="countdownFill" style={{ width: `${progress}%` }} />
-                  <div className="countdownDot" style={{ left: `${progress}%` }} />
-                </div>
-                <p className="countdownSubtext">
-                  Your order will be confirmed automatically unless you cancel
-                </p>
-                <button
-                  className="countdownCancelBtn"
-                  onClick={handleCancelOrder}
-                  disabled={isLoading}
-                >
-                  <X size={18} />
-                  Cancel Order
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
           <AnimatePresence mode="wait">
             {orderState !== "submitting" ? (
               <motion.button
@@ -397,6 +362,50 @@ export function CheckoutPage() {
           </AnimatePresence>
         </section>
       </main>
+
+      <AnimatePresence>
+        {orderState === "countdown" && (
+          <motion.div
+            key="countdown-modal-overlay"
+            className="countdownModalOverlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="countdownContainer"
+              initial={{ opacity: 0, y: 12, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <div className="countdownHeader">
+                <span className="countdownLabel">
+                  <Clock size={16} />
+                  Confirming order...
+                </span>
+                <span className="countdownTimer">{countdownVal}s</span>
+              </div>
+              <div className="countdownTrack">
+                <div className="countdownFill" style={{ width: `${progress}%` }} />
+                <div className="countdownDot" style={{ left: `${progress}%` }} />
+              </div>
+              <p className="countdownSubtext">
+                Your order will be confirmed automatically unless you cancel
+              </p>
+              <button
+                className="countdownCancelBtn"
+                onClick={handleCancelOrder}
+                disabled={isLoading}
+              >
+                <X size={18} />
+                Cancel Order
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
