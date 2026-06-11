@@ -194,6 +194,7 @@ export function CheckoutPage() {
         }
       }
 
+      console.log('ORDER TYPE:', pendingOrder.order_type);
       console.log("[Checkout] Final order payload:", JSON.stringify(pendingOrder, null, 2));
 
       const { error: insertError } = await supabase
