@@ -20,44 +20,58 @@ export function YourOrdersPage() {
   const goBackToMenu = useGoBack(basePath);
 
   const orders = getDeviceSessionOrders();
-  const sortedOrders = orders.slice().reverse();
+  console.log("All Orders", orders);
 
-  const grouped = {};
-  sortedOrders.forEach((order) => {
-    const code = order.order_code || "unknown";
-    if (!grouped[code]) {
-      grouped[code] = {
-        order_code: code,
-        order_type: order.order_type,
-        items: [],
-        total: 0,
-        savedAt: order.savedAt,
-      };
-    }
-    grouped[code].items.push(...(order.items || []));
-    grouped[code].total += Math.round(order.total_price || 0);
-  });
-
-  const groups = Object.values(grouped).map((group) => {
-    const merged = {};
-    group.items.forEach((item) => {
-      const key = item.name;
-      if (merged[key]) {
-        merged[key].quantity += item.quantity;
-      } else {
-        merged[key] = { ...item };
-      }
-    });
-    return { ...group, items: Object.values(merged) };
-  });
-
-  groups.sort((a, b) => b.savedAt - a.savedAt);
-
-  const dineInGroups = groups.filter((g) => g.order_type === "dine_in");
-  const takeoutGroups = groups.filter((g) => g.order_type === "takeout");
-  const otherGroups = groups.filter(
-    (g) => g.order_type !== "dine_in" && g.order_type !== "takeout"
+  const dineInOrders = orders.filter(
+    (order) => order.order_type === "dine_in"
   );
+  const takeoutOrders = orders.filter(
+    (order) => order.order_type === "takeout"
+  );
+  const otherOrders = orders.filter(
+    (order) => order.order_type !== "dine_in" && order.order_type !== "takeout"
+  );
+
+  console.log("Dine-In Orders", dineInOrders);
+  console.log("Takeout Orders", takeoutOrders);
+
+  function groupOrders(orderList) {
+    const grouped = {};
+    orderList.slice().reverse().forEach((order) => {
+      const code = order.order_code || "unknown";
+      if (!grouped[code]) {
+        grouped[code] = {
+          order_code: code,
+          order_type: order.order_type,
+          items: [],
+          total: 0,
+          savedAt: order.savedAt,
+        };
+      }
+      grouped[code].items.push(...(order.items || []));
+      grouped[code].total += Math.round(order.total_price || 0);
+    });
+
+    const groups = Object.values(grouped).map((group) => {
+      const merged = {};
+      group.items.forEach((item) => {
+        const key = item.name;
+        if (merged[key]) {
+          merged[key].quantity += item.quantity;
+        } else {
+          merged[key] = { ...item };
+        }
+      });
+      return { ...group, items: Object.values(merged) };
+    });
+
+    groups.sort((a, b) => b.savedAt - a.savedAt);
+    return groups;
+  }
+
+  const dineInGroups = groupOrders(dineInOrders);
+  const takeoutGroups = groupOrders(takeoutOrders);
+  const otherGroups = groupOrders(otherOrders);
 
   return (
     <div className="pageLayout">
@@ -70,7 +84,7 @@ export function YourOrdersPage() {
       </header>
 
       <main className="yourOrdersBody hideScrollbar">
-        {groups.length > 0 ? (
+        {dineInGroups.length + takeoutGroups.length + otherGroups.length > 0 ? (
           <div className="ordersContainer">
             {dineInGroups.length > 0 && (
               <>
