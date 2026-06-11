@@ -76,7 +76,7 @@ export function OrderSuccessPage() {
 
           {orderData?.order_type && (
             <div className="orderTypeBadge">
-              Order Type: <strong>{orderData.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}</strong>
+              Order Type: <strong>{orderData.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}</strong>
             </div>
           )}
 

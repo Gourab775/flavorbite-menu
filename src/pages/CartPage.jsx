@@ -219,15 +219,15 @@ export function CartPage() {
               </button>
               <button
                 className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
-                  selectedOrderType === 'takeout'
+                  selectedOrderType === 'takeaway'
                     ? 'border-[#ff6b00] bg-[#ff6b00]/10 text-white'
                     : 'border-white/10 bg-[#252525] text-[#a0a0a0] hover:border-white/20 hover:text-white'
                 }`}
-                onClick={() => setSelectedOrderType('takeout')}
+                onClick={() => setSelectedOrderType('takeaway')}
               >
-                <ShoppingBag size={24} className={selectedOrderType === 'takeout' ? 'text-[#ff6b00]' : 'text-[#666]'} />
+                <ShoppingBag size={24} className={selectedOrderType === 'takeaway' ? 'text-[#ff6b00]' : 'text-[#666]'} />
                 <div>
-                  <div className="font-semibold text-[15px]">Takeout</div>
+                  <div className="font-semibold text-[15px]">Takeaway</div>
                   <div className="text-xs opacity-70">Take your order to go</div>
                 </div>
               </button>

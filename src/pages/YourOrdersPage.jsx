@@ -25,15 +25,15 @@ export function YourOrdersPage() {
   const dineInOrders = orders.filter(
     (order) => order.order_type === "dine_in"
   );
-  const takeoutOrders = orders.filter(
-    (order) => order.order_type === "takeout"
+  const takeawayOrders = orders.filter(
+    (order) => order.order_type === "takeaway"
   );
   const otherOrders = orders.filter(
-    (order) => order.order_type !== "dine_in" && order.order_type !== "takeout"
+    (order) => order.order_type !== "dine_in" && order.order_type !== "takeaway"
   );
 
   console.log("Dine-In Orders", dineInOrders);
-  console.log("Takeout Orders", takeoutOrders);
+  console.log("Takeaway Orders", takeawayOrders);
 
   function groupOrders(orderList) {
     const grouped = {};
@@ -70,7 +70,7 @@ export function YourOrdersPage() {
   }
 
   const dineInGroups = groupOrders(dineInOrders);
-  const takeoutGroups = groupOrders(takeoutOrders);
+  const takeawayGroups = groupOrders(takeawayOrders);
   const otherGroups = groupOrders(otherOrders);
 
   return (
@@ -84,7 +84,7 @@ export function YourOrdersPage() {
       </header>
 
       <main className="yourOrdersBody hideScrollbar">
-        {dineInGroups.length + takeoutGroups.length + otherGroups.length > 0 ? (
+        {dineInGroups.length + takeawayGroups.length + otherGroups.length > 0 ? (
           <div className="ordersContainer">
             {dineInGroups.length > 0 && (
               <>
@@ -95,7 +95,7 @@ export function YourOrdersPage() {
                       <div className="orderCardCode">{group.order_code}</div>
                       {group.order_type && (
                         <span className={`orderTypeLabel ${group.order_type}`}>
-                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}
                         </span>
                       )}
                     </div>
@@ -117,16 +117,16 @@ export function YourOrdersPage() {
                 ))}
               </>
             )}
-            {takeoutGroups.length > 0 && (
+            {takeawayGroups.length > 0 && (
               <>
-                <div className="orderSectionTitle">Takeout Orders</div>
-                {takeoutGroups.map((group, idx) => (
+                <div className="orderSectionTitle">Takeaway Orders</div>
+                {takeawayGroups.map((group, idx) => (
                   <div className="orderCard" key={idx}>
                     <div className="orderCardHeader">
                       <div className="orderCardCode">{group.order_code}</div>
                       {group.order_type && (
                         <span className={`orderTypeLabel ${group.order_type}`}>
-                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}
                         </span>
                       )}
                     </div>
@@ -155,7 +155,7 @@ export function YourOrdersPage() {
                     <div className="orderCardCode">{group.order_code}</div>
                     {group.order_type && (
                       <span className={`orderTypeLabel ${group.order_type}`}>
-                        {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                        {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}
                       </span>
                     )}
                   </div>
