@@ -4,7 +4,7 @@ import { useCart } from "../hooks/useCart";
 import { Toast } from "../components/Toast";
 import { getStoredSlug, FALLBACK_IMG } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Utensils } from "lucide-react";
 
 const CART_NOTE_KEY = "cart_order_note";
 
@@ -66,6 +66,17 @@ export function CartPage() {
   }, [clearCart, showToast]);
 
   const goBack = useGoBack(`/${slug}/menu`);
+
+  const [showOrderTypeModal, setShowOrderTypeModal] = useState(false);
+  const [selectedOrderType, setSelectedOrderType] = useState(null);
+
+  const handleProceedWithOrderType = () => {
+    if (!selectedOrderType) return;
+    sessionStorage.setItem(CART_NOTE_KEY, orderNote);
+    sessionStorage.setItem("selected_order_type", selectedOrderType);
+    setShowOrderTypeModal(false);
+    navigate(`${basePath}/checkout`);
+  };
 
   if (cart.length === 0) {
     return (
@@ -177,7 +188,7 @@ export function CartPage() {
           className="ctaBtn primary pressable"
           onClick={() => {
             sessionStorage.setItem(CART_NOTE_KEY, orderNote);
-            navigate(`${basePath}/checkout`);
+            setShowOrderTypeModal(true);
           }}
           aria-label="Proceed to checkout"
         >
@@ -185,6 +196,64 @@ export function CartPage() {
           <span className="ctaPrice">₹{Math.round(grandTotal)}</span>
         </button>
       </div>
+
+      {showOrderTypeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowOrderTypeModal(false)}>
+          <div className="bg-[#1a1a1a] rounded-2xl p-6 w-[320px] max-w-[90vw] shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white text-center mb-1">Select Order Type</h3>
+            <p className="text-sm text-[#a0a0a0] text-center mb-5">Choose how you'd like to receive your order</p>
+            <div className="flex flex-col gap-3">
+              <button
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
+                  selectedOrderType === 'dine_in'
+                    ? 'border-[#ff6b00] bg-[#ff6b00]/10 text-white'
+                    : 'border-white/10 bg-[#252525] text-[#a0a0a0] hover:border-white/20 hover:text-white'
+                }`}
+                onClick={() => setSelectedOrderType('dine_in')}
+              >
+                <Utensils size={24} className={selectedOrderType === 'dine_in' ? 'text-[#ff6b00]' : 'text-[#666]'} />
+                <div>
+                  <div className="font-semibold text-[15px]">Dine-In</div>
+                  <div className="text-xs opacity-70">Enjoy your meal at the restaurant</div>
+                </div>
+              </button>
+              <button
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
+                  selectedOrderType === 'takeout'
+                    ? 'border-[#ff6b00] bg-[#ff6b00]/10 text-white'
+                    : 'border-white/10 bg-[#252525] text-[#a0a0a0] hover:border-white/20 hover:text-white'
+                }`}
+                onClick={() => setSelectedOrderType('takeout')}
+              >
+                <ShoppingBag size={24} className={selectedOrderType === 'takeout' ? 'text-[#ff6b00]' : 'text-[#666]'} />
+                <div>
+                  <div className="font-semibold text-[15px]">Takeout</div>
+                  <div className="text-xs opacity-70">Take your order to go</div>
+                </div>
+              </button>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button
+                className="flex-1 py-3 rounded-xl text-sm font-medium bg-[#252525] text-[#a0a0a0] border border-white/10"
+                onClick={() => setShowOrderTypeModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  selectedOrderType
+                    ? 'bg-[#ff6b00] text-white'
+                    : 'bg-[#ff6b00]/30 text-white/50 cursor-not-allowed'
+                }`}
+                onClick={handleProceedWithOrderType}
+                disabled={!selectedOrderType}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
