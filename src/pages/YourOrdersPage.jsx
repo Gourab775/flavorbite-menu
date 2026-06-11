@@ -28,6 +28,7 @@ export function YourOrdersPage() {
     if (!grouped[code]) {
       grouped[code] = {
         order_code: code,
+        order_type: order.order_type,
         items: [],
         total: 0,
         savedAt: order.savedAt,
@@ -69,6 +70,11 @@ export function YourOrdersPage() {
               <div className="orderCard" key={idx}>
                 <div className="orderCardHeader">
                   <div className="orderCardCode">{group.order_code}</div>
+                  {group.order_type && (
+                    <span className={`orderTypeLabel ${group.order_type}`}>
+                      {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                    </span>
+                  )}
                 </div>
                 <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
                 <div className="orderCardItems">

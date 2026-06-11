@@ -74,6 +74,12 @@ export function OrderSuccessPage() {
             </div>
           )}
 
+          {orderData?.order_type && (
+            <div className="orderTypeBadge">
+              Order Type: <strong>{orderData.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}</strong>
+            </div>
+          )}
+
           {orderData?.items && orderData.items.length > 0 && (
             <div className="orderDetailsSection">
               <h3 className="orderDetailsTitle">Order Details</h3>
