@@ -3178,6 +3178,18 @@ a:focus:not(:focus-visible) {
   margin: 0 auto;
 }
 
+.orderSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 20px 0 10px;
+}
+.orderSectionTitle:first-child {
+  margin-top: 0;
+}
+
 .orderCard {
   background: var(--card);
   border: 1px solid var(--border-light);

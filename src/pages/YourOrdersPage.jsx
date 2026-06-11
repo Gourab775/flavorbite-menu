@@ -53,6 +53,12 @@ export function YourOrdersPage() {
 
   groups.sort((a, b) => b.savedAt - a.savedAt);
 
+  const dineInGroups = groups.filter((g) => g.order_type === "dine_in");
+  const takeoutGroups = groups.filter((g) => g.order_type === "takeout");
+  const otherGroups = groups.filter(
+    (g) => g.order_type !== "dine_in" && g.order_type !== "takeout"
+  );
+
   return (
     <div className="pageLayout">
       <header className="topBar">
@@ -66,32 +72,95 @@ export function YourOrdersPage() {
       <main className="yourOrdersBody hideScrollbar">
         {groups.length > 0 ? (
           <div className="ordersContainer">
-            {groups.map((group, idx) => (
-              <div className="orderCard" key={idx}>
-                <div className="orderCardHeader">
-                  <div className="orderCardCode">{group.order_code}</div>
-                  {group.order_type && (
-                    <span className={`orderTypeLabel ${group.order_type}`}>
-                      {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
-                    </span>
-                  )}
-                </div>
-                <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
-                <div className="orderCardItems">
-                  {group.items.map((item, iidx) => (
-                    <div className="orderCardItem" key={iidx}>
-                      <span className="orderCardItemName">{item.name}</span>
-                      <span className="orderCardItemQty">×{item.quantity}</span>
-                      <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+            {dineInGroups.length > 0 && (
+              <>
+                <div className="orderSectionTitle">Dine-In Orders</div>
+                {dineInGroups.map((group, idx) => (
+                  <div className="orderCard" key={idx}>
+                    <div className="orderCardHeader">
+                      <div className="orderCardCode">{group.order_code}</div>
+                      {group.order_type && (
+                        <span className={`orderTypeLabel ${group.order_type}`}>
+                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                        </span>
+                      )}
                     </div>
-                  ))}
+                    <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
+                    <div className="orderCardItems">
+                      {group.items.map((item, iidx) => (
+                        <div className="orderCardItem" key={iidx}>
+                          <span className="orderCardItemName">{item.name}</span>
+                          <span className="orderCardItemQty">×{item.quantity}</span>
+                          <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="orderCardTotal">
+                      <span>Total</span>
+                      <span>₹{group.total}</span>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+            {takeoutGroups.length > 0 && (
+              <>
+                <div className="orderSectionTitle">Takeout Orders</div>
+                {takeoutGroups.map((group, idx) => (
+                  <div className="orderCard" key={idx}>
+                    <div className="orderCardHeader">
+                      <div className="orderCardCode">{group.order_code}</div>
+                      {group.order_type && (
+                        <span className={`orderTypeLabel ${group.order_type}`}>
+                          {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
+                    <div className="orderCardItems">
+                      {group.items.map((item, iidx) => (
+                        <div className="orderCardItem" key={iidx}>
+                          <span className="orderCardItemName">{item.name}</span>
+                          <span className="orderCardItemQty">×{item.quantity}</span>
+                          <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="orderCardTotal">
+                      <span>Total</span>
+                      <span>₹{group.total}</span>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+            {otherGroups.length > 0 &&
+              otherGroups.map((group, idx) => (
+                <div className="orderCard" key={idx}>
+                  <div className="orderCardHeader">
+                    <div className="orderCardCode">{group.order_code}</div>
+                    {group.order_type && (
+                      <span className={`orderTypeLabel ${group.order_type}`}>
+                        {group.order_type === 'dine_in' ? 'Dine-In' : 'Takeout'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="orderCardRestaurant">{restaurant?.name || "Restaurant"}</div>
+                  <div className="orderCardItems">
+                    {group.items.map((item, iidx) => (
+                      <div className="orderCardItem" key={iidx}>
+                        <span className="orderCardItemName">{item.name}</span>
+                        <span className="orderCardItemQty">×{item.quantity}</span>
+                        <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="orderCardTotal">
+                    <span>Total</span>
+                    <span>₹{group.total}</span>
+                  </div>
                 </div>
-                <div className="orderCardTotal">
-                  <span>Total</span>
-                  <span>₹{group.total}</span>
-                </div>
-              </div>
-            ))}
+              ))}
             <button
               className="btn primary pressable"
               onClick={goBackToMenu}

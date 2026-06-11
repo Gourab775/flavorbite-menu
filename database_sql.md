@@ -92,6 +92,7 @@ create table public.live\_orders (
 &#x20; order\_code text null default generate\_order\_code (),
 
 &#x20; note text null,
+&#x20; order_type text null,
 
 &#x20; table\_id uuid null,
 
