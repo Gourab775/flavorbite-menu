@@ -4,7 +4,7 @@ import { useMenuStore } from "../store/menuStore";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { setStoredSlug } from "../utils/constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { AlertCircle, X, LayoutGrid } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 
 export function LandingPage() {
@@ -16,7 +16,7 @@ export function LandingPage() {
   const [videoError, setVideoError] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
+
 
   /* ── Dynamic viewport height — guarantees fullscreen on all devices ── */
   useEffect(() => {
@@ -85,20 +85,6 @@ export function LandingPage() {
   };
 
   const navigateToMenu = () => {
-    if (mainCategories.length > 0) {
-      setShowPicker(true);
-    } else {
-      navigate(buildMenuUrl());
-    }
-  };
-
-  const navigateToMenuWithCategory = (mainCategoryId) => {
-    setShowPicker(false);
-    navigate(buildMenuUrl(mainCategoryId));
-  };
-
-  const navigateToFullMenu = () => {
-    setShowPicker(false);
     navigate(buildMenuUrl());
   };
 
@@ -170,7 +156,6 @@ export function LandingPage() {
         ) : (
           <div className="landingVideoFallback" />
         )}
-        <div className="landingOverlay" />
       </div>
 
       <div className={`landingVideoLoader ${videoReady ? "ready" : ""}`} />
@@ -187,57 +172,20 @@ export function LandingPage() {
         <HamburgerMenu slug={slug} />
       </header>
 
+      {restaurant?.logo && (
+        <div className="landingCenterLogo">
+          <img src={restaurant.logo} alt={displayName || "Restaurant"} />
+        </div>
+      )}
+
       <main className="landingContent">
         <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
           <div className="landingCtaGlow" />
           <button className="landingCtaBtn" onClick={navigateToMenu}>
-            <span>View Menu</span>
+            <span>{mainCategories.length > 0 ? mainCategories[0].name : "View Menu"}</span>
           </button>
         </div>
       </main>
-
-      {showPicker && (
-        <div className="landingPickerOverlay" onClick={() => setShowPicker(false)}>
-          <div className="landingPicker" onClick={(e) => e.stopPropagation()}>
-            <button className="landingPickerClose" onClick={() => setShowPicker(false)}>
-              <X size={18} />
-            </button>
-            <div className="landingPickerHeader">
-              <LayoutGrid size={22} />
-              <h3>Browse Menu</h3>
-            </div>
-            {mainCategories.length > 0 ? (
-              <>
-                <div className="landingPickerGrid">
-                  {mainCategories.map((mc) => (
-                    <button
-                      key={mc.id}
-                      className="landingPickerItem"
-                      onClick={() => navigateToMenuWithCategory(mc.id)}
-                    >
-                      {mc.imageUrl && (
-                        <div className="landingPickerItemImgWrap">
-                          <img src={mc.imageUrl} alt={mc.name} />
-                        </div>
-                      )}
-                      <span>{mc.name}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="landingPickerFooter">
-                  <button className="landingPickerAllBtn" onClick={navigateToFullMenu}>
-                    View Full Menu
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="landingPickerError">
-                <p>No menu categories available</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
     </div>
   );

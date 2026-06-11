@@ -3719,16 +3719,19 @@ a:focus:not(:focus-visible) {
   pointer-events: none;
 }
 
-.landingOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    160deg,
-    rgba(0, 0, 0, 0.82) 0%,
-    rgba(0, 0, 0, 0.35) 45%,
-    rgba(0, 0, 0, 0.60) 75%,
-    rgba(0, 0, 0, 0.88) 100%
-  );
+.landingCenterLogo {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 8px;
+}
+
+.landingCenterLogo img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Header — fades in */
