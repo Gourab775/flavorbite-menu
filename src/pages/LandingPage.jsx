@@ -4,7 +4,7 @@ import { useMenuStore } from "../store/menuStore";
 import { HamburgerMenu } from "../components/HamburgerMenu";
 import { setStoredSlug } from "../utils/constants";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { AlertCircle, X, Grid3X3 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 
 export function LandingPage() {
@@ -18,8 +18,6 @@ export function LandingPage() {
   const [imageError, setImageError] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-
 
   /* ── Dynamic viewport height — guarantees fullscreen on all devices ── */
   useEffect(() => {
@@ -193,24 +191,7 @@ export function LandingPage() {
 
       <main className="landingContent">
         <div className={`landingCtaWrap ${pageLoaded ? "visible" : ""}`}>
-          <button className="landingCtaBtn" onClick={() => mainCategories.length > 0 ? setPickerOpen(true) : navigateToMenu()}>
-            <span>{mainCategories.length > 0 ? "Browse Menu" : "View Menu"}</span>
-          </button>
-        </div>
-      </main>
-
-      {pickerOpen && (
-        <div className="landingPickerOverlay" onClick={() => setPickerOpen(false)}>
-          <div className="landingPicker" onClick={(e) => e.stopPropagation()}>
-            <button className="landingPickerClose" onClick={() => setPickerOpen(false)}>
-              <X size={18} />
-            </button>
-
-            <div className="landingPickerHeader">
-              <Grid3X3 size={20} />
-              <h3>Browse Menu</h3>
-            </div>
-
+          {mainCategories.length > 0 ? (
             <div className="landingPickerGrid">
               {mainCategories.map((mc) => (
                 <button key={mc.id} className="landingPickerItem" onClick={() => navigate(buildMenuUrl(mc.id))}>
@@ -223,15 +204,13 @@ export function LandingPage() {
                 </button>
               ))}
             </div>
-
-            <div className="landingPickerFooter">
-              <button className="landingPickerAllBtn" onClick={() => navigate(buildMenuUrl())}>
-                View Full Menu
-              </button>
-            </div>
-          </div>
+          ) : (
+            <button className="landingCtaBtn" onClick={navigateToMenu}>
+              <span>View Menu</span>
+            </button>
+          )}
         </div>
-      )}
+      </main>
 
     </div>
   );

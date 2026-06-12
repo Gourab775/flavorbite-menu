@@ -319,6 +319,50 @@ export function MenuProvider({ children }) {
     };
   }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshFeatured]);
 
+  const fetchFreshMainCategories = useCallback(async (restaurantId, slug) => {
+    if (!restaurantId || !slug) return;
+    try {
+      const { data: mcData } = await supabase
+        .from("main_categories").select("*")
+        .eq("restaurant_id", restaurantId);
+      if (mcData && fetchKey.current === slug) {
+        const mainCategories = normalizeMainCategories(mcData);
+        if (menuCache.has(slug)) {
+          const cached = menuCache.get(slug);
+          menuCache.set(slug, { ...cached, mainCategories });
+        }
+        dispatch({ type: "SET_DATA", payload: { mainCategories } });
+      }
+    } catch {
+      // Silently fall back to cached main categories
+    }
+  }, []);
+
+  useEffect(() => {
+    const restaurantId = state.restaurant?.id;
+    const slug = state.restaurant?.slug;
+    if (!restaurantId || !slug || !supabase) return;
+
+    let channel = null;
+    try {
+      channel = supabase
+        .channel(`main-categories-${restaurantId}`)
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "main_categories", filter: `restaurant_id=eq.${restaurantId}` },
+          () => { fetchFreshMainCategories(restaurantId, slugRef.current); }
+        )
+        .subscribe();
+    } catch (err) {
+      console.error('[Realtime] Main categories subscription failed:', err);
+    }
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshMainCategories]);
+
   const value = useMemo(() => ({ ...state, loadMenu, refetch }), [state, loadMenu, refetch]);
 
   return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
