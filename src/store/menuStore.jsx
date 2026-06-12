@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { FALLBACK_IMG } from "../utils/constants";
 
@@ -90,28 +90,6 @@ function useReducer(reducer, init) {
 export function MenuProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchKey = useRef(null);
-  const slugRef = useRef("");
-
-  const fetchFreshFeatured = useCallback(async (restaurantId, slug) => {
-    if (!restaurantId || !slug) return;
-    try {
-      const { data: featData } = await supabase
-        .from("featured_items").select("*")
-        .eq("restaurant_id", restaurantId)
-        .order("display_order", { ascending: true });
-      if (featData && fetchKey.current === slug) {
-        const activeFeat = featData.filter((f) => f.is_active !== false);
-        const featuredItems = normalizeFeaturedItems(activeFeat);
-        if (menuCache.has(slug)) {
-          const cached = menuCache.get(slug);
-          menuCache.set(slug, { ...cached, featuredItems });
-        }
-        dispatch({ type: "SET_DATA", payload: { featuredItems } });
-      }
-    } catch {
-      // Silently fall back to cached/provided featured data
-    }
-  }, []);
 
   const loadMenu = useCallback(async (rawInput) => {
     const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
@@ -132,7 +110,6 @@ export function MenuProvider({ children }) {
     if (menuCache.has(slug)) {
       const cached = menuCache.get(slug);
       dispatch({ type: "SET_DATA", payload: cached });
-      fetchFreshFeatured(cached.restaurant.id, slug);
       return;
     }
 
@@ -286,82 +263,6 @@ export function MenuProvider({ children }) {
     fetchKey.current = null;
     loadMenu(slug);
   }, [loadMenu]);
-
-  // Real-time subscription for featured_items changes
-  useEffect(() => {
-    const restaurantId = state.restaurant?.id;
-    const slug = state.restaurant?.slug;
-    if (!restaurantId || !slug || !supabase) return;
-    slugRef.current = slug;
-
-    console.log('[Realtime] Channel Created: featured', `featured-${restaurantId}`);
-    console.log('[Realtime] Restaurant ID:', restaurantId);
-
-    let channel = null;
-    try {
-      channel = supabase
-        .channel(`featured-${restaurantId}`)
-        .on("postgres_changes",
-          { event: "*", schema: "public", table: "featured_items", filter: `restaurant_id=eq.${restaurantId}` },
-          () => { fetchFreshFeatured(restaurantId, slugRef.current); }
-        )
-        .subscribe();
-      console.log('[Realtime] Featured channel subscribed');
-    } catch (err) {
-      console.error('[Realtime] Featured subscription failed:', err);
-    }
-
-    return () => {
-      if (channel) {
-        console.log('[Realtime] Channel Removed: featured');
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshFeatured]);
-
-  const fetchFreshMainCategories = useCallback(async (restaurantId, slug) => {
-    if (!restaurantId || !slug) return;
-    try {
-      const { data: mcData } = await supabase
-        .from("main_categories").select("*")
-        .eq("restaurant_id", restaurantId);
-      if (mcData && fetchKey.current === slug) {
-        const mainCategories = normalizeMainCategories(mcData);
-        if (menuCache.has(slug)) {
-          const cached = menuCache.get(slug);
-          menuCache.set(slug, { ...cached, mainCategories });
-        }
-        dispatch({ type: "SET_DATA", payload: { mainCategories } });
-      }
-    } catch {
-      // Silently fall back to cached main categories
-    }
-  }, []);
-
-  useEffect(() => {
-    const restaurantId = state.restaurant?.id;
-    const slug = state.restaurant?.slug;
-    if (!restaurantId || !slug || !supabase) return;
-
-    let channel = null;
-    try {
-      channel = supabase
-        .channel(`main-categories-${restaurantId}`)
-        .on("postgres_changes",
-          { event: "*", schema: "public", table: "main_categories", filter: `restaurant_id=eq.${restaurantId}` },
-          () => { fetchFreshMainCategories(restaurantId, slugRef.current); }
-        )
-        .subscribe();
-    } catch (err) {
-      console.error('[Realtime] Main categories subscription failed:', err);
-    }
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [state.restaurant?.id, state.restaurant?.slug, fetchFreshMainCategories]);
 
   const value = useMemo(() => ({ ...state, loadMenu, refetch }), [state, loadMenu, refetch]);
 
