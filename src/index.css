@@ -3717,6 +3717,10 @@ a:focus:not(:focus-visible) {
   object-fit: cover;
 }
 
+.landingImage {
+  display: block;
+}
+
 .landingVideoFallback {
   width: 100%;
   height: 100%;

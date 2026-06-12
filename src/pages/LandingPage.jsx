@@ -13,9 +13,11 @@ export function LandingPage() {
   const { loadMenu, restaurant, mainCategories, loading: storeLoading, error: storeError } = useMenuStore();
 
   const [backgroundVideo, setBackgroundVideo] = useState("");
+  const [backgroundImage, setBackgroundImage] = useState("");
   const [videoError, setVideoError] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
 
 
   /* ── Dynamic viewport height — guarantees fullscreen on all devices ── */
@@ -51,28 +53,33 @@ export function LandingPage() {
     if (!slug || !restaurant?.id) return;
     let cancelled = false;
 
-    const fetchVideo = async () => {
+    const fetchMedia = async () => {
       if (!isSupabaseConfigured || !supabase) return;
 
       try {
         const { data: lps } = await supabase
           .from("landing_page_settings")
-          .select("background_video_url")
+          .select("background_video_url, background_image_url")
           .eq("restaurant_id", restaurant.id)
           .maybeSingle();
 
-        if (!cancelled && lps?.background_video_url) {
-          setBackgroundVideo(lps.background_video_url);
-          setVideoError(false);
-        } else if (!cancelled) {
-          setVideoReady(true);
+        if (cancelled) return;
+
+        const videoUrl = lps?.background_video_url || "";
+        const imageUrl = lps?.background_image_url || "";
+
+        setBackgroundVideo(videoUrl);
+        setBackgroundImage(imageUrl);
+
+        if (!videoUrl && !imageUrl) {
+          setMediaReady(true);
         }
       } catch {
-        if (!cancelled) { setVideoError(true); setVideoReady(true); }
+        if (!cancelled) { setVideoError(true); setMediaReady(true); }
       }
     };
 
-    fetchVideo();
+    fetchMedia();
     return () => { cancelled = true; };
   }, [slug, restaurant?.id]);
 
@@ -147,18 +154,29 @@ export function LandingPage() {
             muted
             loop
             playsInline
-            poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"
-            onCanPlay={() => setVideoReady(true)}
-            onError={() => { setVideoError(true); setVideoReady(true); }}
+            poster={backgroundImage || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='%230a0a0a'/%3E%3C/svg%3E"}
+            onCanPlay={() => setMediaReady(true)}
+            onError={() => {
+              setVideoError(true);
+              if (!backgroundImage) setMediaReady(true);
+            }}
           >
             <source src={backgroundVideo} type="video/mp4" />
           </video>
+        ) : backgroundImage && !imageError ? (
+          <img
+            className="landingVideo landingImage"
+            src={backgroundImage}
+            alt=""
+            onLoad={() => setMediaReady(true)}
+            onError={() => { setImageError(true); setMediaReady(true); }}
+          />
         ) : (
           <div className="landingVideoFallback" />
         )}
       </div>
 
-      <div className={`landingVideoLoader ${videoReady ? "ready" : ""}`} />
+      <div className={`landingVideoLoader ${mediaReady ? "ready" : ""}`} />
       <header className={`landingHeader ${pageLoaded ? "visible" : ""}`}>
         <div className="landingBrandGroup">
           {restaurant?.logo && (

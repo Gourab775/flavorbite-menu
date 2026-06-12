@@ -312,23 +312,25 @@ create index IF not exists idx\_main\_categories\_restaurant on public.main\_cat
 
 create table public.landing\_page\_settings (
 
-&#x20; id uuid not null default gen\_random\_uuid (),
+ &#x20; id uuid not null default gen\_random\_uuid (),
 
-&#x20; restaurant\_id uuid not null,
+ &#x20; restaurant\_id uuid not null,
 
-&#x20; background\_video\_url text null,
+ &#x20; background\_video\_url text null,
 
-&#x20; is\_active boolean null default true,
+ &#x20; background\_image\_url text null,
 
-&#x20; created\_at timestamp with time zone null default now(),
+ &#x20; is\_active boolean null default true,
 
-&#x20; updated\_at timestamp with time zone null default now(),
+ &#x20; created\_at timestamp with time zone null default now(),
 
-&#x20; constraint landing\_page\_settings\_pkey primary key (id),
+ &#x20; updated\_at timestamp with time zone null default now(),
 
-&#x20; constraint landing\_page\_settings\_restaurant\_unique unique (restaurant\_id),
+ &#x20; constraint landing\_page\_settings\_pkey primary key (id),
 
-&#x20; constraint landing\_page\_settings\_restaurant\_id\_fkey foreign KEY (restaurant\_id) references restaurants (id) on delete CASCADE
+ &#x20; constraint landing\_page\_settings\_restaurant\_unique unique (restaurant\_id),
+
+ &#x20; constraint landing\_page\_settings\_restaurant\_id\_fkey foreign KEY (restaurant\_id) references restaurants (id) on delete CASCADE
 
 ) TABLESPACE pg\_default;
 
@@ -340,3 +342,6 @@ update on landing\_page\_settings for EACH row
 
 execute FUNCTION update\_restaurant\_tables\_updated\_at ();
 
+
+-- Migration: Add background_image_url column to existing tables
+-- ALTER TABLE public.landing_page_settings ADD COLUMN background_image_url text NULL;
