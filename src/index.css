@@ -3701,12 +3701,15 @@ a:focus:not(:focus-visible) {
   position: fixed;
   inset: 0;
   z-index: 0;
+  --hero-focal-x: 50%;
+  --hero-focal-y: 50%;
 }
 
 .landingVideo {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: var(--hero-focal-x) var(--hero-focal-y);
 }
 
 .landingImage {
