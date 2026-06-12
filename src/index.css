@@ -849,14 +849,6 @@ a:focus:not(:focus-visible) {
   object-fit: cover;
   object-position: center center;
   display: block;
-  transform: scale(1);
-  transition: transform 8s ease-out;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.featuredSlide.active .featuredImg {
-  transform: scale(1.05);
 }
 
 .featuredImg.placeholder {
