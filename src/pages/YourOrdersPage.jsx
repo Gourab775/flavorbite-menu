@@ -79,7 +79,7 @@ export function YourOrdersPage() {
         <button className="iconBtn pressable" onClick={goBack} aria-label="Back">
           ←
         </button>
-        <h1 className="topBarTitle">Your Orders</h1>
+        <h1 className="topBarTitle">My Orders</h1>
         <div style={{ width: 40 }} />
       </header>
 

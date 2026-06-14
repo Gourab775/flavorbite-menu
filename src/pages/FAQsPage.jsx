@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: "How do I view my order status?",
-    a: "Open the hamburger menu and select 'Your Orders' to view your recent order details and status.",
+    a: "Open the hamburger menu and select 'My Orders' to view your recent order details and status.",
   },
   {
     q: "How do I provide feedback?",
