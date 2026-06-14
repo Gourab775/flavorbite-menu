@@ -205,7 +205,7 @@ export function LandingPage() {
               ))}
             </div>
           ) : (
-            <button className="landingCtaBtn" onClick={navigateToMenu}>
+            <button className="landingCtaBtn" onClick={navigateToMenu} style={{ borderRadius: "9999px" }}>
               <span>View Menu</span>
             </button>
           )}
