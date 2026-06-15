@@ -19,27 +19,45 @@ export function OrderSuccessPage() {
     sessionStorage.removeItem("cart_order_note");
     window.dispatchEvent(new Event("cart-cleared"));
 
+    // 1. Try navigation state first (from wouter navigate)
+    const navState = window.history.state;
+    if (navState && navState.orderId) {
+      const orderDataFromState = {
+        order_code: navState.orderId,
+        restaurant_id: navState.restaurantId,
+        items: Array.isArray(navState.orderItems) ? navState.orderItems : [],
+        total_price: navState.totalAmount,
+        order_type: navState.orderType,
+        table_id: navState.tableId,
+      };
+      setOrderData(orderDataFromState);
+      console.log('[Order Success] orderId', navState.orderId);
+      console.log('[Order Success] orderData', orderDataFromState);
+      console.log('[Order Success] orderItems', orderDataFromState.items);
+      return;
+    }
+
+    // 2. Try sessionStorage fallback
     const pending = sessionStorage.getItem("pending_order");
     if (pending) {
       try {
         const parsed = JSON.parse(pending);
         setOrderData(parsed);
         sessionStorage.removeItem("pending_order");
-
-        console.log("[Order Success] Order ID", parsed.order_code);
-        console.log("[Order Success] Order Data", parsed);
-        console.log("[Order Success] Order Items", parsed.items);
+        console.log('[Order Success] orderId', parsed.order_code);
+        console.log('[Order Success] orderData', parsed);
+        console.log('[Order Success] orderItems', parsed.items);
         return;
       } catch {
         // ignore parse error
       }
     }
 
-    // Fallback: fetch from Supabase using URL order_id
+    // 3. Fallback: fetch from Supabase using URL order_id
     const searchParams = new URLSearchParams(window.location.search);
     const orderId = searchParams.get("order_id");
     if (orderId) {
-      console.log("[Order Success] Order ID", orderId);
+      console.log('[Order Success] orderId', orderId);
       supabase
         .from("live_orders")
         .select("*")
@@ -47,9 +65,10 @@ export function OrderSuccessPage() {
         .maybeSingle()
         .then(({ data, error }) => {
           if (data && !error) {
-            setOrderData(data);
-            console.log("[Order Success] Order Data", data);
-            console.log("[Order Success] Order Items", data.items);
+            const items = Array.isArray(data.items) ? data.items : [];
+            setOrderData({ ...data, items });
+            console.log('[Order Success] orderData', data);
+            console.log('[Order Success] orderItems', items);
           }
         })
         .catch(() => {});

@@ -222,7 +222,21 @@ export function CheckoutPage() {
       markDeviceSessionOrdersUnread();
       dispatchDeviceOrderUpdate();
 
-      navigate(`${basePath}/order-sent?order_id=${orderCode}`);
+      // Clear cart
+      localStorage.removeItem("qr_menu_cart");
+      localStorage.removeItem("notes");
+      window.dispatchEvent(new Event("cart-cleared"));
+
+      navigate(`${basePath}/order-success?order_id=${orderCode}`, {
+        state: {
+          orderId: orderCode,
+          restaurantId: restaurant.id,
+          orderItems: itemsPayload,
+          totalAmount: grandTotal,
+          orderType: pendingOrder.order_type,
+          tableId: tableData.id,
+        },
+      });
     } catch (err) {
       console.error("[Checkout] Order failed:", err);
       const message = err?.message ?? "Something went wrong. Please try again.";
