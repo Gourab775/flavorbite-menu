@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
@@ -34,6 +35,14 @@ export function CallWaiterPage() {
   const [selectedType, setSelectedType] = useState(null);
   const [customMessage, setCustomMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (showModal && modalRef.current) {
+      console.log('Modal Rect', modalRef.current.getBoundingClientRect());
+      console.log('Viewport Height', window.innerHeight);
+    }
+  }, [showModal]);
 
   useEffect(() => {
     console.log("[CallWaiterPage] Mounted with slug:", slug, "restaurant.id:", restaurant?.id);
@@ -235,9 +244,9 @@ export function CallWaiterPage() {
         )}
       </main>
 
-      {showModal && (
+      {showModal && createPortal(
         <div className={`waiterRequestOverlay ${closing ? "closing" : ""}`} onClick={closeModal}>
-          <div className={`waiterRequestSheet ${closing ? "closing" : ""}`} onClick={e => e.stopPropagation()}>
+          <div ref={modalRef} className={`waiterRequestSheet ${closing ? "closing" : ""}`} onClick={e => e.stopPropagation()}>
             <div className="waiterRequestHeader">
               <h2 className="waiterRequestTitle">Call Waiter</h2>
               <p className="waiterRequestSub">What do you need help with?</p>
@@ -299,7 +308,8 @@ export function CallWaiterPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
