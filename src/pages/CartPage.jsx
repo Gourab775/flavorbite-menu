@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { getStoredSlug, FALLBACK_IMG } from "../utils/constants";
@@ -185,9 +186,17 @@ export function CartPage() {
         </button>
       </div>
 
-      {showOrderTypeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowOrderTypeModal(false)}>
-          <div className="bg-[#1a1a1a] rounded-2xl p-6 w-[320px] max-w-[90vw] shadow-2xl border border-white/10" onClick={e => e.stopPropagation()}>
+      {showOrderTypeModal && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setShowOrderTypeModal(false)}
+        >
+          <div
+            className="bg-[#1a1a1a] p-6 shadow-2xl border border-white/10"
+            style={{ width: 'min(90vw, 420px)', maxWidth: '420px', borderRadius: '20px', position: 'relative' }}
+            onClick={e => e.stopPropagation()}
+          >
             <h3 className="text-lg font-bold text-white text-center mb-1">Select Order Type</h3>
             <p className="text-sm text-[#a0a0a0] text-center mb-5">Choose how you'd like to receive your order</p>
             <div className="flex flex-col gap-3">
@@ -240,7 +249,8 @@ export function CartPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
