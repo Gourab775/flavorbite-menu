@@ -130,14 +130,9 @@ export function CallWaiterPage() {
         status: "pending",
         order_code: orderCode ?? null,
         session_order_id: sessionOrderId,
-        request_type_id: selectedType.id,
-        request_type_name: selectedType.name,
-        custom_message: selectedType.name === "Other Request" && customMessage.trim()
-          ? customMessage.trim()
-          : null,
       };
 
-      console.log("[CallWaiterPage] Submitting waiter call:", JSON.stringify(payload, null, 2));
+      console.log("[Waiter Call Payload]", payload);
 
       const { error: insertErr } = await supabase
         .from("waiter_calls")
@@ -150,9 +145,10 @@ export function CallWaiterPage() {
       console.log("[CallWaiterPage] Waiter call submitted successfully");
       setShowModal(false);
       setCalled(true);
-      setToastMsg("");
+      setToastType("success");
+      setToastMsg("Waiter has been called successfully!");
     } catch (err) {
-      console.error("[CallWaiterPage] Submit error:", err);
+      console.error("[Waiter Call Insert Error]", err);
       const msg = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(msg);
       setToastType("error");
