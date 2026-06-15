@@ -92,15 +92,21 @@ export function MenuProvider({ children }) {
   const fetchKey = useRef(null);
 
   const loadMenu = useCallback(async (rawInput) => {
+    console.log("[Restaurant Load] Starting...");
+
     const inputSlug = typeof rawInput === "string" ? rawInput : String(rawInput ?? "");
     const slug = cleanSlug(inputSlug);
 
+    console.log("[Restaurant Load] Slug:", slug);
+
     if (!slug) {
+      console.error("[Restaurant Load Error] No restaurant slug provided.");
       dispatch({ type: "SET_ERROR", payload: "No restaurant slug provided." });
       return;
     }
 
     if (!isSupabaseConfigured || !supabase) {
+      console.error("[Restaurant Load Error] Supabase is not configured.");
       dispatch({ type: "SET_ERROR", payload: "Supabase is not configured. Please check your environment variables." });
       return;
     }
@@ -108,6 +114,7 @@ export function MenuProvider({ children }) {
     fetchKey.current = slug;
 
     if (menuCache.has(slug)) {
+      console.log("[Restaurant Load] Using cached data for slug:", slug);
       const cached = menuCache.get(slug);
       dispatch({ type: "SET_DATA", payload: cached });
       return;
@@ -133,6 +140,7 @@ export function MenuProvider({ children }) {
           .maybeSingle();
 
         if (error) {
+          console.error("[Restaurant Load Error] Restaurant query error:", error.message);
           if (attempt === MAX_ATTEMPTS) {
             fetchKey.current = null;
             dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
@@ -144,6 +152,7 @@ export function MenuProvider({ children }) {
         let restaurantRow = restaurantData;
 
         if (!restaurantData) {
+          console.log("[Restaurant Load] No exact slug match, trying ilike for:", slug);
           const { data: ilikeData, error: ilikeError } = await supabase
             .from("restaurants")
             .select("id, name, slug, logo")
@@ -151,6 +160,7 @@ export function MenuProvider({ children }) {
             .maybeSingle();
 
           if (ilikeError) {
+            console.error("[Restaurant Load Error] ilike query error:", ilikeError.message);
             if (attempt === MAX_ATTEMPTS) {
               fetchKey.current = null;
               dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
@@ -160,8 +170,10 @@ export function MenuProvider({ children }) {
           }
 
           if (ilikeData) {
+            console.log("[Restaurant Load] Found restaurant via partial slug match:", ilikeData.slug);
             restaurantRow = ilikeData;
           } else {
+            console.log("[Restaurant Load] No match found, falling back to first restaurant");
             const { data: firstData, error: firstError } = await supabase
               .from("restaurants")
               .select("id, name, slug, logo")
@@ -169,6 +181,7 @@ export function MenuProvider({ children }) {
               .maybeSingle();
 
             if (firstError) {
+              console.error("[Restaurant Load Error] First-restaurant query error:", firstError.message);
               if (attempt === MAX_ATTEMPTS) {
                 fetchKey.current = null;
                 dispatch({ type: "SET_ERROR", payload: `Database error: ${firstError.message}` });
@@ -178,8 +191,10 @@ export function MenuProvider({ children }) {
             }
 
             if (firstData) {
+              console.log("[Restaurant Load] Using first available restaurant:", firstData.slug);
               restaurantRow = firstData;
             } else {
+              console.error("[Restaurant Load Error] No restaurants found in database.");
               fetchKey.current = null;
               dispatch({ 
                 type: "SET_ERROR", 
@@ -199,15 +214,57 @@ export function MenuProvider({ children }) {
           logo: String(row.logo ?? ""),
         };
 
-        const [cats, items] = await Promise.all([
-          supabase.from("categories").select("*").eq("restaurant_id", restaurantId),
-          supabase.from("menu_items").select("*").eq("restaurant_id", restaurantId),
-        ]);
+        console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ")");
+
+        // Fetch categories and menu_items independently so one failure never blocks the other
+        let categories = [];
+        let menuItems = [];
+        let catError = null;
+        let itemError = null;
+
+        try {
+          const { data: catData, error: ce } = await supabase
+            .from("categories").select("*")
+            .eq("restaurant_id", restaurantId);
+          if (ce) {
+            catError = ce;
+            console.error("[Restaurant Load Error] Categories query error:", ce.message);
+          } else {
+            categories = normalizeCategories(catData);
+            console.log("[Restaurant Load] Categories loaded:", categories.length);
+          }
+        } catch (err) {
+          catError = err;
+          console.error("[Restaurant Load Error] Categories exception:", err.message);
+        }
+
+        try {
+          const { data: itemData, error: ie } = await supabase
+            .from("menu_items").select("*")
+            .eq("restaurant_id", restaurantId);
+          if (ie) {
+            itemError = ie;
+            console.error("[Restaurant Load Error] Menu items query error:", ie.message);
+          } else {
+            menuItems = normalizeMenuItems(itemData);
+            console.log("[Restaurant Load] Menu items loaded:", menuItems.length);
+          }
+        } catch (err) {
+          itemError = err;
+          console.error("[Restaurant Load Error] Menu items exception:", err.message);
+        }
+
+        if (catError && itemError) {
+          console.error("[Restaurant Load Error] Both categories and menu items failed. Aborting.");
+          if (attempt === MAX_ATTEMPTS) {
+            fetchKey.current = null;
+            dispatch({ type: "SET_ERROR", payload: "Failed to load menu data. Please try again." });
+            return;
+          }
+          continue;
+        }
 
         if (fetchKey.current !== slug) return;
-
-        const categories = normalizeCategories(cats.data);
-        const menuItems = normalizeMenuItems(items.data);
 
         // Fetch featured items separately so a column mismatch never blocks menu load
         let featuredItems = [];
@@ -217,7 +274,6 @@ export function MenuProvider({ children }) {
             .eq("restaurant_id", restaurantId)
             .order("display_order", { ascending: true });
           if (featData) {
-            // Filter by active status server-side if column exists, otherwise use all
             const withActive = featData.filter((f) => f.is_active !== false);
             featuredItems = normalizeFeaturedItems(withActive);
           }
@@ -231,9 +287,13 @@ export function MenuProvider({ children }) {
             .from("main_categories").select("*")
             .eq("restaurant_id", restaurantId);
           if (mcData) mainCategories = normalizeMainCategories(mcData);
+          console.log("[Restaurant Load] Main categories loaded:", mainCategories.length);
         } catch {
           // main categories are non-critical
         }
+
+        // waiter_request_types are NOT loaded here — they are fetched on-demand
+        // by CallWaiterPage and are completely independent of restaurant loading.
 
         const data = {
           restaurant,
@@ -245,9 +305,11 @@ export function MenuProvider({ children }) {
 
         menuCache.set(slug, data);
         fetchKey.current = null;
+        console.log("[Restaurant Load] Completed successfully for:", restaurant.name);
         dispatch({ type: "SET_DATA", payload: data });
         return;
       } catch (err) {
+        console.error("[Restaurant Load Error] Unexpected error:", err?.message ?? "Unknown error");
         if (attempt === MAX_ATTEMPTS) {
           fetchKey.current = null;
           dispatch({ type: "SET_ERROR", payload: `Network error: ${err?.message ?? "Unknown error"}` });

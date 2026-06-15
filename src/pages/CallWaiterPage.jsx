@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
+import { useMenuStore } from "../store/menuStore";
 import { getTableData, getOrCreateDeviceOrderCode, getValidDeviceSession } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { Toast } from "../components/Toast";
@@ -17,12 +18,12 @@ export function CallWaiterPage() {
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
-  const { restaurant } = useMenu();
+  const { restaurant, restaurantLoading } = useMenu();
+  const { loadMenu } = useMenuStore();
   const goBack = useGoBack(`${basePath}/menu`);
   const goBackToMenu = useGoBack(basePath);
 
   const [called, setCalled] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
 
@@ -34,10 +35,20 @@ export function CallWaiterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    console.log("[CallWaiterPage] Mounted with slug:", slug, "restaurant.id:", restaurant?.id);
+    if (!restaurant?.id && slug) {
+      console.log("[CallWaiterPage] Restaurant not loaded yet, calling loadMenu for slug:", slug);
+      loadMenu(slug);
+    }
+  }, [slug, restaurant?.id, loadMenu]);
+
+  useEffect(() => {
     if (!showModal || !restaurant?.id) return;
+    console.log("[CallWaiterPage] Opening modal, fetching waiter_request_types for restaurant:", restaurant.id);
     setRequestTypesLoading(true);
     setSelectedType(null);
     setCustomMessage("");
+    setRequestTypes([]);
     supabase
       .from("waiter_request_types")
       .select("id, name, is_active, sort_order")
@@ -46,13 +57,17 @@ export function CallWaiterPage() {
       .order("sort_order", { ascending: true })
       .then(({ data, error }) => {
         if (error) {
-          console.error("[WaiterRequestTypes] Fetch error:", error);
-          setToastMsg("Failed to load request types");
-          setToastType("error");
+          console.error("[CallWaiterPage] waiter_request_types fetch error:", error);
+          console.log("[CallWaiterPage] waiter_request_types query failed — returning empty array, restaurant unaffected");
           setRequestTypes([]);
         } else {
+          console.log("[CallWaiterPage] waiter_request_types loaded count:", data?.length || 0);
           setRequestTypes(data || []);
         }
+      })
+      .catch(err => {
+        console.error("[CallWaiterPage] waiter_request_types unexpected error:", err);
+        setRequestTypes([]);
       })
       .finally(() => setRequestTypesLoading(false));
   }, [showModal, restaurant?.id]);
@@ -119,6 +134,8 @@ export function CallWaiterPage() {
           : null,
       };
 
+      console.log("[CallWaiterPage] Submitting waiter call:", JSON.stringify(payload, null, 2));
+
       const { error: insertErr } = await supabase
         .from("waiter_calls")
         .insert(payload);
@@ -127,10 +144,12 @@ export function CallWaiterPage() {
         throw new Error(`Failed to call waiter: ${insertErr.message}`);
       }
 
+      console.log("[CallWaiterPage] Waiter call submitted successfully");
       setShowModal(false);
       setCalled(true);
       setToastMsg("");
     } catch (err) {
+      console.error("[CallWaiterPage] Submit error:", err);
       const msg = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(msg);
       setToastType("error");
@@ -145,6 +164,8 @@ export function CallWaiterPage() {
     setSelectedType(null);
     setCustomMessage("");
   };
+
+  const isRestaurantReady = restaurant?.id && isValidUUID(restaurant.id);
 
   return (
     <div className="pageLayout">
@@ -168,6 +189,25 @@ export function CallWaiterPage() {
               Back to Menu
             </button>
           </div>
+        ) : restaurantLoading ? (
+          <div className="callWaiterPrompt">
+            <div className="callWaiterIconWrap">
+              <Bell size={48} />
+            </div>
+            <h2 className="callWaiterTitle">Need Assistance?</h2>
+            <p className="callWaiterSub">Loading restaurant data...</p>
+          </div>
+        ) : !isRestaurantReady ? (
+          <div className="callWaiterPrompt">
+            <div className="callWaiterIconWrap">
+              <Bell size={48} />
+            </div>
+            <h2 className="callWaiterTitle">Need Assistance?</h2>
+            <p className="callWaiterSub">Unable to load restaurant data. Please go back and try again.</p>
+            <button className="btn primary pressable" onClick={goBackToMenu} style={{ marginTop: 12, padding: "12px 24px" }}>
+              Back to Menu
+            </button>
+          </div>
         ) : (
           <div className="callWaiterPrompt">
             <div className="callWaiterIconWrap">
@@ -178,9 +218,8 @@ export function CallWaiterPage() {
             <button
               className="callWaiterBtn pressable"
               onClick={handleCallWaiter}
-              disabled={loading}
             >
-              {loading ? "Calling..." : "Call Waiter"}
+              Call Waiter
             </button>
           </div>
         )}
@@ -203,7 +242,7 @@ export function CallWaiterPage() {
                 </div>
               ) : requestTypes.length === 0 ? (
                 <div className="waiterRequestEmpty">
-                  <p>No request options available.</p>
+                  <p>No waiter request options available.</p>
                 </div>
               ) : (
                 requestTypes.map(rt => (
