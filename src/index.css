@@ -600,8 +600,8 @@ a:focus:not(:focus-visible) {
   align-items: center;
   justify-content: space-between;
   height: 42px;
-  width: 114px;
-  padding: 0 14px;
+  width: 100px;
+  padding: 0 12px;
   border-radius: 21px;
   border: 1.5px solid var(--border);
   background: var(--card);
@@ -629,8 +629,8 @@ a:focus:not(:focus-visible) {
 .vegToggleLabel {
   position: relative;
   z-index: 1;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   letter-spacing: 0.3px;
   user-select: none;
   color: var(--text-secondary);
@@ -648,16 +648,16 @@ a:focus:not(:focus-visible) {
 /* Circular slider thumb */
 .vegToggleSlider {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 32px;
-  height: 32px;
+  top: 6px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text);
   z-index: 2;
@@ -666,7 +666,7 @@ a:focus:not(:focus-visible) {
 }
 
 .vegTogglePill.active .vegToggleSlider {
-  left: calc(100% - 37px);
+  left: calc(100% - 34px);
   background: var(--veg);
   color: #fff;
   box-shadow: 0 2px 12px rgba(34, 197, 94, 0.35), 0 1px 3px rgba(0, 0, 0, 0.1);
