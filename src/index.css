@@ -4167,6 +4167,7 @@ a:focus:not(:focus-visible) {
 .waiterRequestSheet {
   width: min(90vw, 420px);
   max-height: calc(100vh - 32px);
+  margin: auto;
   background: var(--card);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
