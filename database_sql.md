@@ -268,6 +268,12 @@ create table public.waiter\_calls (
 
 &#x20; session\_order\_id text null,
 
+&#x20; request\_type\_id uuid null,
+
+&#x20; request\_type\_name text null,
+
+&#x20; custom\_message text null,
+
 &#x20; status text null default 'pending'::text,
 
 &#x20; created\_at timestamp with time zone null default now(),

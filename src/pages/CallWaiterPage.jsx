@@ -124,25 +124,32 @@ export function CallWaiterPage() {
       const orderCode = getOrCreateDeviceOrderCode();
       const sessionOrderId = session?.id ?? null;
 
+      console.log('[Selected Request]', selectedType);
+      console.log('[Custom Message]', customMessage);
+
       const payload = {
         restaurant_id: restaurant.id,
         table_id: tableData.id,
         status: "pending",
         order_code: orderCode ?? null,
         session_order_id: sessionOrderId,
+        request_type_id: selectedType.id,
+        request_type_name: selectedType.name,
+        custom_message: customMessage || null,
       };
 
-      console.log("[Waiter Call Payload]", payload);
+      console.log('[Insert Payload]', payload);
 
-      const { error: insertErr } = await supabase
+      const { data: insertedData, error: insertErr } = await supabase
         .from("waiter_calls")
-        .insert(payload);
+        .insert(payload)
+        .select();
 
       if (insertErr) {
         throw new Error(`Failed to call waiter: ${insertErr.message}`);
       }
 
-      console.log("[CallWaiterPage] Waiter call submitted successfully");
+      console.log('[Waiter Call Inserted]', insertedData);
       setShowModal(false);
       setCalled(true);
       setToastType("success");
