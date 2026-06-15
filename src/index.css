@@ -2655,56 +2655,6 @@ a:focus:not(:focus-visible) {
 
 .clearBtn:hover { background: rgba(239,68,68,0.08); }
 
-/* ── Toast ── */
-.toastWrap {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 18px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 250ms ease, transform 250ms cubic-bezier(0.34,1.56,0.64,1);
-  font-family: inherit;
-  max-width: calc(100vw - 40px);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.toastWrap--visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
-}
-
-.toastWrap--success { background: rgba(20, 83, 45, 0.95); color: #fff; }
-.toastWrap--error { background: rgba(153, 27, 27, 0.95); color: #fff; }
-.toastWrap--info { background: rgba(30, 58, 138, 0.95); color: #fff; }
-
-.toastIcon {
-  font-size: 14px;
-  font-weight: 700;
-  min-width: 16px;
-  text-align: center;
-  opacity: 0.9;
-}
-
-.toastMsg {
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.1px;
-}
-
 /* Loading Page — full-viewport centered loader */
 .loadingPage {
   min-height: 100dvh;

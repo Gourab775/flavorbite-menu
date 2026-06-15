@@ -1,6 +1,5 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
-import { Toast } from "./Toast";
 import { toTitleCase, FALLBACK_IMG } from "../utils/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHatIcon } from "../components/ChefHatIcon";
@@ -8,7 +7,6 @@ import { ChefHatIcon } from "../components/ChefHatIcon";
 export const MenuItemCard = memo(function MenuItemCard({ item }) {
   const { qtyById, addToCart, decreaseQty } = useCart();
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
 
   const qty = useMemo(() => qtyById?.[item.id] ?? 0, [qtyById, item.id]);
 
@@ -21,7 +19,6 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
   const handleAdd = useCallback(() => {
     triggerHaptic();
     addToCart(item);
-    setToastMsg(`"${item.name}" added to cart`);
   }, [addToCart, item]);
 
   const handleIncrease = useCallback(() => {
@@ -136,7 +133,6 @@ export const MenuItemCard = memo(function MenuItemCard({ item }) {
           </div>
         </div>
       </article>
-      <Toast message={toastMsg} onHide={() => setToastMsg("")} />
     </>
   );
 });

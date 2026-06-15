@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
-import { Toast } from "../components/Toast";
 import { getStoredSlug, FALLBACK_IMG } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
 import { ShoppingBag, Utensils } from "lucide-react";
@@ -25,8 +24,6 @@ export function CartPage() {
     grandTotal,
   } = useCart();
 
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success");
   const [orderNote, setOrderNote] = useState(() => {
     return sessionStorage.getItem(CART_NOTE_KEY) || "";
   });
@@ -45,25 +42,18 @@ export function CartPage() {
     }
   }, []);
 
-  const showToast = useCallback((msg, type = "success") => {
-    setToastMsg(msg);
-    setToastType(type);
-  }, []);
-
   const handleRemove = useCallback(
     (item) => {
       removeFromCart(item.id);
-      showToast(`"${item.name}" removed`);
     },
-    [removeFromCart, showToast]
+    [removeFromCart]
   );
 
   const handleClear = useCallback(() => {
     clearCart();
     sessionStorage.removeItem(CART_NOTE_KEY);
     setOrderNote("");
-    showToast("Cart cleared");
-  }, [clearCart, showToast]);
+  }, [clearCart]);
 
   const goBack = useGoBack(`/${slug}/menu`);
 
@@ -106,8 +96,6 @@ export function CartPage() {
             Browse Menu
           </button>
         </main>
-
-        <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
       </div>
     );
   }
@@ -254,8 +242,6 @@ export function CartPage() {
           </div>
         </div>
       )}
-
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
   );
 }

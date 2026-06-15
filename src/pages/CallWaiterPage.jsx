@@ -6,7 +6,6 @@ import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
 import { getTableData, getOrCreateDeviceOrderCode, getValidDeviceSession } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { Toast } from "../components/Toast";
 import { useGoBack } from "../context/NavigationContext";
 import { Bell, CheckCircle } from "lucide-react";
 
@@ -25,8 +24,7 @@ export function CallWaiterPage() {
   const goBackToMenu = useGoBack(basePath);
 
   const [called, setCalled] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [showModal, setShowModal] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -85,15 +83,14 @@ export function CallWaiterPage() {
   }, [showModal, restaurant?.id]);
 
   const handleCallWaiter = () => {
+    setErrorMsg("");
     if (!restaurant?.id) {
-      setToastMsg("Restaurant data not loaded. Please try again.");
-      setToastType("error");
+      setErrorMsg("Restaurant data not loaded. Please try again.");
       return;
     }
     const tableData = getTableData();
     if (!tableData?.id) {
-      setToastMsg("Table not found. Please scan QR code again.");
-      setToastType("error");
+      setErrorMsg("Table not found. Please scan QR code again.");
       return;
     }
     setShowModal(true);
@@ -102,15 +99,13 @@ export function CallWaiterPage() {
   const handleSubmit = async () => {
     if (!selectedType || submitting) return;
     if (!restaurant?.id) {
-      setToastMsg("Restaurant data not loaded. Please try again.");
-      setToastType("error");
+      setErrorMsg("Restaurant data not loaded. Please try again.");
       return;
     }
 
     const tableData = getTableData();
     if (!tableData?.id) {
-      setToastMsg("Table not found. Please scan QR code again.");
-      setToastType("error");
+      setErrorMsg("Table not found. Please scan QR code again.");
       return;
     }
 
@@ -161,13 +156,11 @@ export function CallWaiterPage() {
       console.log('[Waiter Call Inserted]', insertedData);
       setShowModal(false);
       setCalled(true);
-      setToastType("success");
-      setToastMsg("Waiter has been called successfully!");
+      setErrorMsg("");
     } catch (err) {
       console.error("[Waiter Call Insert Error]", err);
       const msg = err?.message ?? "Something went wrong. Please try again.";
-      setToastMsg(msg);
-      setToastType("error");
+      setErrorMsg(msg);
     } finally {
       setSubmitting(false);
     }
@@ -197,6 +190,11 @@ export function CallWaiterPage() {
       </header>
 
       <main className="callWaiterBody">
+        {errorMsg && (
+          <p className="callWaiterError" style={{ color: "var(--nonveg)", fontSize: 13, textAlign: "center", margin: "0 16px 12px" }}>
+            {errorMsg}
+          </p>
+        )}
         {called ? (
           <div className="callWaiterSuccess">
             <div className="callWaiterIconWrap success">
@@ -312,7 +310,6 @@ export function CallWaiterPage() {
         document.body
       )}
 
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
   );
 }

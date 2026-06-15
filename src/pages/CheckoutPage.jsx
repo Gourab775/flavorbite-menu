@@ -4,7 +4,6 @@ import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
 import { supabase } from "../lib/supabaseClient";
-import { Toast } from "../components/Toast";
 import { useGoBack } from "../context/NavigationContext";
 import { getStoredSlug } from "../utils/constants";
 import { addOrderToDeviceSession, getOrCreateDeviceOrderCode, markDeviceSessionOrdersUnread, dispatchDeviceOrderUpdate } from "../utils/session";
@@ -22,8 +21,7 @@ export function CheckoutPage() {
   const { loadMenu } = useMenuStore();
 
   const [localLoading, setLocalLoading] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState("success");
+  const [checkoutError, setCheckoutError] = useState(null);
 
   const basePath = `/${slug}`;
   const goBack = useGoBack(`${basePath}/cart`);
@@ -113,23 +111,21 @@ export function CheckoutPage() {
   }
 
   const handleConfirmOrder = async () => {
+    setCheckoutError(null);
     if (!cart || cart.length === 0) {
-      setToastMsg("Your cart is empty.");
-      setToastType("error");
+      setCheckoutError("Your cart is empty.");
       return;
     }
 
     if (!hasRestaurant) {
-      setToastMsg("Restaurant data not loaded. Please go back and try again.");
-      setToastType("error");
+      setCheckoutError("Restaurant data not loaded. Please go back and try again.");
       return;
     }
 
     const tableToken = localStorage.getItem("table_token") || null;
 
     if (!tableToken) {
-      setToastMsg("Table not found. Please scan QR code again.");
-      setToastType("error");
+      setCheckoutError("Table not found. Please scan QR code again.");
       return;
     }
 
@@ -143,11 +139,13 @@ export function CheckoutPage() {
         .maybeSingle();
 
       if (tableError) {
-        throw new Error("Could not validate table. Please try again.");
+        setCheckoutError("Could not validate table. Please try again.");
+        return;
       }
 
       if (!tableData) {
-        throw new Error("Invalid table. Please rescan the QR code from the beginning.");
+        setCheckoutError("Invalid table. Please rescan the QR code from the beginning.");
+        return;
       }
 
       const itemsPayload = cart.map((item) => ({
@@ -227,8 +225,7 @@ export function CheckoutPage() {
     } catch (err) {
       console.error("[Checkout] Order failed:", err);
       const message = err?.message ?? "Something went wrong. Please try again.";
-      setToastMsg(message);
-      setToastType("error");
+      setCheckoutError(message);
       setOrderState("idle");
       submittingRef.current = false;
     } finally {
@@ -239,20 +236,18 @@ export function CheckoutPage() {
   executeOrderRef.current = handleConfirmOrder;
 
   const handleInitiateOrder = () => {
+    setCheckoutError(null);
     if (!cart || cart.length === 0) {
-      setToastMsg("Your cart is empty.");
-      setToastType("error");
+      setCheckoutError("Your cart is empty.");
       return;
     }
     if (!hasRestaurant) {
-      setToastMsg("Restaurant data not loaded. Please go back and try again.");
-      setToastType("error");
+      setCheckoutError("Restaurant data not loaded. Please go back and try again.");
       return;
     }
     const tableToken = localStorage.getItem("table_token") || null;
     if (!tableToken) {
-      setToastMsg("Table not found. Please scan QR code again.");
-      setToastType("error");
+      setCheckoutError("Table not found. Please scan QR code again.");
       return;
     }
     setOrderState("countdown");
@@ -324,6 +319,11 @@ export function CheckoutPage() {
         </section>
 
         <section className="checkoutSection" style={{ paddingBottom: 100, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {checkoutError && (
+            <p className="checkoutError" style={{ color: "var(--nonveg)", fontSize: 13, marginBottom: 12, textAlign: "center" }}>
+              {checkoutError}
+            </p>
+          )}
           <AnimatePresence mode="wait">
             {orderState !== "submitting" ? (
               <motion.button
@@ -408,7 +408,6 @@ export function CheckoutPage() {
         )}
       </AnimatePresence>
 
-      <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
   );
 }
