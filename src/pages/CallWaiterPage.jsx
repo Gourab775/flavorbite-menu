@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useMenu } from "../hooks/useMenu";
@@ -20,12 +20,60 @@ export function CallWaiterPage() {
   const { restaurant } = useMenu();
   const goBack = useGoBack(`${basePath}/menu`);
   const goBackToMenu = useGoBack(basePath);
+
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState("success");
 
-  const handleCallWaiter = async () => {
+  const [showModal, setShowModal] = useState(false);
+  const [requestTypes, setRequestTypes] = useState([]);
+  const [requestTypesLoading, setRequestTypesLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
+  const [customMessage, setCustomMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!showModal || !restaurant?.id) return;
+    setRequestTypesLoading(true);
+    setSelectedType(null);
+    setCustomMessage("");
+    supabase
+      .from("waiter_request_types")
+      .select("id, name, is_active, sort_order")
+      .eq("restaurant_id", restaurant.id)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[WaiterRequestTypes] Fetch error:", error);
+          setToastMsg("Failed to load request types");
+          setToastType("error");
+          setRequestTypes([]);
+        } else {
+          setRequestTypes(data || []);
+        }
+      })
+      .finally(() => setRequestTypesLoading(false));
+  }, [showModal, restaurant?.id]);
+
+  const handleCallWaiter = () => {
+    if (!restaurant?.id) {
+      setToastMsg("Restaurant data not loaded. Please try again.");
+      setToastType("error");
+      return;
+    }
+    const tableData = getTableData();
+    if (!tableData?.id) {
+      setToastMsg("Table not found. Please scan QR code again.");
+      setToastType("error");
+      return;
+    }
+    setShowModal(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedType || submitting) return;
     if (!restaurant?.id) {
       setToastMsg("Restaurant data not loaded. Please try again.");
       setToastType("error");
@@ -39,7 +87,7 @@ export function CallWaiterPage() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       if (!isSupabaseConfigured || !supabase) {
@@ -58,42 +106,44 @@ export function CallWaiterPage() {
       const orderCode = getOrCreateDeviceOrderCode();
       const sessionOrderId = session?.id ?? null;
 
-      if (!restaurant.id || !tableData.id) {
-        throw new Error("Missing restaurant or table identifier. Cannot place waiter call.");
-      }
-
       const payload = {
         restaurant_id: restaurant.id,
         table_id: tableData.id,
         status: "pending",
         order_code: orderCode ?? null,
         session_order_id: sessionOrderId,
+        request_type_id: selectedType.id,
+        request_type_name: selectedType.name,
+        custom_message: selectedType.name === "Other Request" && customMessage.trim()
+          ? customMessage.trim()
+          : null,
       };
-
-      console.log("[WaiterCall] Inserting waiter call payload:", JSON.stringify(payload, null, 2));
 
       const { error: insertErr } = await supabase
         .from("waiter_calls")
         .insert(payload);
 
       if (insertErr) {
-        console.error("[WaiterCall] Insert error:", insertErr);
-        console.error("[WaiterCall] Failed payload:", JSON.stringify(payload, null, 2));
         throw new Error(`Failed to call waiter: ${insertErr.message}`);
       }
 
-      console.log("[WaiterCall] Successfully inserted waiter call for table:", payload.table_id);
-
+      setShowModal(false);
       setCalled(true);
       setToastMsg("");
     } catch (err) {
-      console.error("[WaiterCall] Error:", err);
       const msg = err?.message ?? "Something went wrong. Please try again.";
       setToastMsg(msg);
       setToastType("error");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
+  };
+
+  const closeModal = () => {
+    if (submitting) return;
+    setShowModal(false);
+    setSelectedType(null);
+    setCustomMessage("");
   };
 
   return (
@@ -135,6 +185,74 @@ export function CallWaiterPage() {
           </div>
         )}
       </main>
+
+      {showModal && (
+        <div className="waiterRequestOverlay" onClick={closeModal}>
+          <div className="waiterRequestSheet" onClick={e => e.stopPropagation()}>
+            <div className="waiterRequestHandle" />
+            <div className="waiterRequestHeader">
+              <h2 className="waiterRequestTitle">Call Waiter</h2>
+              <p className="waiterRequestSub">What do you need help with?</p>
+            </div>
+
+            <div className="waiterRequestOptions">
+              {requestTypesLoading ? (
+                <div className="waiterRequestLoading">
+                  <div className="loadingSpinner" />
+                  <p>Loading options...</p>
+                </div>
+              ) : requestTypes.length === 0 ? (
+                <div className="waiterRequestEmpty">
+                  <p>No request options available.</p>
+                </div>
+              ) : (
+                requestTypes.map(rt => (
+                  <button
+                    key={rt.id}
+                    className={`waiterRequestOption ${selectedType?.id === rt.id ? "selected" : ""}`}
+                    onClick={() => setSelectedType(rt)}
+                  >
+                    <span className={`waiterRequestRadio ${selectedType?.id === rt.id ? "checked" : ""}`}>
+                      {selectedType?.id === rt.id && <span className="waiterRequestRadioDot" />}
+                    </span>
+                    <span className="waiterRequestOptionLabel">{rt.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+
+            {selectedType?.name === "Other Request" && (
+              <div className="waiterRequestMessageArea">
+                <textarea
+                  className="waiterRequestTextarea"
+                  placeholder="Describe your request..."
+                  value={customMessage}
+                  onChange={e => setCustomMessage(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            )}
+
+            <div className="waiterRequestActions">
+              <button
+                className="waiterRequestCancelBtn"
+                onClick={closeModal}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="waiterRequestSubmitBtn"
+                onClick={handleSubmit}
+                disabled={!selectedType || submitting}
+              >
+                {submitting ? "Sending..." : "Send Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast message={toastMsg} type={toastType} onHide={() => setToastMsg("")} />
     </div>
