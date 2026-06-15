@@ -4132,20 +4132,25 @@ a:focus:not(:focus-visible) {
 }
 
 /* ========================================
-   WAITER REQUEST TYPE MODAL / BOTTOM SHEET
+   WAITER REQUEST MODAL - CENTERED DIALOG
    ======================================== */
 
 .waiterRequestOverlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 9999;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  padding: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
   animation: waiterOverlayIn 200ms ease;
+}
+
+.waiterRequestOverlay.closing {
+  animation: waiterOverlayOut 200ms ease forwards;
 }
 
 @keyframes waiterOverlayIn {
@@ -4153,30 +4158,50 @@ a:focus:not(:focus-visible) {
   to { opacity: 1; }
 }
 
+@keyframes waiterOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .waiterRequestSheet {
-  width: 100%;
-  max-width: 420px;
+  width: min(90vw, 420px);
   max-height: 85vh;
   background: var(--card);
-  border-radius: 20px 20px 0 0;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  animation: waiterSheetIn 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: waiterModalIn 300ms cubic-bezier(0.32, 0.72, 0, 1);
   overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-light);
 }
 
-@keyframes waiterSheetIn {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+.waiterRequestSheet.closing {
+  animation: waiterModalOut 200ms ease forwards;
 }
 
-.waiterRequestHandle {
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border);
-  margin: 10px auto 0;
-  flex-shrink: 0;
+@keyframes waiterModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes waiterModalOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 
 .waiterRequestHeader {

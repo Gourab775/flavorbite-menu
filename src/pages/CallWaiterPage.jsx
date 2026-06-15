@@ -28,6 +28,7 @@ export function CallWaiterPage() {
   const [toastType, setToastType] = useState("success");
 
   const [showModal, setShowModal] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [requestTypes, setRequestTypes] = useState([]);
   const [requestTypesLoading, setRequestTypesLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
@@ -161,10 +162,14 @@ export function CallWaiterPage() {
   };
 
   const closeModal = () => {
-    if (submitting) return;
-    setShowModal(false);
-    setSelectedType(null);
-    setCustomMessage("");
+    if (submitting || closing) return;
+    setClosing(true);
+    setTimeout(() => {
+      setShowModal(false);
+      setClosing(false);
+      setSelectedType(null);
+      setCustomMessage("");
+    }, 200);
   };
 
   const isRestaurantReady = restaurant?.id && isValidUUID(restaurant.id);
@@ -228,9 +233,8 @@ export function CallWaiterPage() {
       </main>
 
       {showModal && (
-        <div className="waiterRequestOverlay" onClick={closeModal}>
-          <div className="waiterRequestSheet" onClick={e => e.stopPropagation()}>
-            <div className="waiterRequestHandle" />
+        <div className={`waiterRequestOverlay ${closing ? "closing" : ""}`} onClick={closeModal}>
+          <div className={`waiterRequestSheet ${closing ? "closing" : ""}`} onClick={e => e.stopPropagation()}>
             <div className="waiterRequestHeader">
               <h2 className="waiterRequestTitle">Call Waiter</h2>
               <p className="waiterRequestSub">What do you need help with?</p>
