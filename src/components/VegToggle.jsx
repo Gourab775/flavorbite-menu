@@ -10,9 +10,9 @@ export function VegToggle() {
       aria-pressed={vegMode}
       title={vegMode ? "Showing veg items only" : "Showing all items"}
     >
-      <span className="vegToggleSlider" />
-      <span className={`vegToggleLabel vegToggleLabel--off ${!vegMode ? "vegToggleLabel--active" : ""}`}>All</span>
-      <span className={`vegToggleLabel vegToggleLabel--on ${vegMode ? "vegToggleLabel--active" : ""}`}>Veg</span>
+      <span className="vegToggleLabel">All</span>
+      <span className="vegToggleLabel">Veg</span>
+      <span className="vegToggleSlider">{vegMode ? "Veg" : "All"}</span>
     </button>
   );
 }
