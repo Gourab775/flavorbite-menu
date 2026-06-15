@@ -2871,6 +2871,140 @@ a:focus:not(:focus-visible) {
   transform: scale(0.98);
 }
 
+/* ── Order Success Buttons ── */
+.orderSuccessButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.successBtnOutline {
+  width: 100%;
+  max-width: 240px;
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--accent);
+  background: transparent;
+  transition: all 150ms ease;
+}
+
+.successBtnOutline:hover {
+  background: var(--accent-subtle);
+}
+
+.successBtnOutline:active {
+  transform: scale(0.98);
+}
+
+/* ── Order Summary Card ── */
+.orderSummary {
+  width: 100%;
+  max-width: 320px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: left;
+}
+
+.orderSummaryHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.orderSummaryLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.orderSummaryTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.orderSummaryItems {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderSummaryRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.orderSummaryQty {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 36px;
+}
+
+.orderSummaryName {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.orderSummaryDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+
+.orderSummaryInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.orderSummaryInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orderSummaryLabel {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.orderSummaryValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.orderSummaryTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.orderSummaryTotalAmount {
+  color: var(--accent);
+  font-size: 18px;
+}
+
 /* ── Modal ── */
 .modalOverlay {
   position: fixed;

@@ -8,6 +8,12 @@ export function FeedbackPage() {
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const restaurantId = searchParams.get("restaurant_id");
+  const orderId = searchParams.get("order_id");
+  const tableId = searchParams.get("table_id");
+
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [submitted, setSubmitted] = useState(false);

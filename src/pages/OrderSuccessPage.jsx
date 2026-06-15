@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { getStoredSlug } from "../utils/constants";
+import { supabase } from "../lib/supabaseClient";
 
 export function OrderSuccessPage() {
   const { slug: urlSlug } = useParams();
@@ -10,6 +11,7 @@ export function OrderSuccessPage() {
 
   const [orderData, setOrderData] = useState(null);
   const [showAnim, setShowAnim] = useState(true);
+  const [tableNumber, setTableNumber] = useState(null);
 
   useEffect(() => {
     localStorage.removeItem("qr_menu_cart");
@@ -30,6 +32,22 @@ export function OrderSuccessPage() {
   }, []);
 
   useEffect(() => {
+    if (orderData?.table_id) {
+      supabase
+        .from("restaurant_tables")
+        .select("table_number")
+        .eq("id", orderData.table_id)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (data && !error) {
+            setTableNumber(data.table_number);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [orderData?.table_id]);
+
+  useEffect(() => {
     if (showAnim) {
       const timer = setTimeout(() => setShowAnim(false), 2000);
       return () => clearTimeout(timer);
@@ -38,6 +56,21 @@ export function OrderSuccessPage() {
 
   const [, navigate] = useLocation();
   const goToMenu = () => navigate(`${basePath}/menu`);
+
+  const goToFeedback = () => {
+    const params = new URLSearchParams();
+    if (orderData?.restaurant_id) params.set("restaurant_id", orderData.restaurant_id);
+    if (orderData?.order_code) params.set("order_id", orderData.order_code);
+    if (orderData?.table_id) params.set("table_id", orderData.table_id);
+    navigate(`${basePath}/feedback?${params.toString()}`);
+  };
+
+  const items = orderData?.items || [];
+
+  const orderTypeLabel =
+    orderData?.order_type === "takeaway" ? "Takeaway" : "Dine In";
+
+  const total = orderData?.total_price ? Math.round(orderData.total_price) : 0;
 
   return (
     <div className="pageLayout">
@@ -74,38 +107,55 @@ export function OrderSuccessPage() {
             </div>
           )}
 
-          {orderData?.order_type && (
-            <div className="orderTypeBadge">
-              Order Type: <strong>{orderData.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}</strong>
-            </div>
-          )}
+          <div className="orderSuccessButtons">
+            <button className="successBtn" onClick={goToMenu}>
+              Back to Menu
+            </button>
+            <button className="successBtn successBtnOutline" onClick={goToFeedback}>
+              Feedback / Rate Experience
+            </button>
+          </div>
 
-          {orderData?.items && orderData.items.length > 0 && (
-            <div className="orderDetailsSection">
-              <h3 className="orderDetailsTitle">Order Details</h3>
-              <div className="orderItemsList">
-                {orderData.items.map((item, index) => (
-                  <div key={index} className="orderItemRow">
-                    <div className="orderItemInfo">
-                      <span className="orderItemName">{item.name}</span>
-                      <span className="orderItemQty">× {item.quantity}</span>
-                    </div>
-                    <span className="orderItemPrice">₹{item.price * item.quantity}</span>
+          {items.length > 0 && (
+            <div className="orderSummary">
+              <div className="orderSummaryHeader">
+                <span className="orderSummaryLine" />
+                <h3 className="orderSummaryTitle">Order Summary</h3>
+                <span className="orderSummaryLine" />
+              </div>
+
+              <div className="orderSummaryItems">
+                {items.map((item, index) => (
+                  <div key={index} className="orderSummaryRow">
+                    <span className="orderSummaryQty">{item.quantity} ×</span>
+                    <span className="orderSummaryName">{item.name}</span>
                   </div>
                 ))}
               </div>
-              {orderData.total_price && (
-                <div className="orderTotalRow">
-                  <span>Total</span>
-                  <span className="orderTotalAmount">₹{Math.round(orderData.total_price)}</span>
+
+              <div className="orderSummaryDivider" />
+
+              <div className="orderSummaryInfo">
+                <div className="orderSummaryInfoRow">
+                  <span className="orderSummaryLabel">Order Type</span>
+                  <span className="orderSummaryValue">{orderTypeLabel}</span>
                 </div>
-              )}
+                {tableNumber && (
+                  <div className="orderSummaryInfoRow">
+                    <span className="orderSummaryLabel">Table</span>
+                    <span className="orderSummaryValue">{tableNumber}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="orderSummaryDivider" />
+
+              <div className="orderSummaryTotal">
+                <span>Total</span>
+                <span className="orderSummaryTotalAmount">₹{total}</span>
+              </div>
             </div>
           )}
-
-          <button className="successBtn" onClick={goToMenu}>
-            Back to Menu
-          </button>
         </div>
       </main>
     </div>
