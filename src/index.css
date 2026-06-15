@@ -644,9 +644,9 @@ a:focus:not(:focus-visible) {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 30px;
+  width: 36px;
   height: 30px;
-  border-radius: 50%;
+  border-radius: 15px;
   background: #fff;
   display: flex;
   align-items: center;
@@ -659,10 +659,13 @@ a:focus:not(:focus-visible) {
   transition: left 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
   pointer-events: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .vegToggleSwitch.active .vegToggleThumb {
-  left: calc(100% - 34px);
+  left: calc(100% - 40px);
 }
 
 /* Category strip */
