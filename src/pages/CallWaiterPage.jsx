@@ -44,24 +44,26 @@ export function CallWaiterPage() {
 
   useEffect(() => {
     if (!showModal || !restaurant?.id) return;
-    console.log("[CallWaiterPage] Opening modal, fetching waiter_request_types for restaurant:", restaurant.id);
+    console.log('[Waiter Types] Restaurant ID:', restaurant.id);
     setRequestTypesLoading(true);
     setSelectedType(null);
     setCustomMessage("");
     setRequestTypes([]);
     supabase
       .from("waiter_request_types")
-      .select("id, name, is_active, sort_order")
+      .select("id, restaurant_id, name, sort_order, is_active")
       .eq("restaurant_id", restaurant.id)
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data, error }) => {
+        console.log('[Waiter Types] Data:', data);
+        console.log('[Waiter Types] Error:', error);
         if (error) {
           console.error("[CallWaiterPage] waiter_request_types fetch error:", error);
           console.log("[CallWaiterPage] waiter_request_types query failed — returning empty array, restaurant unaffected");
           setRequestTypes([]);
         } else {
-          console.log("[CallWaiterPage] waiter_request_types loaded count:", data?.length || 0);
+          console.log('[Waiter Types Count]', data?.length);
           setRequestTypes(data || []);
         }
       })
