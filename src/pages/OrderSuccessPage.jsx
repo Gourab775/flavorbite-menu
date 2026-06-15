@@ -25,9 +25,34 @@ export function OrderSuccessPage() {
         const parsed = JSON.parse(pending);
         setOrderData(parsed);
         sessionStorage.removeItem("pending_order");
+
+        console.log("[Order Success] Order ID", parsed.order_code);
+        console.log("[Order Success] Order Data", parsed);
+        console.log("[Order Success] Order Items", parsed.items);
+        return;
       } catch {
         // ignore parse error
       }
+    }
+
+    // Fallback: fetch from Supabase using URL order_id
+    const searchParams = new URLSearchParams(window.location.search);
+    const orderId = searchParams.get("order_id");
+    if (orderId) {
+      console.log("[Order Success] Order ID", orderId);
+      supabase
+        .from("live_orders")
+        .select("*")
+        .eq("order_code", orderId)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (data && !error) {
+            setOrderData(data);
+            console.log("[Order Success] Order Data", data);
+            console.log("[Order Success] Order Items", data.items);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 

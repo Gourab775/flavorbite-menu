@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
 import { Star, Send, CheckCircle } from "lucide-react";
@@ -8,6 +8,7 @@ export function FeedbackPage() {
   const { slug: urlSlug } = useParams();
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
+  const [, navigate] = useLocation();
 
   const searchParams = new URLSearchParams(window.location.search);
   const restaurantId = searchParams.get("restaurant_id");
@@ -18,17 +19,24 @@ export function FeedbackPage() {
   const [hovered, setHovered] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const goBack = useGoBack(`${basePath}/menu`);
-  const goBackToMenu = useGoBack(basePath);
 
   const handleSubmit = () => {
     setSubmitted(true);
+  };
+
+  const handleBackToMenu = () => {
+    const targetUrl = `${basePath}/menu`;
+    console.log("[Feedback] Back To Menu");
+    console.log("[Feedback] Restaurant Slug", slug);
+    console.log("[Feedback] Redirect URL", targetUrl);
+    navigate(targetUrl);
   };
 
   if (submitted) {
     return (
       <div className="pageLayout">
         <header className="topBar">
-          <button className="iconBtn pressable" onClick={goBackToMenu} aria-label="Back">
+          <button className="iconBtn pressable" onClick={handleBackToMenu} aria-label="Back">
             ←
           </button>
           <h1 className="topBarTitle">Feedback</h1>
@@ -39,7 +47,7 @@ export function FeedbackPage() {
             <div className="feedbackSuccessIcon"><CheckCircle size={48} strokeWidth={1.5} /></div>
             <h2>Thank You!</h2>
             <p>Your feedback helps us improve the experience.</p>
-            <button className="btn primary pressable" onClick={goBackToMenu} style={{ marginTop: 24, padding: "14px 0", width: "100%", maxWidth: 240 }}>
+            <button className="btn primary pressable" onClick={handleBackToMenu} style={{ marginTop: 24, padding: "14px 0", width: "100%", maxWidth: 240 }}>
               Back to Menu
             </button>
           </div>

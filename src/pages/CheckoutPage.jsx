@@ -222,7 +222,7 @@ export function CheckoutPage() {
       markDeviceSessionOrdersUnread();
       dispatchDeviceOrderUpdate();
 
-      navigate(`${basePath}/order-sent`);
+      navigate(`${basePath}/order-sent?order_id=${orderCode}`);
     } catch (err) {
       console.error("[Checkout] Order failed:", err);
       const message = err?.message ?? "Something went wrong. Please try again.";
