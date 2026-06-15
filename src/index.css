@@ -600,8 +600,8 @@ a:focus:not(:focus-visible) {
   align-items: center;
   justify-content: space-between;
   height: 42px;
-  width: 120px;
-  padding: 0 16px;
+  width: 114px;
+  padding: 0 14px;
   border-radius: 21px;
   border: 1.5px solid var(--border);
   background: var(--card);
@@ -629,7 +629,7 @@ a:focus:not(:focus-visible) {
 .vegToggleLabel {
   position: relative;
   z-index: 1;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
   user-select: none;
