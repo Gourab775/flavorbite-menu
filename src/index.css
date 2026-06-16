@@ -496,7 +496,7 @@ a:focus:not(:focus-visible) {
 }
 
 .stickyHeader {
-  background: transparent;
+  background: #000000;
   transition: all 200ms ease;
 }
 
@@ -511,6 +511,7 @@ a:focus:not(:focus-visible) {
 
 /* Search container */
 .searchBarContainer {
+  background: #000000;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1133,6 +1134,7 @@ a:focus:not(:focus-visible) {
 .sections { display: flex; flex-direction: column; }
 
 .menuSection {
+  background: #000000;
   scroll-margin-top: 180px;
   padding-top: 20px;
   display: grid;
