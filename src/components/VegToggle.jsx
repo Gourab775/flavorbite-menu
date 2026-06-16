@@ -12,7 +12,10 @@ export function VegToggle() {
     >
       <span className="vegToggleLabel">All</span>
       <span className="vegToggleLabel">Veg</span>
-      <span className="vegToggleThumb">{vegMode ? "Veg" : "All"}</span>
+      <span className="vegToggleThumb">
+        <span className={`vegToggleThumbText ${vegMode ? "" : "active"}`}>All</span>
+        <span className={`vegToggleThumbText ${vegMode ? "active" : ""}`}>Veg</span>
+      </span>
     </button>
   );
 }
