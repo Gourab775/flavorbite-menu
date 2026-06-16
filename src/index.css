@@ -1094,7 +1094,7 @@ a:focus:not(:focus-visible) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg);
+  background: #000000;
   position: relative;
 }
 
