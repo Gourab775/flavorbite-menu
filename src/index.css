@@ -599,10 +599,10 @@ a:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 92px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 19px;
+  width: 104px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
   border: none;
   background: #5a5a5a;
   cursor: pointer;
@@ -623,7 +623,7 @@ a:focus:not(:focus-visible) {
 .vegToggleLabel {
   position: relative;
   z-index: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.3px;
   user-select: none;
@@ -644,14 +644,14 @@ a:focus:not(:focus-visible) {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 36px;
-  height: 30px;
-  border-radius: 15px;
+  width: 44px;
+  height: 36px;
+  border-radius: 18px;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #222;
   z-index: 2;
@@ -665,7 +665,7 @@ a:focus:not(:focus-visible) {
 }
 
 .vegToggleSwitch.active .vegToggleThumb {
-  left: calc(100% - 40px);
+  left: calc(100% - 48px);
 }
 
 /* Category strip */
