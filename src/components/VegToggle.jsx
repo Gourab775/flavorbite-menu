@@ -10,11 +10,10 @@ export function VegToggle() {
       aria-pressed={vegMode}
       title={vegMode ? "Showing veg items only" : "Showing all items"}
     >
-      <span className="vegToggleLabel">All</span>
-      <span className="vegToggleLabel">Veg</span>
+      <span className={`vegToggleLabel${vegMode ? "" : " inactive"}`}>All</span>
+      <span className={`vegToggleLabel${vegMode ? " inactive" : ""}`}>Veg</span>
       <span className="vegToggleThumb">
-        <span className={`vegToggleThumbText ${vegMode ? "" : "active"}`}>All</span>
-        <span className={`vegToggleThumbText ${vegMode ? "active" : ""}`}>Veg</span>
+        <span className="vegToggleThumbText active">{vegMode ? "Veg" : "All"}</span>
       </span>
     </button>
   );

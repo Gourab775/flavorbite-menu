@@ -637,6 +637,11 @@ a:focus:not(:focus-visible) {
   color: var(--text-secondary);
 }
 
+.vegToggleLabel.inactive {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Sliding thumb - frosted glass */
 .vegToggleThumb {
   position: absolute;
