@@ -593,7 +593,7 @@ a:focus:not(:focus-visible) {
   color: #fff;
 }
 
-/* Veg Toggle Switch - iOS-style toggle */
+/* Veg Toggle Switch - Premium dark glassmorphism */
 .vegToggleSwitch {
   position: relative;
   display: flex;
@@ -603,12 +603,12 @@ a:focus:not(:focus-visible) {
   height: 38px;
   padding: 0 14px;
   border-radius: 19px;
-  border: none;
-  background: #5a5a5a;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: background 300ms ease;
+  transition: background 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
 }
 
 .vegToggleSwitch:active {
@@ -616,30 +616,28 @@ a:focus:not(:focus-visible) {
 }
 
 .vegToggleSwitch.active {
-  background: var(--veg);
+  background: var(--veg-bg);
+  border-color: var(--veg-border);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
 }
 
 /* Track labels */
 .vegToggleLabel {
   position: relative;
   z-index: 1;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   user-select: none;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
   transition: color 250ms ease;
 }
 
-.vegToggleSwitch.active .vegToggleLabel:first-child {
-  color: rgba(255, 255, 255, 0.9);
+.vegToggleSwitch.active .vegToggleLabel {
+  color: var(--text-secondary);
 }
 
-.vegToggleSwitch.active .vegToggleLabel:last-child {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Sliding thumb */
+/* Sliding thumb - frosted glass */
 .vegToggleThumb {
   position: absolute;
   top: 4px;
@@ -647,15 +645,18 @@ a:focus:not(:focus-visible) {
   width: 40px;
   height: 30px;
   border-radius: 15px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #222;
+  color: var(--text);
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: left 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
   pointer-events: none;
