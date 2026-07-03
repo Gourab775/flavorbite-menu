@@ -207,15 +207,16 @@ export function MenuProvider({ children }) {
 
         const row = restaurantRow;
         const restaurantId = String(row.id);
+        const planValue = row.plan ? String(row.plan).trim().toLowerCase() : "plus"
         const restaurant = {
           id: restaurantId,
           name: String(row.name ?? ""),
           slug: String(row.slug ?? ""),
           logo: String(row.logo ?? ""),
-          plan: String(row.plan ?? "plus"),
+          plan: planValue,
         };
 
-        console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ")");
+        console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ", plan:", planValue, ")");
 
         // Fetch categories and menu_items independently so one failure never blocks the other
         let categories = [];

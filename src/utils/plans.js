@@ -1,5 +1,5 @@
 export function hasFeature(plan, feature) {
-  const p = (plan || 'plus').toLowerCase()
+  const p = (plan || 'plus').toLowerCase().trim()
 
   const basicFeatures = [
     'browse_menu',
