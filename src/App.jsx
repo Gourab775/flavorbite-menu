@@ -44,12 +44,14 @@ function AppRoutes() {
   const [isReady, setIsReady] = useState(false);
 
   const slug = landingParams?.slug || menuParams?.slug || cartParams?.slug;
+  const { loadMenu } = useMenuStore()
 
   useEffect(() => {
     if (slug) {
       setStoredSlug(slug);
+      loadMenu(slug)
     }
-  }, [slug]);
+  }, [slug, loadMenu]);
 
   useEffect(() => {
     if (location === "/" || location === "") {

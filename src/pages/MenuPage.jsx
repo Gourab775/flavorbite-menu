@@ -11,7 +11,6 @@ import { useMenuStore } from "../store/menuStore";
 import { useMenuSearch } from "../hooks/useMenuSearch";
 import { useCart } from "../hooks/useCart";
 import { useCategorySync } from "../hooks/useCategorySync";
-import { setStoredSlug } from "../utils/constants";
 import { initSession, setTableData } from "../utils/session";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { AlertCircle, Search } from "lucide-react";
@@ -118,8 +117,6 @@ export function MenuPage() {
   // ── Init session + handle table_token extraction ────────────────────────
   useEffect(() => {
     if (slug && typeof slug === "string") {
-      setStoredSlug(slug);
-      loadMenu(slug);
       initSession();
     }
 
@@ -136,7 +133,7 @@ export function MenuPage() {
         sessionStorage.setItem("qr_table_param", storedToken);
       }
     }
-  }, [slug, loadMenu]);
+  }, [slug]);
 
   // Cleanup scroll lock timeout on unmount
   useEffect(() => {
