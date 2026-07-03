@@ -63,7 +63,7 @@ const initialState = {
   menuItems: [],
   featuredItems: [],
   mainCategories: [],
-  restaurant: { id: "", name: "", slug: "", logo: "" },
+  restaurant: { id: "", name: "", slug: "", logo: "", plan: "plus" },
   loading: false,
   error: null,
 };
@@ -135,7 +135,7 @@ export function MenuProvider({ children }) {
       try {
         const { data: restaurantData, error } = await supabase
           .from("restaurants")
-          .select("id, name, slug, logo")
+          .select("id, name, slug, logo, plan")
           .eq("slug", slug)
           .maybeSingle();
 
@@ -155,7 +155,7 @@ export function MenuProvider({ children }) {
           console.log("[Restaurant Load] No exact slug match, trying ilike for:", slug);
           const { data: ilikeData, error: ilikeError } = await supabase
             .from("restaurants")
-            .select("id, name, slug, logo")
+            .select("id, name, slug, logo, plan")
             .ilike("slug", `%${slug}%`)
             .maybeSingle();
 
@@ -176,7 +176,7 @@ export function MenuProvider({ children }) {
             console.log("[Restaurant Load] No match found, falling back to first restaurant");
             const { data: firstData, error: firstError } = await supabase
               .from("restaurants")
-              .select("id, name, slug, logo")
+              .select("id, name, slug, logo, plan")
               .limit(1)
               .maybeSingle();
 
@@ -212,6 +212,7 @@ export function MenuProvider({ children }) {
           name: String(row.name ?? ""),
           slug: String(row.slug ?? ""),
           logo: String(row.logo ?? ""),
+          plan: String(row.plan ?? "plus"),
         };
 
         console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ")");

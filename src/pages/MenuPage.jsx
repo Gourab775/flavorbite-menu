@@ -34,6 +34,9 @@ export function MenuPage() {
   const { results: searchResults, searching } = useMenuSearch(searchQuery);
   const isSearching = searchQuery.trim() !== "";
 
+  const plan = storeRestaurant?.plan || 'plus'
+  const readOnly = plan === 'basic'
+
   const [tableStatus, setTableStatus] = useState("validating");
   const tableLookupDone = useRef(false);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -370,7 +373,7 @@ export function MenuPage() {
                       </span>
                     </div>
                     {items.map((item) => (
-                      <MenuItemCard key={item.id} item={item} />
+                      <MenuItemCard key={item.id} item={item} readOnly={readOnly} />
                     ))}
                   </div>
                 ))}

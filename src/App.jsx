@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Route, Switch, useRoute, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
 import { CartProvider } from "./hooks/useCart";
-import { MenuProvider } from "./store/menuStore";
+import { MenuProvider, useMenuStore } from "./store/menuStore";
 import { LandingPage } from "./pages/LandingPage";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
@@ -20,8 +20,17 @@ import { CartBar } from "./components/CartBar";
 import { NavigationProvider } from "./context/NavigationContext";
 import { setStoredSlug } from "./utils/constants";
 import { initDeviceSession } from "./utils/session";
+import { hasFeature } from "./utils/plans";
 
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
+
+function FeatureGuard({ feature, children }) {
+  const { restaurant } = useMenuStore()
+  if (!hasFeature(restaurant?.plan, feature)) {
+    return null
+  }
+  return children
+}
 
 function AppRoutes() {
   const [_landingMatch, landingParams] = useRoute("/:slug");
@@ -77,14 +86,38 @@ function AppRoutes() {
         >
           <Switch>
             <Route path="/:slug/menu" component={MenuPage} />
-            <Route path="/:slug/cart" component={CartPage} />
-            <Route path="/:slug/checkout" component={CheckoutPage} />
-            <Route path="/:slug/order-sent" component={OrderSuccessPage} />
-            <Route path="/:slug/order-success" component={OrderSuccessPage} />
-            <Route path="/:slug/your-orders" component={YourOrdersPage} />
+            <Route path="/:slug/cart">
+              <FeatureGuard feature="cart">
+                <CartPage />
+              </FeatureGuard>
+            </Route>
+            <Route path="/:slug/checkout">
+              <FeatureGuard feature="checkout">
+                <CheckoutPage />
+              </FeatureGuard>
+            </Route>
+            <Route path="/:slug/order-sent">
+              <FeatureGuard feature="order_tracking">
+                <OrderSuccessPage />
+              </FeatureGuard>
+            </Route>
+            <Route path="/:slug/order-success">
+              <FeatureGuard feature="order_tracking">
+                <OrderSuccessPage />
+              </FeatureGuard>
+            </Route>
+            <Route path="/:slug/your-orders">
+              <FeatureGuard feature="order_tracking">
+                <YourOrdersPage />
+              </FeatureGuard>
+            </Route>
             <Route path="/:slug/call-waiter" component={CallWaiterPage} />
             <Route path="/:slug/help-support" component={HelpSupportPage} />
-            <Route path="/:slug/feedback" component={FeedbackPage} />
+            <Route path="/:slug/feedback">
+              <FeatureGuard feature="feedback">
+                <FeedbackPage />
+              </FeatureGuard>
+            </Route>
             <Route path="/:slug/restaurant-info" component={RestaurantInfoPage} />
             <Route path="/:slug/faqs" component={FAQsPage} />
             <Route path="/:slug/terms-privacy" component={TermsPrivacyPage} />
@@ -94,7 +127,9 @@ function AppRoutes() {
           </Switch>
         </motion.div>
       </AnimatePresence>
-      <CartBar />
+      <FeatureGuard feature="cart">
+        <CartBar />
+      </FeatureGuard>
     </>
   );
 }
