@@ -185,6 +185,22 @@ export function CheckoutPage() {
         )
       );
 
+      // Server-side plan verification: re-check restaurant's plan from DB
+      const { data: planCheck, error: planCheckError } = await supabase
+        .from("restaurants")
+        .select("plan")
+        .eq("id", restaurant.id)
+        .maybeSingle();
+
+      if (planCheckError || !planCheck) {
+        throw new Error("Could not verify restaurant plan.");
+      }
+
+      const dbPlan = String(planCheck.plan).trim().toLowerCase();
+      if (dbPlan !== "plus") {
+        throw new Error("Ordering is not available on the current plan.");
+      }
+
       // Validate required fields exist in final payload
       const requiredFields = ["restaurant_id", "status", "order_code", "total_price", "items"];
       for (const field of requiredFields) {

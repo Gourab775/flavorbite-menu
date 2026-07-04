@@ -116,6 +116,31 @@ export function MenuProvider({ children }) {
     if (menuCache.has(slug)) {
       console.log("[Restaurant Load] Using cached data for slug:", slug);
       const cached = menuCache.get(slug);
+
+      // Silently check if the restaurant plan changed in the DB
+      try {
+        const { data: planCheck } = await supabase
+          .from("restaurants")
+          .select("plan")
+          .eq("id", cached.restaurant.id)
+          .maybeSingle();
+        if (planCheck) {
+          const freshPlan = String(planCheck.plan).trim().toLowerCase();
+          if (freshPlan && freshPlan !== cached.restaurant.plan) {
+            console.log("[Restaurant Load] Plan changed from", cached.restaurant.plan, "to", freshPlan);
+            const updated = {
+              ...cached,
+              restaurant: { ...cached.restaurant, plan: freshPlan },
+            };
+            menuCache.set(slug, updated);
+            dispatch({ type: "SET_DATA", payload: updated });
+            return;
+          }
+        }
+      } catch {
+        // Plan check is best-effort; fall through to cached data
+      }
+
       dispatch({ type: "SET_DATA", payload: cached });
       return;
     }

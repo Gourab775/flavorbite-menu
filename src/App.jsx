@@ -20,15 +20,23 @@ import { CartBar } from "./components/CartBar";
 import { NavigationProvider } from "./context/NavigationContext";
 import { setStoredSlug } from "./utils/constants";
 import { initDeviceSession } from "./utils/session";
-import { hasFeature } from "./utils/plans";
+import { hasFeature, getDefaultTab } from "./utils/plans";
 
 const DEFAULT_SLUG = import.meta.env.VITE_RESTAURANT_SLUG || "demo-restaurant";
 
 function FeatureGuard({ feature, children }) {
-  const { restaurant } = useMenuStore()
-  if (!hasFeature(restaurant?.plan, feature)) {
-    return null
-  }
+  const { restaurant, loading } = useMenuStore()
+  const [, navigate] = useLocation()
+  const slug = restaurant?.slug
+
+  useEffect(() => {
+    if (slug && !loading && restaurant?.id && !hasFeature(restaurant?.plan, feature)) {
+      navigate(`/${slug}/${getDefaultTab(restaurant?.plan)}`, { replace: true })
+    }
+  }, [slug, loading, restaurant?.id, restaurant?.plan, feature, navigate])
+
+  if (!restaurant?.id || loading) return null
+  if (!hasFeature(restaurant?.plan, feature)) return null
   return children
 }
 
