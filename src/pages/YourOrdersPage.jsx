@@ -3,6 +3,7 @@ import { useParams } from "wouter";
 import { getStoredSlug } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
 import { useMenu } from "../hooks/useMenu";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { getDeviceSessionOrders, markDeviceSessionOrdersRead } from "../utils/session";
 import { ClipboardList } from "lucide-react";
 
@@ -11,6 +12,7 @@ export function YourOrdersPage() {
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
   const { restaurant } = useMenu();
+  const formatCurrency = useFormatCurrency();
 
   useEffect(() => {
     markDeviceSessionOrdersRead();
@@ -105,13 +107,13 @@ export function YourOrdersPage() {
                         <div className="orderCardItem" key={iidx}>
                           <span className="orderCardItemName">{item.name}</span>
                           <span className="orderCardItemQty">×{item.quantity}</span>
-                          <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                          <span className="orderCardItemPrice">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
                     <div className="orderCardTotal">
                       <span>Total</span>
-                      <span>₹{group.total}</span>
+                      <span>{formatCurrency(group.total)}</span>
                     </div>
                   </div>
                 ))}
@@ -136,13 +138,13 @@ export function YourOrdersPage() {
                         <div className="orderCardItem" key={iidx}>
                           <span className="orderCardItemName">{item.name}</span>
                           <span className="orderCardItemQty">×{item.quantity}</span>
-                          <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                          <span className="orderCardItemPrice">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
                     <div className="orderCardTotal">
                       <span>Total</span>
-                      <span>₹{group.total}</span>
+                      <span>{formatCurrency(group.total)}</span>
                     </div>
                   </div>
                 ))}
@@ -165,13 +167,13 @@ export function YourOrdersPage() {
                       <div className="orderCardItem" key={iidx}>
                         <span className="orderCardItemName">{item.name}</span>
                         <span className="orderCardItemQty">×{item.quantity}</span>
-                        <span className="orderCardItemPrice">₹{item.price * item.quantity}</span>
+                        <span className="orderCardItemPrice">{formatCurrency(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="orderCardTotal">
                     <span>Total</span>
-                    <span>₹{group.total}</span>
+                    <span>{formatCurrency(group.total)}</span>
                   </div>
                 </div>
               ))}

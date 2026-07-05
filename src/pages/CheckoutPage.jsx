@@ -4,6 +4,7 @@ import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
 import { useMenu } from "../hooks/useMenu";
 import { useMenuStore } from "../store/menuStore";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { supabase } from "../lib/supabaseClient";
 import { useGoBack } from "../context/NavigationContext";
 import { getStoredSlug } from "../utils/constants";
@@ -20,6 +21,7 @@ export function CheckoutPage() {
   const { cart, subtotal, tax, grandTotal } = useCart();
   const { restaurant, loading: menuLoading } = useMenu();
   const { loadMenu } = useMenuStore();
+  const formatCurrency = useFormatCurrency();
 
   const [localLoading, setLocalLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
@@ -322,7 +324,7 @@ export function CheckoutPage() {
                 />
                 <span className="checkoutItemName">{item.name}</span>
                 <span className="checkoutItemQty">×{item.quantity}</span>
-                <span className="checkoutItemPrice">₹{item.price * item.quantity}</span>
+                <span className="checkoutItemPrice">{formatCurrency(item.price * item.quantity)}</span>
               </div>
               );
             })}
@@ -335,15 +337,15 @@ export function CheckoutPage() {
             <div className="billRows">
               <div className="billRow">
                 <span>Subtotal</span>
-                <span>₹{Math.round(subtotal)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="billRow">
                 <span>GST (5%)</span>
-                <span>₹{Math.round(tax)}</span>
+                <span>{formatCurrency(tax)}</span>
               </div>
               <div className="billRow billRow--total">
                 <span>Total</span>
-                <span>₹{Math.round(grandTotal)}</span>
+                <span>{formatCurrency(grandTotal)}</span>
               </div>
             </div>
           </div>

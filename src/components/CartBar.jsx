@@ -1,5 +1,6 @@
 import { useRoute, useLocation } from "wouter";
 import { useCart } from "../hooks/useCart";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { getStoredSlug } from "../utils/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, ChevronRight } from "lucide-react";
@@ -8,6 +9,7 @@ export function CartBar() {
   const [isMenuRoute] = useRoute("/:slug/menu");
   const [location] = useLocation();
   const { totalItems, grandTotal } = useCart();
+  const formatCurrency = useFormatCurrency();
 
   const slug = getStoredSlug();
 
@@ -43,7 +45,7 @@ export function CartBar() {
             </div>
             <div className="cartBarInfo">
               <span className="cartBarCount">{totalItems} item{totalItems === 1 ? "" : "s"}</span>
-              <span className="cartBarAmt">₹{Math.round(grandTotal)}</span>
+              <span className="cartBarAmt">{formatCurrency(grandTotal)}</span>
             </div>
           </div>
           <span className="cartBarCta">

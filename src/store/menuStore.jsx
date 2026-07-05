@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
-import { FALLBACK_IMG } from "../utils/constants";
+import { FALLBACK_IMG, DEFAULT_CURRENCY } from "../utils/constants";
 
 const MenuContext = createContext(null);
 
@@ -63,7 +63,7 @@ const initialState = {
   menuItems: [],
   featuredItems: [],
   mainCategories: [],
-  restaurant: { id: "", name: "", slug: "", logo: "", plan: "plus" },
+  restaurant: { id: "", name: "", slug: "", logo: "", plan: "plus", ...DEFAULT_CURRENCY },
   loading: false,
   error: null,
 };
@@ -239,6 +239,10 @@ export function MenuProvider({ children }) {
           slug: String(row.slug ?? ""),
           logo: String(row.logo ?? ""),
           plan: planValue,
+          country_code: String(row.country_code ?? DEFAULT_CURRENCY.country_code),
+          currency_code: String(row.currency_code ?? DEFAULT_CURRENCY.currency_code),
+          currency_symbol: String(row.currency_symbol ?? DEFAULT_CURRENCY.currency_symbol),
+          locale: String(row.locale ?? DEFAULT_CURRENCY.locale),
         };
 
         console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ", plan:", planValue, ")");

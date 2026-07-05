@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useParams } from "wouter";
 import { useCart } from "../hooks/useCart";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { getStoredSlug, FALLBACK_IMG } from "../utils/constants";
 import { useGoBack } from "../context/NavigationContext";
 import { ShoppingBag, Utensils } from "lucide-react";
@@ -14,6 +15,7 @@ export function CartPage() {
   
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
+  const formatCurrency = useFormatCurrency();
   const {
     cart,
     increaseQty,
@@ -131,6 +133,7 @@ export function CartPage() {
               onRemove={handleRemove}
               onIncrease={() => increaseQty(item.id)}
               onDecrease={() => decreaseQty(item.id)}
+              formatCurrency={formatCurrency}
             />
           ))}
         </div>
@@ -155,15 +158,15 @@ export function CartPage() {
           <div className="billRows">
             <div className="billRow">
               <span>Subtotal</span>
-              <span>₹{Math.round(subtotal)}</span>
+              <span>{formatCurrency(subtotal)}</span>
             </div>
             <div className="billRow">
               <span>GST &amp; Tax (5%)</span>
-              <span>₹{Math.round(tax)}</span>
+              <span>{formatCurrency(tax)}</span>
             </div>
             <div className="billRow billRow--total">
               <span>Total</span>
-              <span>₹{Math.round(grandTotal)}</span>
+              <span>{formatCurrency(grandTotal)}</span>
             </div>
           </div>
         </div>
@@ -182,7 +185,7 @@ export function CartPage() {
           aria-label="Proceed to checkout"
         >
           <span>Proceed to Checkout</span>
-          <span className="ctaPrice">₹{Math.round(grandTotal)}</span>
+          <span className="ctaPrice">{formatCurrency(grandTotal)}</span>
         </button>
       </div>
 
@@ -257,7 +260,7 @@ export function CartPage() {
 }
 
 // ── Inner item card (memoized) ───────────────────────────────────────────────
-function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
+function CartItemCard({ item, onRemove, onIncrease, onDecrease, formatCurrency }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const isVeg = Boolean(item.isVeg);
 
@@ -304,7 +307,7 @@ function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
         </div>
 
         <div className="cartCardBottom">
-          <span className="cartCardPrice">₹{item.price} × {item.quantity}</span>
+          <span className="cartCardPrice">{formatCurrency(item.price)} × {item.quantity}</span>
           <div className="stepper">
             <button
               className="stepBtn pressable"
@@ -323,7 +326,7 @@ function CartItemCard({ item, onRemove, onIncrease, onDecrease }) {
               +
             </button>
           </div>
-          <span className="cartCardLineTotal">₹{item.price * item.quantity}</span>
+          <span className="cartCardLineTotal">{formatCurrency(item.price * item.quantity)}</span>
         </div>
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { getStoredSlug } from "../utils/constants";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { supabase } from "../lib/supabaseClient";
 
 export function OrderSuccessPage() {
   const { slug: urlSlug } = useParams();
+  const formatCurrency = useFormatCurrency();
 
   const slug = urlSlug || getStoredSlug();
   const basePath = `/${slug}`;
@@ -196,7 +198,7 @@ export function OrderSuccessPage() {
 
               <div className="orderSummaryTotal">
                 <span>Total</span>
-                <span className="orderSummaryTotalAmount">₹{total}</span>
+                <span className="orderSummaryTotalAmount">{formatCurrency(total)}</span>
               </div>
             </div>
           )}

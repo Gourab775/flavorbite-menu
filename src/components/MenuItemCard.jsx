@@ -1,11 +1,13 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { useCart } from "../hooks/useCart";
+import { useFormatCurrency } from "../hooks/useFormatCurrency";
 import { toTitleCase, FALLBACK_IMG } from "../utils/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChefHatIcon } from "../components/ChefHatIcon";
 
 export const MenuItemCard = memo(function MenuItemCard({ item, readOnly }) {
   const { qtyById, addToCart, decreaseQty } = useCart();
+  const formatCurrency = useFormatCurrency();
   const [imgLoaded, setImgLoaded] = useState(false);
 
   const qty = useMemo(() => qtyById?.[item.id] ?? 0, [qtyById, item.id]);
@@ -74,7 +76,7 @@ export const MenuItemCard = memo(function MenuItemCard({ item, readOnly }) {
           </div>
           <p className="menuDesc">{item.description}</p>
             <div className="menuPriceRow">
-            <div className="menuPrice">₹{item.price}</div>
+            <div className="menuPrice">{formatCurrency(item.price)}</div>
             {!readOnly && (
               <div className="menuActions">
                 <AnimatePresence mode="wait">
