@@ -71,7 +71,6 @@ export function CheckoutPage() {
   const ALLOWED_COLUMNS = new Set([
     "restaurant_id", "table_id", "status", "order_code",
     "total_price", "items", "note", "customer_name", "order_type",
-    "subtotal", "total_tax", "tax_breakdown",
   ]);
 
   // Check that table_id column actually exists in live_orders
@@ -175,9 +174,6 @@ export function CheckoutPage() {
         items: itemsPayload,
         note: sessionStorage.getItem("cart_order_note") || undefined,
         order_type: sessionStorage.getItem("selected_order_type"),
-        subtotal: Number(subtotal) || 0,
-        total_tax: Number(totalTax) || 0,
-        tax_breakdown: taxBreakdown,
       };
 
       if (hasTableId) {
