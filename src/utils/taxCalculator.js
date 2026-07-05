@@ -11,10 +11,10 @@ export function calculateTaxes(subtotal, taxes = []) {
   let totalTax = 0;
 
   for (const tax of enabled) {
-    const rate = Number(tax.percentage) || 0;
+    const rate = Number(tax.tax_percentage) || 0;
     let amount = 0;
 
-    if (tax.type === "inclusive") {
+    if (tax.tax_type === "inclusive") {
       amount = Math.round(subtotal * rate / (100 + rate));
     } else {
       amount = Math.round(subtotal * rate / 100);
@@ -22,9 +22,9 @@ export function calculateTaxes(subtotal, taxes = []) {
 
     totalTax += amount;
     taxBreakdown.push({
-      name: tax.name,
+      name: tax.tax_name,
       percentage: rate,
-      type: tax.type,
+      type: tax.tax_type,
       amount,
     });
   }
