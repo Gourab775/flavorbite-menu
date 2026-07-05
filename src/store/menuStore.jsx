@@ -2,6 +2,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { FALLBACK_IMG, DEFAULT_CURRENCY } from "../utils/constants";
+import { useRestaurant } from "./restaurantStore";
 
 const MenuContext = createContext(null);
 
@@ -88,6 +89,7 @@ function useReducer(reducer, init) {
 }
 
 export function MenuProvider({ children }) {
+  const { loadRestaurant } = useRestaurant();
   const [state, dispatch] = useReducer(reducer, initialState);
   const fetchKey = useRef(null);
 
@@ -147,6 +149,17 @@ export function MenuProvider({ children }) {
 
     dispatch({ type: "START_LOADING" });
 
+    const restaurant = await loadRestaurant(slug);
+    if (!restaurant) {
+      fetchKey.current = null;
+      dispatch({ type: "SET_ERROR", payload: "Restaurant not found" });
+      return;
+    }
+    if (fetchKey.current !== slug) return;
+
+    const restaurantId = restaurant.id;
+    console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ", plan:", restaurant.plan, ")");
+
     const MAX_ATTEMPTS = 3;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -158,94 +171,6 @@ export function MenuProvider({ children }) {
       }
 
       try {
-        const { data: restaurantData, error } = await supabase
-          .from("restaurants")
-          .select("id, name, slug, logo, plan")
-          .eq("slug", slug)
-          .maybeSingle();
-
-        if (error) {
-          console.error("[Restaurant Load Error] Restaurant query error:", error.message);
-          if (attempt === MAX_ATTEMPTS) {
-            fetchKey.current = null;
-            dispatch({ type: "SET_ERROR", payload: `Database error: ${error.message}` });
-            return;
-          }
-          continue;
-        }
-
-        let restaurantRow = restaurantData;
-
-        if (!restaurantData) {
-          console.log("[Restaurant Load] No exact slug match, trying ilike for:", slug);
-          const { data: ilikeData, error: ilikeError } = await supabase
-            .from("restaurants")
-            .select("id, name, slug, logo, plan")
-            .ilike("slug", `%${slug}%`)
-            .maybeSingle();
-
-          if (ilikeError) {
-            console.error("[Restaurant Load Error] ilike query error:", ilikeError.message);
-            if (attempt === MAX_ATTEMPTS) {
-              fetchKey.current = null;
-              dispatch({ type: "SET_ERROR", payload: `Database error: ${ilikeError.message}` });
-              return;
-            }
-            continue;
-          }
-
-          if (ilikeData) {
-            console.log("[Restaurant Load] Found restaurant via partial slug match:", ilikeData.slug);
-            restaurantRow = ilikeData;
-          } else {
-            console.log("[Restaurant Load] No match found, falling back to first restaurant");
-            const { data: firstData, error: firstError } = await supabase
-              .from("restaurants")
-              .select("id, name, slug, logo, plan")
-              .limit(1)
-              .maybeSingle();
-
-            if (firstError) {
-              console.error("[Restaurant Load Error] First-restaurant query error:", firstError.message);
-              if (attempt === MAX_ATTEMPTS) {
-                fetchKey.current = null;
-                dispatch({ type: "SET_ERROR", payload: `Database error: ${firstError.message}` });
-                return;
-              }
-              continue;
-            }
-
-            if (firstData) {
-              console.log("[Restaurant Load] Using first available restaurant:", firstData.slug);
-              restaurantRow = firstData;
-            } else {
-              console.error("[Restaurant Load Error] No restaurants found in database.");
-              fetchKey.current = null;
-              dispatch({ 
-                type: "SET_ERROR", 
-                payload: "No restaurant found. Please create a restaurant in the database first." 
-              });
-              return;
-            }
-          }
-        }
-
-        const row = restaurantRow;
-        const restaurantId = String(row.id);
-        const planValue = row.plan ? String(row.plan).trim().toLowerCase() : "plus"
-        const restaurant = {
-          id: restaurantId,
-          name: String(row.name ?? ""),
-          slug: String(row.slug ?? ""),
-          logo: String(row.logo ?? ""),
-          plan: planValue,
-          country_code: String(row.country_code ?? DEFAULT_CURRENCY.country_code),
-          currency_code: String(row.currency_code ?? DEFAULT_CURRENCY.currency_code),
-          currency_symbol: String(row.currency_symbol ?? DEFAULT_CURRENCY.currency_symbol),
-          locale: String(row.locale ?? DEFAULT_CURRENCY.locale),
-        };
-
-        console.log("[Restaurant Load] Restaurant found:", restaurant.name, "(id:", restaurantId, ", plan:", planValue, ")");
 
         // Fetch categories and menu_items independently so one failure never blocks the other
         let categories = [];
@@ -348,7 +273,7 @@ export function MenuProvider({ children }) {
         }
       }
     }
-  }, []);
+  }, [loadRestaurant]);
 
   const refetch = useCallback((rawInput) => {
     const slug = cleanSlug(rawInput);

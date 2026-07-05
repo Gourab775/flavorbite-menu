@@ -3,6 +3,7 @@ import { Route, Switch, useRoute, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
 import { CartProvider } from "./hooks/useCart";
 import { MenuProvider, useMenuStore } from "./store/menuStore";
+import { RestaurantProvider } from "./store/restaurantStore";
 import { LandingPage } from "./pages/LandingPage";
 import { MenuPage } from "./pages/MenuPage";
 import { CartPage } from "./pages/CartPage";
@@ -164,16 +165,18 @@ export default function App() {
   }, []);
 
   return (
-    <CartProvider>
-      <MenuProvider>
-        <div className="appBackdrop">
-          <div className="phoneFrame">
-            <NavigationProvider>
-              <AppRoutes />
-            </NavigationProvider>
+    <RestaurantProvider>
+      <CartProvider>
+        <MenuProvider>
+          <div className="appBackdrop">
+            <div className="phoneFrame">
+              <NavigationProvider>
+                <AppRoutes />
+              </NavigationProvider>
+            </div>
           </div>
-        </div>
-      </MenuProvider>
-    </CartProvider>
+        </MenuProvider>
+      </CartProvider>
+    </RestaurantProvider>
   );
 }
