@@ -18,7 +18,7 @@ export function CheckoutPage() {
 
   const slug = urlSlug || getStoredSlug();
 
-  const { cart, subtotal, tax, grandTotal } = useCart();
+  const { cart, subtotal, tax, grandTotal, taxBreakdown, totalTax } = useCart();
   const { restaurant, loading: menuLoading } = useMenu();
   const { loadMenu } = useMenuStore();
   const formatCurrency = useFormatCurrency();
@@ -71,6 +71,7 @@ export function CheckoutPage() {
   const ALLOWED_COLUMNS = new Set([
     "restaurant_id", "table_id", "status", "order_code",
     "total_price", "items", "note", "customer_name", "order_type",
+    "subtotal", "total_tax", "tax_breakdown",
   ]);
 
   // Check that table_id column actually exists in live_orders
@@ -174,6 +175,9 @@ export function CheckoutPage() {
         items: itemsPayload,
         note: sessionStorage.getItem("cart_order_note") || undefined,
         order_type: sessionStorage.getItem("selected_order_type"),
+        subtotal: Number(subtotal) || 0,
+        total_tax: Number(totalTax) || 0,
+        tax_breakdown: taxBreakdown,
       };
 
       if (hasTableId) {
@@ -339,10 +343,19 @@ export function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              <div className="billRow">
-                <span>GST (5%)</span>
-                <span>{formatCurrency(tax)}</span>
-              </div>
+              {taxBreakdown.length > 0 ? (
+                taxBreakdown.map((t, i) => (
+                  <div className="billRow" key={i}>
+                    <span>{t.name} ({t.percentage}%)</span>
+                    <span>{formatCurrency(t.amount)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="billRow">
+                  <span>Tax</span>
+                  <span>{formatCurrency(totalTax)}</span>
+                </div>
+              )}
               <div className="billRow billRow--total">
                 <span>Total</span>
                 <span>{formatCurrency(grandTotal)}</span>

@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { FALLBACK_IMG } from "../utils/constants";
+import { useRestaurant } from "../store/restaurantStore";
+import { calculateTaxes } from "../utils/taxCalculator";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "qr_menu_cart";
@@ -48,6 +50,7 @@ function loadCart() {
 }
 
 export function CartProvider({ children }) {
+  const { taxes } = useRestaurant();
   const [cart, setCart] = useState(loadCart);
   const [vegMode, setVegMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -137,8 +140,11 @@ export function CartProvider({ children }) {
     return map;
   }, [cart]);
 
-  const tax = useMemo(() => Math.round(subtotal * 0.05), [subtotal]);
-  const grandTotal = useMemo(() => subtotal + tax, [subtotal, tax]);
+  const { totalTax, grandTotal, taxBreakdown } = useMemo(
+    () => calculateTaxes(subtotal, taxes),
+    [subtotal, taxes]
+  );
+  const tax = totalTax;
 
   const value = useMemo(
     () => ({
@@ -152,6 +158,8 @@ export function CartProvider({ children }) {
       subtotal,
       tax,
       grandTotal,
+      totalTax,
+      taxBreakdown,
       qtyById,
       vegMode,
       setVegMode,
@@ -164,6 +172,8 @@ export function CartProvider({ children }) {
       subtotal,
       tax,
       grandTotal,
+      totalTax,
+      taxBreakdown,
       qtyById,
       vegMode,
       searchQuery,

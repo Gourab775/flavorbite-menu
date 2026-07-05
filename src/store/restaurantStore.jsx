@@ -5,6 +5,7 @@ import { DEFAULT_CURRENCY } from "../utils/constants";
 
 const RestaurantContext = createContext(null);
 const restaurantCache = new Map();
+const taxesCache = new Map();
 
 const RESTAURANT_FIELDS = "id, name, slug, logo, plan, country_code, currency_code, currency_symbol, locale";
 
@@ -32,6 +33,8 @@ export function RestaurantProvider({ children }) {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [taxes, setTaxes] = useState([]);
+  const [taxesLoading, setTaxesLoading] = useState(false);
   const fetchKey = useRef(null);
   const pendingFetches = useRef(new Map());
 
@@ -44,6 +47,9 @@ export function RestaurantProvider({ children }) {
     if (restaurantCache.has(slug)) {
       const cached = restaurantCache.get(slug);
       setRestaurant(cached);
+      if (cached.id && taxesCache.has(cached.id)) {
+        setTaxes(taxesCache.get(cached.id));
+      }
       return cached;
     }
 
@@ -98,6 +104,32 @@ export function RestaurantProvider({ children }) {
       restaurantCache.set(slug, config);
       setRestaurant(config);
       setLoading(false);
+
+      if (config.id) {
+        setTaxesLoading(true);
+        try {
+          if (taxesCache.has(config.id)) {
+            setTaxes(taxesCache.get(config.id));
+          } else {
+            const { data: taxData, error: taxError } = await supabase
+              .from("restaurant_taxes")
+              .select("*")
+              .eq("restaurant_id", config.id)
+              .order("display_order", { ascending: true });
+            if (!taxError && taxData) {
+              taxesCache.set(config.id, taxData);
+              if (fetchKey.current === slug) setTaxes(taxData);
+            } else {
+              if (fetchKey.current === slug) setTaxes([]);
+            }
+          }
+        } catch {
+          if (fetchKey.current === slug) setTaxes([]);
+        } finally {
+          if (fetchKey.current === slug) setTaxesLoading(false);
+        }
+      }
+
       return config;
     } catch (err) {
       if (fetchKey.current === slug) {
@@ -111,8 +143,8 @@ export function RestaurantProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ restaurant, loading, error, loadRestaurant, isLoaded: !!restaurant }),
-    [restaurant, loading, error, loadRestaurant]
+    () => ({ restaurant, loading, error, loadRestaurant, isLoaded: !!restaurant, taxes, taxesLoading }),
+    [restaurant, loading, error, loadRestaurant, taxes, taxesLoading]
   );
 
   return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;

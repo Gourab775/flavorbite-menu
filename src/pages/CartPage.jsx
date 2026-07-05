@@ -25,6 +25,8 @@ export function CartPage() {
     subtotal,
     tax,
     grandTotal,
+    taxBreakdown,
+    totalTax,
   } = useCart();
 
   const [orderNote, setOrderNote] = useState(() => {
@@ -160,10 +162,19 @@ export function CartPage() {
               <span>Subtotal</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
-            <div className="billRow">
-              <span>GST &amp; Tax (5%)</span>
-              <span>{formatCurrency(tax)}</span>
-            </div>
+            {taxBreakdown.length > 0 ? (
+              taxBreakdown.map((t, i) => (
+                <div className="billRow" key={i}>
+                  <span>{t.name} ({t.percentage}%)</span>
+                  <span>{formatCurrency(t.amount)}</span>
+                </div>
+              ))
+            ) : (
+              <div className="billRow">
+                <span>Tax</span>
+                <span>{formatCurrency(totalTax)}</span>
+              </div>
+            )}
             <div className="billRow billRow--total">
               <span>Total</span>
               <span>{formatCurrency(grandTotal)}</span>
