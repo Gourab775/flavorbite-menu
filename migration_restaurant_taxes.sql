@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.restaurant_taxes (
   percentage numeric(5,2) NOT NULL,
   type text NOT NULL DEFAULT 'exclusive'::text,
   display_order integer NOT NULL DEFAULT 0,
-  is_active boolean NOT NULL DEFAULT true,
+  is_enabled boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT restaurant_taxes_pkey PRIMARY KEY (id),

@@ -4,7 +4,7 @@ export function calculateTaxes(subtotal, taxes = []) {
   }
 
   const enabled = taxes
-    .filter((t) => t.is_active)
+    .filter((t) => t.is_enabled)
     .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
 
   const taxBreakdown = [];
