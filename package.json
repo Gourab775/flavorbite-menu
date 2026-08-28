@@ -1,5 +1,6 @@
 {
-  "name": "project-new",
+  "name": "qr-menu-app",
+  "description": "Mobile-first QR-driven restaurant menu and ordering platform with Supabase backend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
