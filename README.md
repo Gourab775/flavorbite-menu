@@ -1,6 +1,6 @@
-# QR Menu — Customer Ordering Experience
+﻿# QR Menu — Customer Ordering Experience
 
-Live Demo: https://qr-menu-app-gamma.vercel.app
+Live Demo: https://flavorbite-menu.vercel.app
 
 Category: Hospitality Tech · Food & Beverage Commerce
 
@@ -114,10 +114,10 @@ Build outputs to `dist/` for production deployment.
 
 ### GitHub Pages
 
-1. Update `vite.config.js` `base` if serving from `https://qr-menu-app-gamma.vercel.app/` (e.g., `base: '/qr-menu-app/'`).
+1. Update `vite.config.js` `base` if serving from `https://flavorbite-menu.vercel.app/` (e.g., `base: '/qr-menu-app/'`).
 2. Run `npm run build` and deploy `dist/` via `gh-pages` or Actions.
 
-Live demo at `https://qr-menu-app-gamma.vercel.app`.
+Live demo at `https://flavorbite-menu.vercel.app`.
 
 ### Supabase Setup
 
